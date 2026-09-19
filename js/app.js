@@ -31,17 +31,34 @@
   navButtons.forEach(btn => btn.addEventListener('click', () => showView(btn.dataset.view)));
 
   // --- Step rendering ---------------------------------------------------
-  // 'register', 'destinations', 'examPrep' and 'examList' have real content
-  // (Phase 1). Every other step is still a labelled placeholder — built out in
-  // Phase 2 onward — but the order and navigation around them are real. Every
+  // 'register', 'destinations', 'examPrep', 'examList', the 5 academic
+  // questions and 'review' have real content. 'courses'/'activities' (Phase 3
+  // per PLAN.md) and 'game1'/'game2'/'request' (unscoped — see RUN_LOG.md's
+  // Phase 2 scope-check finding) are still labelled placeholders. Every
   // renderer (real or placeholder) draws its own step-actions row with the
   // same onNext/onBack contract, so there is exactly one Back/Next affordance
-  // on screen at a time.
+  // on screen at a time. A renderer may return a cleanup function (only the
+  // quiz renderer does, for its countdown interval) — renderStep() below
+  // always calls the previous step's cleanup before rendering the next one.
+  const onGotoReview = () => { PED.state.mutateDraft(draft, d => PED.steps.goToStep(d, 'review')); renderStep(); };
+  const onJump = stepId => { PED.state.mutateDraft(draft, d => PED.steps.goToStep(d, stepId)); renderStep(); };
+  const onSubmitted = () => {
+    draft = PED.state.resetForNewVisitor(draft.mode);
+    appShell.hidden = true;
+    heroScreen.hidden = false;
+  };
+
   const REAL_RENDERERS = {
     register: (el, onNext) => PED.registration.renderRegister(el, draft, datasets, onNext),
     destinations: (el, onNext, onBack) => PED.destinations.renderDestinations(el, draft, datasets, onNext, onBack),
     examPrep: (el, onNext, onBack) => PED.destinations.renderExamPrep(el, draft, datasets, onNext, onBack),
     examList: (el, onNext, onBack) => PED.destinations.renderExamList(el, draft, datasets, onNext, onBack),
+    q1: (el, onNext, onBack) => PED.quiz.renderQuestion(el, draft, datasets, 'q1', onNext, onBack, onGotoReview),
+    q2: (el, onNext, onBack) => PED.quiz.renderQuestion(el, draft, datasets, 'q2', onNext, onBack, onGotoReview),
+    q3: (el, onNext, onBack) => PED.quiz.renderQuestion(el, draft, datasets, 'q3', onNext, onBack, onGotoReview),
+    q4: (el, onNext, onBack) => PED.quiz.renderQuestion(el, draft, datasets, 'q4', onNext, onBack, onGotoReview),
+    q5: (el, onNext, onBack) => PED.quiz.renderQuestion(el, draft, datasets, 'q5', onNext, onBack, onGotoReview),
+    review: (el, onNext, onBack) => PED.review.renderReview(el, draft, datasets, { onBack, onJump, onDone: onSubmitted }),
   };
 
   function renderPlaceholder(el, stepId, onNext, onBack, isFirst, isLast) {
@@ -58,7 +75,21 @@
     el.querySelector('#placeholderNextBtn').addEventListener('click', onNext);
   }
 
+  // Only the quiz renderer currently returns a cleanup (its countdown
+  // interval) — tracked here so renderStep() can always stop the previous
+  // step's timer/interval before tearing down its DOM, regardless of which
+  // direction navigation came from (Next, Back, an edit-jump from review, or
+  // the timeout auto-advance to review).
+  let stepCleanup = null;
+
   function renderStep(direction) {
+    if (stepCleanup) { stepCleanup(); stepCleanup = null; }
+
+    // Pooled quiz timer: pause/resume based on the step we're entering, before
+    // that step actually renders, so its own countdown display (if any)
+    // starts from the correct remaining time on first paint.
+    PED.state.mutateDraft(draft, d => PED.timer.syncForStep(d, d.currentStepId));
+
     const steps = PED.steps.getVisibleSteps(draft);
     const index = PED.steps.getCurrentIndex(draft);
     stepProgressEl.textContent = `Step ${index + 1} / ${steps.length}`;
@@ -68,7 +99,7 @@
 
     const renderer = REAL_RENDERERS[draft.currentStepId];
     if (renderer) {
-      renderer(stepContentEl, onNext, onBack);
+      stepCleanup = renderer(stepContentEl, onNext, onBack) || null;
     } else {
       renderPlaceholder(stepContentEl, draft.currentStepId, onNext, onBack, PED.steps.isFirstStep(draft), PED.steps.isLastStep(draft));
     }
@@ -116,6 +147,7 @@
   function boot() {
     datasets = PED.data.loadDatasets();
     const questions = PED.questions.loadQuestionBank(datasets.questionBank, datasets.curriculumSubjects);
+    datasets.questions = questions; // validated list — quiz.js/review.js read this, not questionBank raw
     console.log(
       `[pedagogy] datasets loaded: ${datasets.schools.schools.length} schools, ` +
       `${Object.keys(datasets.curriculumSubjects.curricula).length} curricula, ` +

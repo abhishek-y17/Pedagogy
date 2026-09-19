@@ -574,6 +574,40 @@ main {
 
 .exam-group-label { margin-bottom: 4px; font-weight: 700; color: var(--ink); }
 
+/* Pooled quiz timer (Phase 2) — only ever rendered inside the quiz step's own
+   panel, so it's naturally absent everywhere else (registration, preference
+   steps, review) without any extra show/hide logic. */
+.quiz-timer {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--green);
+  background: #eef6ea;
+  border: 1px solid #b9d9a4;
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  margin: 0 0 16px;
+}
+.quiz-timer--low { color: #8a3b1f; background: #fbe9e2; border-color: #eab99f; }
+.chips--quiz label span { min-width: 64px; text-align: center; }
+
+/* Review screen (Phase 2, session_handoff.md item D) */
+.review-section {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  margin: 0 0 16px;
+}
+.review-section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 10px; }
+.review-section-head h3 { margin: 0; font-size: 15px; }
+.review-fields { display: grid; gap: 10px; margin: 0; }
+.review-fields > div { display: flex; justify-content: space-between; gap: 16px; align-items: baseline; }
+.review-fields dt { color: var(--muted); font-size: 12px; flex: 0 0 auto; }
+.review-fields dd { margin: 0; font-weight: 600; text-align: right; }
+.review-fields--quiz > div { flex-wrap: wrap; }
+.review-fields--quiz dt { flex-basis: 100%; font-weight: 700; color: var(--ink); }
+.review-fields--quiz dd { text-align: left; }
+
 .scaffold-notice {
   border: 1px dashed var(--line);
   border-radius: var(--radius-md);

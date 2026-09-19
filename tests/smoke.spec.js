@@ -9,10 +9,11 @@ async function startJourney(page) {
 async function completeRegistrationToDestinations(page, overrides) {
   await fillValidRegistration(page, overrides);
   await page.locator('#registerNextBtn').click();
-  // 'q1' is a Phase 2+ placeholder between register and destinations in the
-  // real step order — click through it like a real visitor would.
-  await expect(page.locator('#stepContent h2')).toHaveText('q1');
-  await page.locator('#placeholderNextBtn').click();
+  // 'q1' (the first academic question) sits between register and destinations
+  // in the real step order — free navigation means Next works whether or not
+  // it's answered, same as any other question this round (no skip button yet).
+  await expect(page.locator('#quizOptions')).toBeVisible();
+  await page.locator('#qNextBtn').click();
   await expect(page.locator('#stepContent h2')).toHaveText('Where could your next chapter begin?');
 }
 
@@ -207,4 +208,217 @@ test('new visitor reset clears the draft back to the register step', async ({ pa
   await page.reload();
   await expect(page.locator('#heroScreen')).toBeVisible();
   await expect(page.locator('#appShell')).toBeHidden();
+});
+
+// ===================== Phase 2: review + timer + filtering =====================
+
+/** From the destinations step (where completeRegistrationToDestinations leaves
+ * off), clicks through every remaining full-path step to reach review.
+ * examPrep is left unanswered on purpose — that skips the conditional
+ * examList step, which keeps this walker generic. game1/game2/courses/
+ * activities/request are still Phase 2+ placeholders (out of this round's
+ * scope — see RUN_LOG.md), so they're just '#placeholderNextBtn' clicks. */
+async function walkDestinationsToReview(page) {
+  await page.locator('#destNextBtn').click();
+  await expect(page.locator('#stepContent h2')).toHaveText('Are you preparing for any competitive exam?');
+  await page.locator('#examPrepNextBtn').click();
+  // game1, q2, courses, game2, q3, activities, q4, q5, request -> review (9 steps).
+  // `force: true`: button:hover's translateY(-2px) (styles.css) fights
+  // WebKit's hover-based actionability retry when clicking through many
+  // buttons this fast in a row — real UX polish, not a bug (a real visitor's
+  // finger doesn't "hover" the way a synthetic mouse-move retry loop does),
+  // so the test bypasses that check here rather than working around the CSS.
+  for (let i = 0; i < 15; i++) {
+    if (await page.locator('.review-section').first().isVisible().catch(() => false)) break;
+    const quizVisible = await page.locator('#quizOptions').isVisible().catch(() => false);
+    if (quizVisible) await page.locator('#qNextBtn').click({ force: true });
+    else await page.locator('#placeholderNextBtn').click({ force: true });
+  }
+}
+
+test('final review screen shows registration, preferences and quiz answers', async ({ page }) => {
+  await startJourney(page);
+  await fillValidRegistration(page, { name: 'Aisha Rahman' });
+  await page.locator('#registerNextBtn').click();
+  // Answer q1 so the review reflects a real selection, not "Not answered yet".
+  await page.locator('#quizOptions label').first().click();
+  await page.locator('#qNextBtn').click();
+  await walkDestinationsToReview(page);
+
+  await expect(page.locator('.review-section').first()).toBeVisible();
+  await expect(page.locator('.review-section', { hasText: 'Registration' })).toContainText('Aisha Rahman');
+  await expect(page.locator('.review-fields--quiz')).toContainText('Q1');
+});
+
+test('tapping Edit on a review section jumps back to that exact step', async ({ page }) => {
+  await startJourney(page);
+  await completeRegistrationToDestinations(page);
+  await walkDestinationsToReview(page);
+
+  await page.locator('.review-section', { hasText: 'Registration' }).getByText('Edit').click();
+  await expect(page.locator('#stepContent h2')).toHaveText('First, make it yours.');
+});
+
+test('submitting the review finalizes the record and only then (no earlier point calls finalizeDraft)', async ({ page }) => {
+  await startJourney(page);
+  await completeRegistrationToDestinations(page);
+  await walkDestinationsToReview(page);
+
+  const recordsBefore = await page.evaluate(() => JSON.parse(localStorage.getItem('pedagogy-expo-records') || '[]').length);
+  await page.locator('#reviewSubmitBtn').click();
+  await expect(page.locator('.step-heading')).toHaveText("You're entered — thank you!");
+  const recordsAfter = await page.evaluate(() => JSON.parse(localStorage.getItem('pedagogy-expo-records') || '[]').length);
+  expect(recordsAfter).toBe(recordsBefore + 1);
+  // the draft slot is cleared by finalizeDraft() the instant Submit is clicked
+  // (not deferred until "Done") — confirms finalize really is the only save point.
+  const draftAfterSubmitScreen = await page.evaluate(() => localStorage.getItem('pedagogy-expo-draft'));
+  expect(draftAfterSubmitScreen).toBeNull();
+  await page.locator('#submittedDoneBtn').click();
+  await expect(page.locator('#heroScreen')).toBeVisible();
+});
+
+test('submit is blocked with the non-alarming popup if the parent number is missing (defensive re-check)', async ({ page }) => {
+  // This state (reaching review with an invalid parent number) isn't reachable
+  // through any real navigation today — the register step's own Continue
+  // button already gates it, and there's no way to jump straight to review
+  // bypassing that (confirmed: goToStep only fires from review's own "Edit"
+  // links and the timer's timeout handler, neither of which touches
+  // registration). Submit's re-check is a defensive net for a future bypass
+  // (e.g. a Phase 3 skip path), so this test seeds a draft directly via
+  // addInitScript (before the app's own boot() runs) rather than trying to
+  // tamper with a live page's localStorage — a live page's pagehide-autosave
+  // listener (js/app.js, for iPad Safari tab discards) correctly fights that
+  // kind of tampering by re-saving its known-good in-memory draft.
+  const draft = {
+    schema: 'pedagogy.v6', mode: 'full', currentStepId: 'review',
+    registration: {
+      name: 'Aisha Rahman', dob: '2009-05-14', parentMobile: '', studentMobile: null,
+      school: 'Delhi Private School Dubai', schoolKey: null, curriculum: 'Indian',
+      grade: 'stage10', stream: null, section: null, subjects: [],
+      tcsAccepted: true, consentToContact: true,
+    },
+    preferences: { destinations: [], destinationsOther: [], competitiveExamPrep: null, competitiveExams: {}, courses: [], activities: [] },
+    quiz: { selectedQuestionIds: [], answers: [], timerStartedAt: null, timerElapsedMs: 0 },
+    followUp: { counselling: false, marketing: false, preferredFollowup: null, channel: null },
+    meta: { id: null, createdAt: null, deviceId: null, recordStatus: null, duplicateFlag: false },
+  };
+  await page.addInitScript(d => localStorage.setItem('pedagogy-expo-draft', JSON.stringify(d)), draft);
+  await page.goto('/');
+
+  await expect(page.locator('.review-section').first()).toBeVisible();
+  await page.locator('#reviewSubmitBtn').click();
+  await expect(page.locator('.modal-title')).toHaveText('A parent/guardian number is needed');
+  await page.locator('.modal-close').click();
+  await expect(page.locator('#stepContent h2')).toHaveText('First, make it yours.');
+});
+
+test('quiz timer counts down on a question step and is absent on registration/preference steps', async ({ page }) => {
+  await startJourney(page);
+  await expect(page.locator('.quiz-timer')).toHaveCount(0); // register step: no timer
+  await fillValidRegistration(page);
+  await page.locator('#registerNextBtn').click();
+  await expect(page.locator('.quiz-timer')).toBeVisible();
+  const first = await page.locator('.quiz-timer').textContent();
+  await page.waitForTimeout(1200);
+  const second = await page.locator('.quiz-timer').textContent();
+  expect(second).not.toBe(first);
+
+  await page.locator('#qNextBtn').click();
+  await expect(page.locator('.quiz-timer')).toHaveCount(0); // destinations step: no timer
+});
+
+test('timer survives free back-navigation instead of resetting', async ({ page }) => {
+  await startJourney(page);
+  await fillValidRegistration(page);
+  await page.locator('#registerNextBtn').click();
+  await page.waitForTimeout(1500);
+  const beforeBack = await page.evaluate(() => JSON.parse(localStorage.getItem('pedagogy-expo-draft')).quiz.timerElapsedMs
+    + (JSON.parse(localStorage.getItem('pedagogy-expo-draft')).quiz.timerStartedAt ? Date.now() - JSON.parse(localStorage.getItem('pedagogy-expo-draft')).quiz.timerStartedAt : 0));
+  await page.locator('#qBackBtn').click(); // back to register — pauses and banks elapsed time
+  await page.waitForTimeout(300);
+  await page.locator('#registerNextBtn').click(); // forward again — resumes, doesn't reset
+  const remainingText = await page.locator('.quiz-timer').textContent();
+  expect(remainingText).toMatch(/4:5\d|4:4\d/); // still close to the ~5:00 start, not reset to 5:00 flat nor near zero
+  expect(beforeBack).toBeGreaterThan(1000);
+});
+
+test('quiz filtering: an Indian PCM-stream visitor is served PCM-eligible questions, not Commerce-only ones', async ({ page }) => {
+  await startJourney(page);
+  await fillValidRegistration(page, { school: false });
+  await page.locator('#regCurriculum').selectOption('Indian');
+  await page.locator('#regStream').selectOption('science-pcm');
+  await page.locator('#regTcs').check();
+  await page.locator('#regConsent').check();
+  await page.locator('#registerNextBtn').click();
+
+  const questionText = await page.locator('#stepContent h2').textContent();
+  const commerceOnlyQuestions = ['A product costs AED 60 and sells for AED 80. Ignoring other costs, profit per unit is:'];
+  expect(commerceOnlyQuestions).not.toContain(questionText);
+});
+
+// ===================== Phase 2 item 5: express path parity =====================
+// There is currently no UI control to actually choose express mode (hero's
+// only entry point is "Start my journey", which always creates a 'full'
+// draft — js/app.js's boot() hardcodes createDraft('full')). That's a real
+// gap flagged separately in RUN_LOG.md, not part of this round's scope. This
+// test verifies the express step machine/timer/filtering/review logic itself
+// is correct by seeding an express-mode draft directly, same technique as the
+// defensive-gate test above.
+test('express path: 1 question, ~60s pooled timer, and review/submit work end to end', async ({ page }) => {
+  // Seed via addInitScript (runs before app.js's own boot()), same technique
+  // as the defensive-gate test above — a live page's pagehide-autosave would
+  // otherwise race a post-load localStorage edit and stomp it back to 'full'.
+  const draft = {
+    schema: 'pedagogy.v6', mode: 'express', currentStepId: 'register',
+    registration: {
+      name: null, dob: null, parentMobile: null, studentMobile: null,
+      school: null, schoolKey: null, curriculum: null, grade: null, stream: null,
+      section: null, subjects: [], tcsAccepted: false, consentToContact: false,
+    },
+    preferences: { destinations: [], destinationsOther: [], competitiveExamPrep: null, competitiveExams: {}, courses: [], activities: [] },
+    quiz: { selectedQuestionIds: [], answers: [], timerStartedAt: null, timerElapsedMs: 0 },
+    followUp: { counselling: false, marketing: false, preferredFollowup: null, channel: null },
+    meta: { id: null, createdAt: null, deviceId: null, recordStatus: null, duplicateFlag: false },
+  };
+  await page.addInitScript(d => localStorage.setItem('pedagogy-expo-draft', JSON.stringify(d)), draft);
+  await page.goto('/');
+  // createDraft() always starts at currentStepId 'register', so boot() still
+  // shows the hero first (only a mid-journey currentStepId skips it) — click
+  // through as usual; the seeded express-mode draft underneath is what's
+  // actually being exercised here, not a fresh 'full' one.
+  await page.locator('#heroStartBtn').click();
+  await fillValidRegistration(page);
+  await page.locator('#registerNextBtn').click();
+
+  await expect(page.locator('#stepContent h2')).not.toHaveText(''); // a real question rendered
+  await expect(page.locator('.quiz-timer')).toBeVisible();
+  const timerText = await page.locator('.quiz-timer').textContent();
+  expect(timerText).toMatch(/0:5\d|1:00/); // ~60s budget, not the full path's ~5:00
+  await page.locator('#quizOptions label').first().click();
+  await page.locator('#qNextBtn').click();
+
+  // express path per steps.js: destinations -> examPrep -> (examList) -> courses -> activities -> request -> review
+  await expect(page.locator('#stepContent h2')).toHaveText('Where could your next chapter begin?');
+  await page.locator('#destNextBtn').click();
+  await page.locator('#examPrepNextBtn').click();
+  for (let i = 0; i < 10; i++) {
+    if (await page.locator('.review-section').first().isVisible().catch(() => false)) break;
+    await page.locator('#placeholderNextBtn').click({ force: true });
+  }
+  await expect(page.locator('.review-section').first()).toBeVisible();
+  await expect(page.locator('.review-fields--quiz div')).toHaveCount(1); // exactly 1 question on express
+
+  await page.locator('#reviewSubmitBtn').click();
+  await expect(page.locator('.step-heading')).toHaveText("You're entered — thank you!");
+});
+
+test('score/points are never shown to the participant', async ({ page }) => {
+  await startJourney(page);
+  await fillValidRegistration(page);
+  await page.locator('#registerNextBtn').click();
+  await page.locator('#quizOptions label').first().click();
+  const bodyText = await page.locator('#appShell').innerText();
+  expect(bodyText).not.toMatch(/\bscore\b/i);
+  expect(bodyText).not.toMatch(/\bpoints?\b/i);
+  expect(bodyText).not.toMatch(/correct|incorrect/i);
 });

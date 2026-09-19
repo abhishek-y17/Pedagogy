@@ -43,22 +43,11 @@
     return GRADE_VALUES.map((value, i) => ({ value, label: labels[i] }));
   }
 
-  /** Normalizes whichever stream/cluster/category/track structure a curriculum
-   * uses (see data/curriculum_subjects.json) into a plain [{id,label}] list, or
-   * [] if the curriculum has no such structure (the "Other" bucket). */
-  function getStreamOptions(curriculumSubjects, curriculumName) {
-    const c = (curriculumSubjects.curricula || {})[curriculumName];
-    if (!c) return [];
-    if (c.streams) return c.streams.map(s => ({ id: s.id, label: s.label }));
-    if (c.groups) return c.groups.map(g => ({ id: g.id, label: g.label }));
-    if (c.combination_clusters) return c.combination_clusters.map(cl => ({
-      id: cl.id,
-      label: cl.id.replace(/-/g, ' ').replace(/\b\w/g, ch => ch.toUpperCase()),
-    }));
-    if (c.ap_categories) return c.ap_categories.map(a => ({ id: a.id, label: a.label || a.id }));
-    if (c.external_exam_tracks) return c.external_exam_tracks.map((t, i) => ({ id: `track-${i}`, label: t }));
-    return [];
-  }
+  // Canonical derivation now lives in js/questions.js (getStreamOptions) so
+  // question-eligibility validation can never drift from what this picker
+  // shows — see that file's comment. Local alias for readability below.
+  const getStreamOptions = (curriculumSubjects, curriculumName) =>
+    window.PED.questions.getStreamOptions(curriculumSubjects, curriculumName);
 
   // Same UAE-05-number / international-number normalization as both reference
   // prototypes. Format-checked only — no OTP, no verification call (standing decision).
@@ -72,6 +61,49 @@
 
   function renderOptions(list) {
     return list.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+  }
+
+  /**
+   * Single source of truth for "is this registration complete enough to
+   * proceed" — used by the register step's own Continue button AND, as a
+   * defensive re-check, by the review screen's Submit button (Phase 2 item 1:
+   * "Submit is also the missing-parent-number gate"). Returns a plain result
+   * object rather than showing UI itself, so each caller can present it in its
+   * own context (the register step already has its fields on screen; the
+   * review screen needs to jump back to register first).
+   */
+  function validateRegistrationForSubmit(reg) {
+    if (!reg.name || reg.name.trim().length < 2) return { ok: false, kind: 'alert', message: 'Please enter your full name.' };
+    if (!reg.dob) return { ok: false, kind: 'alert', message: 'Please enter a date of birth.' };
+    if (!reg.tcsAccepted) return { ok: false, kind: 'alert', message: 'Please accept the Terms & Conditions to continue.' };
+    if (!reg.consentToContact) return { ok: false, kind: 'alert', message: 'Please agree to be contacted (including via WhatsApp) to continue.' };
+
+    const parentPhone = normalizePhone(reg.parentMobile);
+    if (!parentPhone) return { ok: false, kind: 'parentMissing' };
+
+    const studentPhone = reg.studentMobile ? normalizePhone(reg.studentMobile) : null;
+    if (reg.studentMobile && !studentPhone) return { ok: false, kind: 'alert', message: 'That student mobile number doesn’t look valid — use an international format or a UAE 05xxxxxxxx number.' };
+
+    return { ok: true, parentPhone, studentPhone };
+  }
+
+  /** Shared modal presentation for a failed validateRegistrationForSubmit() result.
+   * `onFocusParent` re-focuses the parent-mobile field when it exists on screen
+   * (the register step passes its own field; the review screen passes a no-op
+   * since the field isn't rendered there — see js/review.js). */
+  function presentValidationFailure(result, onFocusParent) {
+    if (result.kind === 'parentMissing') {
+      window.PED.modal.open(
+        'A parent/guardian number is needed',
+        `<p>Since the iPad prize can only be handed over through a parent or guardian, we need a
+         reachable parent/guardian mobile number before we can continue &mdash; not to alarm you,
+         just so we can arrange collection and any follow-up.</p>
+         <p>Please add a number in the format <strong>+971 5xxxxxxxx</strong> (or your country code).</p>`,
+        [{ label: 'Go back and add it', action: onFocusParent || (() => {}) }]
+      );
+    } else {
+      window.PED.modal.alert(result.message);
+    }
   }
 
   const TCS_TEXT = `
@@ -178,7 +210,17 @@
     function refreshGradeOptions() {
       const options = gradeOptionsFor(reg.curriculum);
       $('#regGrade').innerHTML = options.map(o => `<option value="${escapeHtml(o.value)}">${escapeHtml(o.label)}</option>`).join('');
-      if (reg.grade && options.some(o => o.value === reg.grade)) $('#regGrade').value = reg.grade;
+      if (reg.grade && options.some(o => o.value === reg.grade)) {
+        $('#regGrade').value = reg.grade;
+      } else {
+        // A <select> always shows its first option as visually selected even
+        // with no explicit choice — persist that same default onto the draft
+        // so review.js's "every registration field shown" actually matches
+        // what the visitor saw, instead of showing "—" for a field that
+        // never looked empty on screen (found in Phase 2 review-screen QA).
+        $('#regGrade').value = options[0].value;
+        window.PED.state.mutateDraft(draft, () => { reg.grade = options[0].value; });
+      }
     }
 
     function refreshStreamOptions() {
@@ -322,29 +364,12 @@
 
     // --- Continue / validation ---
     $('#registerNextBtn').addEventListener('click', () => {
-      if (!reg.name || reg.name.trim().length < 2) { window.PED.modal.alert('Please enter your full name.'); return; }
-      if (!reg.dob) { window.PED.modal.alert('Please enter a date of birth.'); return; }
-      if (!reg.tcsAccepted) { window.PED.modal.alert('Please accept the Terms & Conditions to continue.'); return; }
-      if (!reg.consentToContact) { window.PED.modal.alert('Please agree to be contacted (including via WhatsApp) to continue.'); return; }
-
-      const parentPhone = normalizePhone(reg.parentMobile);
-      if (!parentPhone) {
-        window.PED.modal.open(
-          'A parent/guardian number is needed',
-          `<p>Since the iPad prize can only be handed over through a parent or guardian, we need a
-           reachable parent/guardian mobile number before we can continue &mdash; not to alarm you,
-           just so we can arrange collection and any follow-up.</p>
-           <p>Please add a number in the format <strong>+971 5xxxxxxxx</strong> (or your country code).</p>`,
-          [{ label: 'Go back and add it', action: () => schoolInput ? $('#regParentMobile').focus() : null }]
-        );
-        return;
-      }
-      const studentPhone = reg.studentMobile ? normalizePhone(reg.studentMobile) : null;
-      if (reg.studentMobile && !studentPhone) { window.PED.modal.alert('That student mobile number doesn’t look valid — use an international format or a UAE 05xxxxxxxx number.'); return; }
+      const result = validateRegistrationForSubmit(reg);
+      if (!result.ok) { presentValidationFailure(result, () => $('#regParentMobile').focus()); return; }
 
       window.PED.state.mutateDraft(draft, () => {
-        reg.parentMobile = parentPhone;
-        reg.studentMobile = studentPhone;
+        reg.parentMobile = result.parentPhone;
+        reg.studentMobile = result.studentPhone;
         reg.school = reg.school ? reg.school.trim() : null;
         reg.schoolKey = reg.schoolKey || (reg.school ? window.PED.schools.schoolKeyFor(reg.school) : null);
       });
@@ -352,5 +377,8 @@
     });
   }
 
-  window.PED.registration = { renderRegister, gradeOptionsFor, getStreamOptions, normalizePhone, TCS_TEXT };
+  window.PED.registration = {
+    renderRegister, gradeOptionsFor, getStreamOptions, normalizePhone, TCS_TEXT,
+    validateRegistrationForSubmit, presentValidationFailure,
+  };
 })();

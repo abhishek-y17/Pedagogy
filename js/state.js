@@ -7,7 +7,11 @@
   'use strict';
   window.PED = window.PED || {};
 
-  const SCHEMA = 'pedagogy.v5';
+  // Bumped v5 -> v6 for Phase 2's quiz.selectedQuestionIds addition. Safe to
+  // invalidate old in-progress drafts on load (loadDraft() below just treats a
+  // schema mismatch as "no draft") — this is pre-launch dev/rehearsal data
+  // only, never a real visitor record.
+  const SCHEMA = 'pedagogy.v6';
   const RECORDS_KEY = 'pedagogy-expo-records';
   const DRAFT_KEY = 'pedagogy-expo-draft';
 
@@ -42,9 +46,15 @@
         activities: [],
       },
       quiz: {
-        answers: [],       // [{ questionId, selected, skipped }]
-        timerStartedAt: null,
-        timerElapsedMs: 0, // pooled ~5-minute budget, counts only while a question is shown
+        selectedQuestionIds: [], // fixed at first entry into a question step, so free
+                                  // back-navigation always re-shows the same questions
+        answers: [],       // [{ questionId, selected, skipped, timedOut }] — no `correct`
+                            // field here; that's computed only at finalizeDraft() below,
+                            // for staff-side analytics, never surfaced to the participant
+                            // (standing decision: no score/points shown in the UI).
+        timerStartedAt: null,   // epoch ms; null while paused (not on a question step)
+        timerElapsedMs: 0,      // pooled budget consumed so far, counts only while a
+                                 // question is on screen (js/timer.js owns start/pause)
       },
       followUp: {
         counselling: false,
@@ -108,8 +118,22 @@
     return fresh;
   }
 
-  /** Only point at which a draft becomes a saved, finalized record. */
-  function finalizeDraft(draft) {
+  /**
+   * Only point at which a draft becomes a saved, finalized record (Phase 2:
+   * wired to the review screen's single Submit action — see js/review.js).
+   * `questions` (the validated bank, optional) lets correctness get computed
+   * and stored per answer for staff-side analytics only — never shown to the
+   * participant anywhere in the UI (standing decision), and never used to
+   * affect draw odds (equal-odds rule is independent of this).
+   */
+  function finalizeDraft(draft, questions) {
+    if (Array.isArray(questions)) {
+      const byId = new Map(questions.map(q => [q.id, q]));
+      draft.quiz.answers = draft.quiz.answers.map(a => {
+        const q = byId.get(a.questionId);
+        return { ...a, correct: q && a.selected != null ? q.answer === a.selected : null };
+      });
+    }
     const records = loadRecords();
     draft.meta.id = draft.meta.id || `P-${crypto.randomUUID()}`;
     draft.meta.createdAt = new Date().toISOString();

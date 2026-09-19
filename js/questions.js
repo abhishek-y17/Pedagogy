@@ -11,6 +11,28 @@
   const VALID_DIFFICULTIES = ['easy', 'medium', 'hard'];
 
   /**
+   * Normalizes whichever stream/cluster/category/track structure a curriculum
+   * uses (see data/curriculum_subjects.json) into a plain [{id,label}] list, or
+   * [] if the curriculum has no such structure (the "Other" bucket). Canonical
+   * home for this derivation — both the registration stream picker
+   * (js/registration.js) and question-eligibility filtering/validation below
+   * call this, so a stream's id can never drift between the two.
+   */
+  function getStreamOptions(curriculumSubjects, curriculumName) {
+    const c = (curriculumSubjects.curricula || {})[curriculumName];
+    if (!c) return [];
+    if (c.streams) return c.streams.map(s => ({ id: s.id, label: s.label }));
+    if (c.groups) return c.groups.map(g => ({ id: g.id, label: g.label }));
+    if (c.combination_clusters) return c.combination_clusters.map(cl => ({
+      id: cl.id,
+      label: cl.id.replace(/-/g, ' ').replace(/\b\w/g, ch => ch.toUpperCase()),
+    }));
+    if (c.ap_categories) return c.ap_categories.map(a => ({ id: a.id, label: a.label || a.id }));
+    if (c.external_exam_tracks) return c.external_exam_tracks.map((t, i) => ({ id: `track-${i}`, label: t }));
+    return [];
+  }
+
+  /**
    * Validates a question bank against the schema and against curriculum_subjects.json's
    * real stream/subject-group ids, so a typo'd eligible_stream_ids value fails loudly
    * at load time instead of silently excluding a question from every filter later.
@@ -49,10 +71,13 @@
       if (!curriculum) {
         errors.push(`${where}: curriculum "${q.curriculum}" is not a key in curriculum_subjects.json`);
       } else if (Array.isArray(q.eligible_stream_ids) && q.eligible_stream_ids.length) {
-        const validIds = new Set([
-          ...(curriculum.streams || []).map(s => s.id),
-          ...(curriculum.groups || []).map(g => g.id),
-        ]);
+        // Covers every curriculum shape (streams/groups/combination_clusters/
+        // ap_categories/external_exam_tracks) via the same derivation
+        // registration.js uses to populate the stream picker — see
+        // getStreamOptions above. Previously this only checked .streams/.groups,
+        // which silently let a typo'd British/American/SABIS id through
+        // unvalidated (flagged in RUN_LOG.md 2026-09-19, fixed here).
+        const validIds = new Set(getStreamOptions(curriculumSubjects, q.curriculum).map(o => o.id));
         for (const streamId of q.eligible_stream_ids) {
           if (!validIds.has(streamId)) {
             errors.push(`${where}: eligible_stream_ids value "${streamId}" is not a real stream/group id under curriculum "${q.curriculum}"`);
@@ -90,5 +115,46 @@
     });
   }
 
-  window.PED.questions = { validateQuestionBank, loadQuestionBank, getEligibleQuestions };
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  /**
+   * Picks `count` unique questions for a visitor's quiz, with a fallback chain
+   * so the stub bank (still small — session_handoff.md item K, real bank not
+   * yet delivered) never comes up short or crashes:
+   *   1. Eligible for the visitor's exact curriculum + stream.
+   *   2. Topped up from the same curriculum, any stream (still on-curriculum,
+   *      just not stream-matched — "the curriculum's generic pool").
+   *   3. Topped up from the whole bank (any curriculum) as a last resort.
+   * Logs via console.warn whenever tier 2 or 3 actually fires, so a thin bank
+   * for some curriculum/stream combo is visible during Phase 2/5 QA rather
+   * than silently under-serving that visitor.
+   */
+  function selectQuizQuestions(questions, count, { curriculum, streamId }) {
+    const byId = new Map();
+    const add = list => { for (const q of list) if (!byId.has(q.id)) byId.set(q.id, q); };
+
+    add(getEligibleQuestions(questions, { curriculum, streamId }));
+    if (byId.size < count) {
+      const before = byId.size;
+      add(getEligibleQuestions(questions, { curriculum }));
+      if (byId.size > before) {
+        console.warn(`[pedagogy] quiz fallback: only ${before} stream-matched question(s) for curriculum "${curriculum}" stream "${streamId || '(none)'}" — topped up to ${byId.size} from the same curriculum's other streams.`);
+      }
+    }
+    if (byId.size < count) {
+      const before = byId.size;
+      add(shuffle(questions));
+      console.warn(`[pedagogy] quiz fallback: only ${before} question(s) available for curriculum "${curriculum}" even after same-curriculum top-up — filled the remaining ${Math.min(count, byId.size) - before} slot(s) from the whole bank (any curriculum).`);
+    }
+    return shuffle(Array.from(byId.values())).slice(0, count);
+  }
+
+  window.PED.questions = { validateQuestionBank, loadQuestionBank, getEligibleQuestions, getStreamOptions, selectQuizQuestions };
 })();

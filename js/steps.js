@@ -115,6 +115,21 @@
     return draft;
   }
 
+  /** 0-based position of a question step among ONLY the 'question'-kind steps
+   * on this draft's path (q1 -> 0, q2 -> 1, ...). Used by js/quiz.js to map a
+   * step id onto draft.quiz.selectedQuestionIds[index]. */
+  function getQuestionStepIds(draft) {
+    return stepsFor(draft).filter(s => s.kind === 'question').map(s => s.id);
+  }
+
+  function getQuestionIndex(draft, stepId) {
+    return getQuestionStepIds(draft).indexOf(stepId);
+  }
+
+  function getQuestionCount(draft) {
+    return getQuestionStepIds(draft).length;
+  }
+
   window.PED.steps = {
     FULL_PATH_STEPS,
     EXPRESS_PATH_STEPS,
@@ -125,5 +140,8 @@
     goNext,
     goPrev,
     goToStep,
+    getQuestionStepIds,
+    getQuestionIndex,
+    getQuestionCount,
   };
 })();
