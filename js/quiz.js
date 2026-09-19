@@ -88,7 +88,7 @@
     }
 
     container.innerHTML = `
-      <p class="eyebrow-small">ACADEMIC QUESTION ${index + 1} / ${total}${question.placeholder ? ' &middot; PLACEHOLDER CONTENT' : ''}</p>
+      <p class="eyebrow-small">ACADEMIC QUESTION ${index + 1} / ${total}</p>
       <div class="quiz-timer" id="quizTimer" role="timer" aria-live="polite"></div>
       <h2 class="step-heading">${escapeHtml(question.q)}</h2>
       <div class="chips chips--quiz" role="radiogroup" id="quizOptions">

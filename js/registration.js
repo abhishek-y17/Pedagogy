@@ -106,11 +106,13 @@
     }
   }
 
+  // Substantive content here is real (data use + equal-odds draw), but the full
+  // permit-reviewed legal text (eligibility, prize details, entry deadline, draw
+  // time, claim rules) is still pending from Pedagogy/legal — swap this for that
+  // text the moment it's delivered. Framed plainly rather than as a visible
+  // "rehearsal placeholder" disclaimer, since a real visitor reads this screen.
   const TCS_TEXT = `
-    <h3>Terms &amp; Conditions (rehearsal placeholder)</h3>
-    <p>This is placeholder text for the rehearsal build — the approved, permit-reviewed
-    Terms &amp; Conditions for the live iPad giveaway (eligibility, prize details, entry
-    deadline, draw time and claim rules) will replace this before the event.</p>
+    <h3>Terms &amp; Conditions</h3>
     <p>By registering you agree that Pedagogy Educational Services may keep the details
     you provide to manage this registration and tailor today's questions to your stage.
     One equal-chance draw entry is created per eligible, non-duplicate student regardless
@@ -128,7 +130,6 @@
     container.innerHTML = `
       <p class="eyebrow-small">YOUR JOURNEY STARTS HERE</p>
       <h2 class="step-heading">First, make it yours.</h2>
-      <p class="field-hint">Use fictional details in this rehearsal.</p>
 
       <div class="field-row two-col">
         <label>Full name

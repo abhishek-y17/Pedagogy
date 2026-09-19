@@ -51,7 +51,8 @@ test('hero loads with no console errors and datasets/question bank validate', as
 test('hero start button opens the app shell on the register step', async ({ page }) => {
   await startJourney(page);
   await expect(page.locator('#stepContent h2')).toHaveText('First, make it yours.');
-  await expect(page.locator('#stepProgress')).toHaveText('Step 1 / 14');
+  await expect(page.locator('#stepProgressLabel')).toHaveText('Step 1 / 14');
+  await expect(page.locator('#stepProgress')).toHaveAttribute('aria-valuenow', /\d+/);
 });
 
 test('prize banner tap also opens the app (not just the CTA button)', async ({ page }) => {
@@ -239,6 +240,8 @@ async function walkDestinationsToReview(page) {
       await page.locator('#coursesNextBtn').click({ force: true });
     } else if (await page.locator('#activitiesNextBtn').isVisible().catch(() => false)) {
       await page.locator('#activitiesNextBtn').click({ force: true });
+    } else if (await page.locator('#requestNextBtn').isVisible().catch(() => false)) {
+      await page.locator('#requestNextBtn').click({ force: true });
     } else {
       await page.locator('#placeholderNextBtn').click({ force: true });
     }
@@ -396,6 +399,8 @@ test('express entry point: hero secondary link starts a real 1-question, ~60s ex
       await page.locator('#coursesNextBtn').click({ force: true });
     } else if (await page.locator('#activitiesNextBtn').isVisible().catch(() => false)) {
       await page.locator('#activitiesNextBtn').click({ force: true });
+    } else if (await page.locator('#requestNextBtn').isVisible().catch(() => false)) {
+      await page.locator('#requestNextBtn').click({ force: true });
     } else {
       await page.locator('#placeholderNextBtn').click({ force: true });
     }
@@ -546,6 +551,50 @@ test('no skip button anywhere on data-collection/preference steps', async ({ pag
   await page.locator('#qNextBtn').click();
   await expect(page.locator('#stepContent h2')).toHaveText('Where could your next chapter begin?');
   expect(await page.locator('button', { hasText: /^Skip$/ }).count()).toBe(0);
+});
+
+// ===================== Final build: no dev/rehearsal scaffolding left visible =====================
+test('no rehearsal banner, "fictional details" copy, or PLACEHOLDER text anywhere in the app shell', async ({ page }) => {
+  await startJourney(page);
+  await expect(page.locator('#rehearsalBanner')).toHaveCount(0);
+  const registerText = await page.locator('#appShell').innerText();
+  expect(registerText).not.toMatch(/fictional details/i);
+  await fillValidRegistration(page);
+  await page.locator('#registerNextBtn').click();
+  const questionText = await page.locator('#appShell').innerText();
+  expect(questionText).not.toMatch(/PLACEHOLDER/);
+});
+
+test('request step (final before review): channel + marketing opt-in + note are captured and shown on review', async ({ page }) => {
+  await startJourney(page);
+  await completeRegistrationToDestinations(page);
+  await walkDestinationsToReview(page);
+  // walkDestinationsToReview already clicked past request with its defaults;
+  // re-verify the fields it left on the draft actually reached review.
+  await expect(page.locator('.review-section', { hasText: 'Follow-up preferences' })).toBeVisible();
+});
+
+test('request step lets a visitor set a contact channel and a note for the counsellor', async ({ page }) => {
+  await startJourney(page);
+  await fillValidRegistration(page);
+  await page.locator('#registerNextBtn').click();
+  await page.locator('#qNextBtn').click();
+  await page.locator('#destNextBtn').click();
+  await page.locator('#examPrepNextBtn').click();
+  await page.locator('#gameSkipBtn').click();
+  await page.locator('#qNextBtn').click();
+  await page.locator('#coursesNextBtn').click();
+  await page.locator('#gameSkipBtn').click();
+  await page.locator('#qNextBtn').click();
+  await page.locator('#activitiesNextBtn').click();
+  await page.locator('#qNextBtn').click();
+  await page.locator('#qNextBtn').click();
+  await expect(page.locator('#stepContent h2')).toHaveText('One last thing before you go.');
+  await page.locator('label[for="channel-1"]').click(); // WhatsApp
+  await page.locator('#requestNote').fill('Interested in engineering in Germany.');
+  await page.locator('#requestNextBtn').click();
+  await expect(page.locator('.review-section', { hasText: 'Follow-up preferences' })).toContainText('WhatsApp');
+  await expect(page.locator('.review-section', { hasText: 'Follow-up preferences' })).toContainText('Interested in engineering in Germany.');
 });
 
 test('skipping an academic question shows the exact approved popup copy, then advances', async ({ page }) => {

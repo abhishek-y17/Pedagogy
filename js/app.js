@@ -16,6 +16,9 @@
   const views = document.querySelectorAll('[data-view-panel]');
   const navButtons = document.querySelectorAll('.site-nav button[data-view]');
   const stepProgressEl = document.getElementById('stepProgress');
+  const stepProgressFillEl = document.getElementById('stepProgressFill');
+  const stepProgressLabelEl = document.getElementById('stepProgressLabel');
+  const stepPanelEl = document.getElementById('stepPanel');
   const stepContentEl = document.getElementById('stepContent');
   const newVisitorBtn = document.getElementById('newVisitorBtn');
   const logoEl = document.querySelector('.brand-mark');
@@ -31,15 +34,17 @@
   navButtons.forEach(btn => btn.addEventListener('click', () => showView(btn.dataset.view)));
 
   // --- Step rendering ---------------------------------------------------
-  // 'register', 'destinations', 'examPrep', 'examList', 'game1', 'game2',
-  // 'courses', 'activities', the 5 academic questions and 'review' all have
-  // real content as of Phase 3. Only 'request' is still a labelled
-  // placeholder (unscoped, not part of any phase yet). Every renderer (real
-  // or placeholder) draws its own step-actions row with the same
-  // onNext/onBack contract, so there is exactly one Back/Next affordance on
-  // screen at a time. A renderer may return a cleanup function (only the
-  // quiz renderer does, for its countdown interval) — renderStep() below
-  // always calls the previous step's cleanup before rendering the next one.
+  // Every step in the full and express paths now has real content —
+  // 'request' (follow-up channel + optional note) was the last one still
+  // showing the generic dev placeholder, closed out for the final build.
+  // renderPlaceholder() below is kept only as a fail-safe for an unrecognized
+  // stepId (e.g. a future step added to steps.js without a renderer yet), not
+  // because any real step still uses it. Every renderer draws its own
+  // step-actions row with the same onNext/onBack contract, so there is
+  // exactly one Back/Next affordance on screen at a time. A renderer may
+  // return a cleanup function (only the quiz renderer does, for its
+  // countdown interval) — renderStep() below always calls the previous
+  // step's cleanup before rendering the next one.
   const onGotoReview = () => { PED.state.mutateDraft(draft, d => PED.steps.goToStep(d, 'review')); renderStep(); };
   const onJump = stepId => { PED.state.mutateDraft(draft, d => PED.steps.goToStep(d, stepId)); renderStep(); };
   const onSubmitted = () => {
@@ -57,6 +62,7 @@
     courses: (el, onNext, onBack) => PED.courses.renderCourses(el, draft, datasets, onNext, onBack),
     game2: (el, onNext, onBack) => PED.games.renderGame2(el, draft, onNext, onBack),
     activities: (el, onNext, onBack) => PED.courses.renderActivities(el, draft, datasets, onNext, onBack),
+    request: (el, onNext, onBack) => PED.request.renderRequest(el, draft, datasets, onNext, onBack),
     q1: (el, onNext, onBack) => PED.quiz.renderQuestion(el, draft, datasets, 'q1', onNext, onBack, onGotoReview),
     q2: (el, onNext, onBack) => PED.quiz.renderQuestion(el, draft, datasets, 'q2', onNext, onBack, onGotoReview),
     q3: (el, onNext, onBack) => PED.quiz.renderQuestion(el, draft, datasets, 'q3', onNext, onBack, onGotoReview),
@@ -96,7 +102,16 @@
 
     const steps = PED.steps.getVisibleSteps(draft);
     const index = PED.steps.getCurrentIndex(draft);
-    stepProgressEl.textContent = `Step ${index + 1} / ${steps.length}`;
+    const percent = Math.round(((index + 1) / steps.length) * 100);
+    stepProgressLabelEl.textContent = `Step ${index + 1} / ${steps.length}`;
+    stepProgressFillEl.style.width = `${percent}%`;
+    stepProgressEl.setAttribute('aria-valuenow', String(percent));
+    // Color accent per step kind (question/preference/game/request/review, or
+    // 'intro' for register) — the panel wash, top accent bar and progress
+    // fill all key off this (styles.css `[data-kind]` rules). Purely visual,
+    // extends the hero's color-accent language into every step per Abhi's
+    // 2026-09-19 design feedback.
+    stepPanelEl.dataset.kind = PED.steps.getStepKind(draft, draft.currentStepId);
 
     const onNext = () => { PED.state.mutateDraft(draft, PED.steps.goNext); renderStep('forward'); };
     const onBack = () => { PED.state.mutateDraft(draft, PED.steps.goPrev); renderStep('back'); };

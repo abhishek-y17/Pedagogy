@@ -86,6 +86,17 @@
     `);
   }
 
+  function renderFollowUpSection(draft) {
+    const f = draft.followUp;
+    return section('Follow-up preferences', 'request', `
+      <dl class="review-fields">
+        <div><dt>Preferred contact method</dt><dd>${escapeHtml(f.channel || 'Not answered yet')}</dd></div>
+        <div><dt>Event/offer updates</dt><dd>${f.marketing ? 'Yes, please' : 'No thanks'}</dd></div>
+        <div><dt>Note for the counsellor</dt><dd>${escapeHtml(f.preferredFollowup || '— (none)')}</dd></div>
+      </dl>
+    `);
+  }
+
   function renderQuizSection(draft, datasets) {
     const stepIds = window.PED.steps.getQuestionStepIds(draft);
     const rows = stepIds.map((stepId, i) => {
@@ -126,6 +137,7 @@
       <p class="field-hint">Tap "Edit" on any section to jump back and change it. Nothing is saved until you submit.</p>
       ${renderRegistrationSection(draft, datasets)}
       ${renderPreferencesSection(draft, datasets)}
+      ${renderFollowUpSection(draft)}
       ${renderQuizSection(draft, datasets)}
       <div class="step-actions">
         <button type="button" class="quiet" id="reviewBackBtn">&larr; Back</button>
