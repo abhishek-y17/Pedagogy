@@ -18,3 +18,9 @@ build/
 .env.local
 .DS_Store
 *.log
+
+# Playwright (dev-only smoke testing, see package.json)
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/

@@ -1,0 +1,13 @@
+{
+  "name": "pedagogy-sharjah-expo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Interactive registration + games + lead-capture stall app for Pedagogy Educational Services at the Sharjah International Education Show. Dev-only tooling (this package.json, Playwright) — the shipped app is plain HTML/CSS/JS with no build step.",
+  "scripts": {
+    "dev": "npx serve . -l 5500",
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0"
+  }
+}

@@ -1,0 +1,98 @@
+/* Pedagogy · Sharjah Expo app
+   Palette + font stack carried forward from reference/pedagogy-expo-v2.html
+   (per CLAUDE.md "Visual design direction" — keep palette/fonts, redo everything else).
+   Layout, hero and all illustration are new, code-drawn work (Phase 1+). */
+
+:root {
+  --bg: #f6f5ef;
+  --ink: #192d24;
+  --green: #2b614b;
+  --muted: #66776b;
+  --line: #dce3d7;
+  --lime: #d8ee96;
+  --purple: #e6def6;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 25px;
+  --font: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.6 var(--font);
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: 12px 20px;
+  min-height: 46px;
+  background: #e9eee2;
+  color: var(--green);
+  transition: transform .15s ease;
+}
+button:hover:not(:disabled) { transform: translateY(-2px); }
+button:focus-visible { outline: 3px solid #9274c4; outline-offset: 3px; }
+button.is-active { background: var(--green); color: white; font-weight: 700; }
+
+.site-header {
+  max-width: 1180px;
+  margin: auto;
+  padding: 22px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.brand-mark { display: block; height: 40px; width: auto; }
+
+.site-nav { display: flex; gap: 8px; }
+.site-nav button { background: transparent; font-size: 13px; }
+
+.rehearsal-banner {
+  padding: 9px 18px;
+  text-align: center;
+  font-size: 12px;
+  background: #ece9dd;
+  color: #625d48;
+  border-block: 1px solid #dedacb;
+}
+
+main {
+  max-width: 1120px;
+  padding: 45px 24px 70px;
+  margin: auto;
+}
+
+.scaffold-notice {
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  color: var(--muted);
+  font-size: 14px;
+  max-width: 640px;
+}
+
+.site-footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+@media (max-width: 720px) {
+  main { padding: 28px 16px 50px; }
+  .site-header { padding: 18px; }
+}
