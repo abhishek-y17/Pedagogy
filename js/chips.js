@@ -22,16 +22,22 @@
    * selected: string[] of currently-selected values (mutated in place on change).
    * exclusiveValues: string[] subset of options that clear all others when picked
    *   (and are themselves cleared if any non-exclusive chip is picked).
+   * suggested: string[] subset of options to visually mark as a data-driven
+   *   suggestion (a ✦ mark, per curriculum_subjects.json's "pre-suggest, not
+   *   force" note — see js/questions.js's getSuggestedCourses). Purely visual;
+   *   never affects selection/exclusivity behavior.
    * onChange(selectedArray): called after every toggle.
    */
-  function renderChipGrid(container, { name, options, selected, exclusiveValues, onChange }) {
+  function renderChipGrid(container, { name, options, selected, exclusiveValues, suggested, onChange }) {
     exclusiveValues = exclusiveValues || [];
+    suggested = suggested || [];
     container.innerHTML =
       '<div class="chips" role="group">' +
       options.map((opt, i) => {
         const id = `${name}-${i}`;
         const checked = selected.includes(opt) ? ' checked' : '';
-        return `<label for="${id}"><input type="checkbox" id="${id}" name="${name}" value="${escapeHtml(opt)}"${checked}><span>${escapeHtml(opt)}</span></label>`;
+        const spanClass = suggested.includes(opt) ? ' class="chip-suggested"' : '';
+        return `<label for="${id}"><input type="checkbox" id="${id}" name="${name}" value="${escapeHtml(opt)}"${checked}><span${spanClass}>${escapeHtml(opt)}</span></label>`;
       }).join('') +
       '</div>';
 

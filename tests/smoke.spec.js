@@ -215,9 +215,10 @@ test('new visitor reset clears the draft back to the register step', async ({ pa
 /** From the destinations step (where completeRegistrationToDestinations leaves
  * off), clicks through every remaining full-path step to reach review.
  * examPrep is left unanswered on purpose — that skips the conditional
- * examList step, which keeps this walker generic. game1/game2/courses/
- * activities/request are still Phase 2+ placeholders (out of this round's
- * scope — see RUN_LOG.md), so they're just '#placeholderNextBtn' clicks. */
+ * examList step, which keeps this walker generic. game1/game2 are skipped via
+ * their own "Skip puzzle" button (real content, Phase 3) rather than played;
+ * dedicated tests below actually play them. Only 'request' is still a
+ * placeholder. */
 async function walkDestinationsToReview(page) {
   await page.locator('#destNextBtn').click();
   await expect(page.locator('#stepContent h2')).toHaveText('Are you preparing for any competitive exam?');
@@ -230,9 +231,17 @@ async function walkDestinationsToReview(page) {
   // so the test bypasses that check here rather than working around the CSS.
   for (let i = 0; i < 15; i++) {
     if (await page.locator('.review-section').first().isVisible().catch(() => false)) break;
-    const quizVisible = await page.locator('#quizOptions').isVisible().catch(() => false);
-    if (quizVisible) await page.locator('#qNextBtn').click({ force: true });
-    else await page.locator('#placeholderNextBtn').click({ force: true });
+    if (await page.locator('#quizOptions').isVisible().catch(() => false)) {
+      await page.locator('#qNextBtn').click({ force: true });
+    } else if (await page.locator('#gameSkipBtn').isVisible().catch(() => false)) {
+      await page.locator('#gameSkipBtn').click({ force: true });
+    } else if (await page.locator('#coursesNextBtn').isVisible().catch(() => false)) {
+      await page.locator('#coursesNextBtn').click({ force: true });
+    } else if (await page.locator('#activitiesNextBtn').isVisible().catch(() => false)) {
+      await page.locator('#activitiesNextBtn').click({ force: true });
+    } else {
+      await page.locator('#placeholderNextBtn').click({ force: true });
+    }
   }
 }
 
@@ -356,37 +365,17 @@ test('quiz filtering: an Indian PCM-stream visitor is served PCM-eligible questi
   expect(commerceOnlyQuestions).not.toContain(questionText);
 });
 
-// ===================== Phase 2 item 5: express path parity =====================
-// There is currently no UI control to actually choose express mode (hero's
-// only entry point is "Start my journey", which always creates a 'full'
-// draft — js/app.js's boot() hardcodes createDraft('full')). That's a real
-// gap flagged separately in RUN_LOG.md, not part of this round's scope. This
-// test verifies the express step machine/timer/filtering/review logic itself
-// is correct by seeding an express-mode draft directly, same technique as the
-// defensive-gate test above.
-test('express path: 1 question, ~60s pooled timer, and review/submit work end to end', async ({ page }) => {
-  // Seed via addInitScript (runs before app.js's own boot()), same technique
-  // as the defensive-gate test above — a live page's pagehide-autosave would
-  // otherwise race a post-load localStorage edit and stomp it back to 'full'.
-  const draft = {
-    schema: 'pedagogy.v6', mode: 'express', currentStepId: 'register',
-    registration: {
-      name: null, dob: null, parentMobile: null, studentMobile: null,
-      school: null, schoolKey: null, curriculum: null, grade: null, stream: null,
-      section: null, subjects: [], tcsAccepted: false, consentToContact: false,
-    },
-    preferences: { destinations: [], destinationsOther: [], competitiveExamPrep: null, competitiveExams: {}, courses: [], activities: [] },
-    quiz: { selectedQuestionIds: [], answers: [], timerStartedAt: null, timerElapsedMs: 0 },
-    followUp: { counselling: false, marketing: false, preferredFollowup: null, channel: null },
-    meta: { id: null, createdAt: null, deviceId: null, recordStatus: null, duplicateFlag: false },
-  };
-  await page.addInitScript(d => localStorage.setItem('pedagogy-expo-draft', JSON.stringify(d)), draft);
+// ===================== Phase 3: real express entry point =====================
+// js/hero.js's secondary "Just here for the quiz?" link now actually sets
+// draft.mode = 'express' (previously only reachable by seeding a draft
+// directly — see RUN_LOG.md's Phase 2 scope-check finding, now closed). This
+// test goes through the real button rather than seeding state.
+test('express entry point: hero secondary link starts a real 1-question, ~60s express path', async ({ page }) => {
   await page.goto('/');
-  // createDraft() always starts at currentStepId 'register', so boot() still
-  // shows the hero first (only a mid-journey currentStepId skips it) — click
-  // through as usual; the seeded express-mode draft underneath is what's
-  // actually being exercised here, not a fresh 'full' one.
-  await page.locator('#heroStartBtn').click();
+  await page.locator('#heroExpressBtn').click();
+  await expect(page.locator('#appShell')).toBeVisible();
+  const mode = await page.evaluate(() => JSON.parse(localStorage.getItem('pedagogy-expo-draft')).mode);
+  expect(mode).toBe('express');
   await fillValidRegistration(page);
   await page.locator('#registerNextBtn').click();
 
@@ -403,7 +392,13 @@ test('express path: 1 question, ~60s pooled timer, and review/submit work end to
   await page.locator('#examPrepNextBtn').click();
   for (let i = 0; i < 10; i++) {
     if (await page.locator('.review-section').first().isVisible().catch(() => false)) break;
-    await page.locator('#placeholderNextBtn').click({ force: true });
+    if (await page.locator('#coursesNextBtn').isVisible().catch(() => false)) {
+      await page.locator('#coursesNextBtn').click({ force: true });
+    } else if (await page.locator('#activitiesNextBtn').isVisible().catch(() => false)) {
+      await page.locator('#activitiesNextBtn').click({ force: true });
+    } else {
+      await page.locator('#placeholderNextBtn').click({ force: true });
+    }
   }
   await expect(page.locator('.review-section').first()).toBeVisible();
   await expect(page.locator('.review-fields--quiz div')).toHaveCount(1); // exactly 1 question on express
@@ -421,4 +416,145 @@ test('score/points are never shown to the participant', async ({ page }) => {
   expect(bodyText).not.toMatch(/\bscore\b/i);
   expect(bodyText).not.toMatch(/\bpoints?\b/i);
   expect(bodyText).not.toMatch(/correct|incorrect/i);
+});
+
+// ===================== Phase 3: hero primary CTA still defaults to full =====================
+test('hero primary CTA still creates a full-mode draft (express link is additive, not a replacement)', async ({ page }) => {
+  await startJourney(page);
+  const mode = await page.evaluate(() => JSON.parse(localStorage.getItem('pedagogy-expo-draft')).mode);
+  expect(mode).toBe('full');
+});
+
+// ===================== Phase 3: mini-games =====================
+async function reachGame1(page) {
+  await startJourney(page);
+  await completeRegistrationToDestinations(page);
+  await page.locator('#destNextBtn').click();
+  await page.locator('#examPrepNextBtn').click();
+  await expect(page.locator('#trailTiles')).toBeVisible();
+}
+
+test('game 1 (number trail): tapping 1..12 in order completes it and turns Skip into Continue', async ({ page }) => {
+  await reachGame1(page);
+  for (let n = 1; n <= 12; n++) {
+    await page.locator(`#trailTiles [data-n="${n}"]`).click();
+  }
+  await expect(page.locator('#gameStatus')).toHaveText('Nice work — trail complete!');
+  await expect(page.locator('#gameSkipBtn')).toHaveText('Continue →');
+  await page.locator('#gameSkipBtn').click();
+  await expect(page.locator('#quizOptions')).toBeVisible(); // q2, the next real step after game1
+});
+
+test('game 1: a mis-tap does not complete the puzzle or reveal any error count', async ({ page }) => {
+  await reachGame1(page);
+  // Tap the highest-numbered tile first — guaranteed wrong since 1 is expected.
+  const tiles = page.locator('#trailTiles [data-n]');
+  const count = await tiles.count();
+  let wrongTile = null;
+  for (let i = 0; i < count; i++) {
+    if (await tiles.nth(i).getAttribute('data-n') !== '1') { wrongTile = tiles.nth(i); break; }
+  }
+  await wrongTile.click();
+  await expect(page.locator('#gameStatus')).toHaveText('Try 1 next.');
+  const bodyText = await page.locator('#appShell').innerText();
+  expect(bodyText).not.toMatch(/\berror(s)?\b/i);
+});
+
+test('game 1: Back navigates away without breaking state, and Skip puzzle advances without completing it', async ({ page }) => {
+  await reachGame1(page);
+  await page.locator('#gameBackBtn').click();
+  await expect(page.locator('#stepContent h2')).toHaveText('Are you preparing for any competitive exam?');
+  await page.locator('#examPrepNextBtn').click();
+  await expect(page.locator('#trailTiles')).toBeVisible(); // re-entering re-deals a fresh puzzle, no crash
+  await page.locator('#gameSkipBtn').click();
+  await expect(page.locator('#stepContent h2')).not.toHaveText('');
+});
+
+test('game 2 (pattern recall): studying, hiding and tapping the sequence back completes it', async ({ page }) => {
+  await reachGame1(page);
+  await page.locator('#gameSkipBtn').click(); // skip game 1
+  await expect(page.locator('#quizOptions')).toBeVisible(); // q2
+  await page.locator('#qNextBtn').click();
+  await expect(page.locator('#coursesChipGrid .chips')).toBeVisible(); // courses, between game1 and game2
+  await page.locator('#coursesNextBtn').click();
+  await expect(page.locator('#patternDisplay')).toBeVisible();
+  const sequenceText = await page.locator('#patternDisplay').textContent();
+  const symbols = sequenceText.trim().split(/\s+/);
+  await page.locator('#patternReadyBtn').click();
+  await expect(page.locator('#patternKeys')).toBeVisible();
+  for (const symbol of symbols) {
+    await page.locator(`#patternKeys [data-symbol="${symbol}"]`).click();
+  }
+  await expect(page.locator('#gameStatus')).toHaveText('Sequence complete — nicely done!');
+  await expect(page.locator('#gameSkipBtn')).toHaveText('Continue →');
+});
+
+// ===================== Phase 3: courses / activities chip steps =====================
+async function reachCourses(page) {
+  await reachGame1(page);
+  await page.locator('#gameSkipBtn').click();
+  await page.locator('#qNextBtn').click(); // q2
+  await expect(page.locator('#coursesChipGrid .chips')).toBeVisible();
+}
+
+test('courses step: tap-chip multi-select with "Undecided" clearing other picks', async ({ page }) => {
+  await reachCourses(page);
+  await page.locator('#coursesChipGrid label', { hasText: 'Medicine' }).click();
+  await page.locator('#coursesChipGrid label', { hasText: 'Law' }).click();
+  await page.locator('#coursesChipGrid label', { hasText: 'Undecided' }).click();
+  const checked = await page.locator('#coursesChipGrid input:checked').evaluateAll(els => els.map(e => e.value));
+  expect(checked).toEqual(['Undecided']);
+});
+
+test('courses step: an Indian PCM-stream visitor sees Engineering/Computing marked as suggested', async ({ page }) => {
+  await startJourney(page);
+  await fillValidRegistration(page, { school: false });
+  await page.locator('#regCurriculum').selectOption('Indian');
+  await page.locator('#regStream').selectOption('science-pcm');
+  await page.locator('#regTcs').check();
+  await page.locator('#regConsent').check();
+  await page.locator('#registerNextBtn').click();
+  await page.locator('#qNextBtn').click(); // q1
+  await page.locator('#destNextBtn').click();
+  await page.locator('#examPrepNextBtn').click();
+  await page.locator('#gameSkipBtn').click(); // game1
+  await page.locator('#qNextBtn').click(); // q2
+  await expect(page.locator('#coursesChipGrid .chips')).toBeVisible();
+  await expect(page.locator('#coursesChipGrid span.chip-suggested', { hasText: 'Engineering' })).toBeVisible();
+});
+
+test('activities step: plain tap-chip multi-select, no exclusivity', async ({ page }) => {
+  await reachCourses(page);
+  await page.locator('#coursesNextBtn').click();
+  await page.locator('#gameSkipBtn').click(); // game2
+  await page.locator('#qNextBtn').click(); // q3
+  await expect(page.locator('#activitiesChipGrid .chips')).toBeVisible();
+  await page.locator('#activitiesChipGrid label', { hasText: 'Sport' }).click();
+  await page.locator('#activitiesChipGrid label', { hasText: 'Music' }).click();
+  const checked = await page.locator('#activitiesChipGrid input:checked').evaluateAll(els => els.map(e => e.value));
+  expect(checked.sort()).toEqual(['Music', 'Sport']);
+});
+
+// ===================== Phase 3: skip only on academic questions =====================
+test('no skip button anywhere on data-collection/preference steps', async ({ page }) => {
+  await startJourney(page);
+  await expect(page.locator('#registerNextBtn')).toBeVisible();
+  expect(await page.locator('button', { hasText: /^Skip$/ }).count()).toBe(0);
+  await fillValidRegistration(page);
+  await page.locator('#registerNextBtn').click();
+  await expect(page.locator('#qSkipBtn')).toBeVisible(); // academic question: skip IS present
+  await page.locator('#qNextBtn').click();
+  await expect(page.locator('#stepContent h2')).toHaveText('Where could your next chapter begin?');
+  expect(await page.locator('button', { hasText: /^Skip$/ }).count()).toBe(0);
+});
+
+test('skipping an academic question shows the exact approved popup copy, then advances', async ({ page }) => {
+  await startJourney(page);
+  await fillValidRegistration(page);
+  await page.locator('#registerNextBtn').click();
+  await page.locator('#qSkipBtn').click();
+  await expect(page.locator('.modal-title')).toHaveText('Skip this question?');
+  await expect(page.locator('.modal-body')).toHaveText('Completing all questions makes your winning chance higher.');
+  await page.locator('.modal-actions button', { hasText: 'Skip anyway' }).click();
+  await expect(page.locator('#stepContent h2')).toHaveText('Where could your next chapter begin?');
 });

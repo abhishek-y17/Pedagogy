@@ -6,11 +6,10 @@
 // step's own Continue button already blocks on the same rules, so this is a
 // belt-and-braces safety net, not the only gate.
 //
-// Courses and activities sections show "None selected yet" for now — those
-// two steps are still Phase 2+ placeholders (PLAN.md assigns building their
-// tap-chip UI to Phase 3, alongside the destinations chip-grid redesign work
-// they share a pattern with), not part of this round's scope. This screen
-// just reflects whatever's actually on the draft; it doesn't invent content.
+// Courses/activities (Phase 3, js/courses.js) are real tap-chip steps now —
+// this screen still just reflects whatever's actually on the draft, same as
+// every other section, so no change was needed here beyond the "Skipped"
+// wording below once js/quiz.js grew a real skip action.
 (function () {
   'use strict';
   window.PED = window.PED || {};
@@ -94,8 +93,13 @@
       const question = datasets.questions.find(q => q.id === questionId);
       const answer = draft.quiz.answers.find(a => a.questionId === questionId);
       let answerText;
-      if (!answer || answer.selected == null) answerText = answer && answer.timedOut ? 'Not answered (time ran out)' : 'Not answered yet';
-      else answerText = answer.selected;
+      if (!answer || answer.selected == null) {
+        if (answer && answer.timedOut) answerText = 'Not answered (time ran out)';
+        else if (answer && answer.skipped) answerText = 'Skipped';
+        else answerText = 'Not answered yet';
+      } else {
+        answerText = answer.selected;
+      }
       return `<div><dt>Q${i + 1}${question ? ': ' + escapeHtml(question.q) : ''}</dt><dd>${escapeHtml(answerText)}</dd>
         <button type="button" class="link-btn" data-jump="${escapeHtml(stepId)}">Edit</button></div>`;
     });

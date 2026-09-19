@@ -18,22 +18,28 @@
   function wireHero(onStart) {
     const heroScreen = document.getElementById('heroScreen');
     const startBtn = document.getElementById('heroStartBtn');
+    const expressBtn = document.getElementById('heroExpressBtn');
     const banner = document.getElementById('prizeBanner');
     const tcsLink = document.getElementById('heroTcsLink');
     const visual = document.getElementById('heroVisual');
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    function start() {
+    // mode: 'full' | 'express'. Passed through to onStart so app.js can set
+    // draft.mode before the first render — the primary CTA/banner/drag-gesture
+    // all stay the default full-path choice; only the secondary express link
+    // below picks 'express'.
+    function start(mode) {
       tapHaptic();
       heroScreen.classList.add('hero-screen--exit');
       setTimeout(() => {
         heroScreen.hidden = true;
-        onStart();
+        onStart(mode);
       }, 280);
     }
 
-    startBtn.addEventListener('click', start);
-    banner.addEventListener('click', start);
+    startBtn.addEventListener('click', () => start('full'));
+    banner.addEventListener('click', () => start('full'));
+    if (expressBtn) expressBtn.addEventListener('click', () => start('express'));
     tcsLink.addEventListener('click', () => {
       window.PED.modal.open('Terms & Conditions', window.PED.registration.TCS_TEXT);
     });
@@ -67,7 +73,7 @@
       if (dy > 60) {
         dragging = false;
         banner.style.transform = '';
-        start();
+        start('full');
       }
     });
     ['pointerup', 'pointerleave', 'pointercancel'].forEach(evt =>

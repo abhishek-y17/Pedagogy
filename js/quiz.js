@@ -1,11 +1,12 @@
-// Classic script. Academic quiz question step (Phase 2). No per-question
-// correct/incorrect reveal (session_handoff.md item D) and no score/points
-// shown anywhere (standing decision) — selecting an option just marks it
-// selected; correctness is only computed later, at finalizeDraft(), for
-// staff-side analytics (see state.js). No skip button this round — that's
-// explicitly Phase 3 scope (session_handoff.md item B) and is NOT added here;
-// free back/forward navigation (already built) is how a visitor can leave an
-// unanswered question for now.
+// Classic script. Academic quiz question step. No per-question correct/
+// incorrect reveal (session_handoff.md item D) and no score/points shown
+// anywhere (standing decision) — selecting an option just marks it selected;
+// correctness is only computed later, at finalizeDraft(), for staff-side
+// analytics (see state.js). Skip (Phase 3) lives ONLY here, not on any
+// data-collection/preference step — confirming it shows the exact approved
+// popup copy below, then advances; the draw itself stays equal-odds
+// regardless of completion (that gap between copy and mechanic is
+// Abhi-confirmed, not a bug — see CLAUDE.md).
 (function () {
   'use strict';
   window.PED = window.PED || {};
@@ -32,8 +33,19 @@
   function setAnswer(draft, questionId, selected) {
     window.PED.state.mutateDraft(draft, () => {
       const existing = draft.quiz.answers.find(a => a.questionId === questionId);
-      if (existing) existing.selected = selected;
+      if (existing) { existing.selected = selected; existing.skipped = false; }
       else draft.quiz.answers.push({ questionId, selected, skipped: false, timedOut: false });
+    });
+  }
+
+  /** Confirmed via the popup below, not a silent action — only ever reachable
+   * from an academic question, never from a data-collection/preference step
+   * (those have no skip at all, per Phase 3 scope). */
+  function setSkipped(draft, questionId) {
+    window.PED.state.mutateDraft(draft, () => {
+      const existing = draft.quiz.answers.find(a => a.questionId === questionId);
+      if (existing) { if (existing.selected == null) existing.skipped = true; }
+      else draft.quiz.answers.push({ questionId, selected: null, skipped: true, timedOut: false });
     });
   }
 
@@ -88,6 +100,7 @@
       </div>
       <div class="step-actions">
         <button type="button" class="quiet" id="qBackBtn">&larr; Back</button>
+        <button type="button" class="quiet" id="qSkipBtn"${expired ? ' disabled' : ''}>Skip</button>
         <button type="button" class="primary" id="qNextBtn">Next &rarr;</button>
       </div>
     `;
@@ -97,6 +110,13 @@
     });
     container.querySelector('#qBackBtn').addEventListener('click', onBack);
     container.querySelector('#qNextBtn').addEventListener('click', onNext);
+    container.querySelector('#qSkipBtn').addEventListener('click', () => {
+      window.PED.modal.open(
+        'Skip this question?',
+        '<p>Completing all questions makes your winning chance higher.</p>',
+        [{ label: 'Skip anyway', action: () => { setSkipped(draft, questionId); onNext(); } }]
+      );
+    });
 
     const timerEl = container.querySelector('#quizTimer');
     function tick() {
