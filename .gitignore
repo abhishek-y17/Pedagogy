@@ -2,6 +2,13 @@
 reference/
 session_handoff.md
 
+# Ignore all markdown notes except README.md and the two files CLAUDE.md
+# explicitly designates as pushed (CLAUDE.md itself, and PLAN.md).
+*.md
+!README.md
+!CLAUDE.md
+!PLAN.md
+
 # Standard
 node_modules/
 .next/
