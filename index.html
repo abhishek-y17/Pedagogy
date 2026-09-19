@@ -16,8 +16,12 @@
   </div>
   <nav class="site-nav" aria-label="Primary">
     <button type="button" data-view="home" class="is-active">Experience</button>
-    <button type="button" data-view="staff">Staff</button>
+    <button type="button" id="newVisitorBtn" class="quiet">New visitor</button>
   </nav>
+  <!-- Staff dashboard has no visible nav entry — a visitor on a stall device must
+       not be able to reach it. Long-press (hold ~1s) the logo above, then enter
+       the staff PIN. This is a casual deterrent only, not real authentication
+       (see js/app.js STAFF_PIN comment and CLAUDE.md's no-real-auth standing decisions). -->
 </header>
 
 <div class="rehearsal-banner" id="rehearsalBanner">Rehearsal build · this browser only · use fictional details</div>
@@ -25,13 +29,21 @@
 <main id="app">
   <section id="view-home" data-view-panel>
     <div class="scaffold-notice">
-      <p><strong>Phase 0 scaffold.</strong> Landing hero, registration, quiz and staff dashboard are not built yet &mdash; this confirms the shell, palette, logo and state machine load cleanly with no console errors before Phase 1 begins.</p>
+      <p><strong>Phase 0 scaffold.</strong> Landing hero, registration, quiz and staff dashboard are not built yet &mdash; this confirms the shell, palette, logo, datasets and state machine load cleanly with no console errors before Phase 1 begins.</p>
+    </div>
+    <div class="step-panel" id="stepPanel">
+      <p class="step-progress" id="stepProgress"></p>
+      <p class="step-id" id="stepIdLabel"></p>
+      <div class="step-actions">
+        <button type="button" id="stepBackBtn" class="quiet">&larr; Back</button>
+        <button type="button" id="stepNextBtn" class="primary">Next &rarr;</button>
+      </div>
     </div>
   </section>
 
   <section id="view-staff" data-view-panel hidden>
     <div class="scaffold-notice">
-      <p>Staff dashboard placeholder &mdash; built in Phase 4.</p>
+      <p>Staff dashboard placeholder &mdash; built in Phase 4. You reached this by long-pressing the logo and entering the staff PIN.</p>
     </div>
   </section>
 </main>

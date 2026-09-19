@@ -16,7 +16,7 @@ export function createDraft(mode = 'full') {
   return {
     schema: SCHEMA,
     mode, // 'full' | 'express'
-    stepIndex: 0,
+    currentStepId: 'register',
     registration: {
       name: null,
       dob: null,
@@ -83,6 +83,30 @@ export function saveDraft(draft) {
 
 export function clearDraft() {
   try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ }
+}
+
+/**
+ * Mutate the draft and immediately persist it. This is the pattern every future
+ * form field / step transition should use (from Phase 1 onward) so a mid-registration
+ * background-tab discard on iPad Safari never loses progress — persistence isn't
+ * something to bolt on in Phase 4, every mutation already saves as it happens.
+ */
+export function mutateDraft(draft, mutator) {
+  mutator(draft);
+  saveDraft(draft);
+  return draft;
+}
+
+/**
+ * One-action reset between visitors (Phase 6 needs this at the stall, not just in
+ * the eventual staff dashboard) — wipes the in-progress draft and starts clean.
+ * Does not touch finalized records in RECORDS_KEY.
+ */
+export function resetForNewVisitor(mode = 'full') {
+  clearDraft();
+  const fresh = createDraft(mode);
+  saveDraft(fresh);
+  return fresh;
 }
 
 /** Only point at which a draft becomes a saved, finalized record. */

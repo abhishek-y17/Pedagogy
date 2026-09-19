@@ -5,6 +5,7 @@
   "description": "Interactive registration + games + lead-capture stall app for Pedagogy Educational Services at the Sharjah International Education Show. Dev-only tooling (this package.json, Playwright) — the shipped app is plain HTML/CSS/JS with no build step.",
   "scripts": {
     "dev": "npx serve . -l 5500",
+    "build:data": "node scripts/build-data.js",
     "test": "playwright test"
   },
   "devDependencies": {

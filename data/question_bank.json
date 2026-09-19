@@ -1,0 +1,63 @@
+{
+  "schema": "pedagogy.question-bank.v1",
+  "purpose": "Academic quiz question bank for the Sharjah Expo app. STUB DATA ONLY — Abhi has not yet delivered the real bank (target ~50-70 questions per subject per difficulty tier per curriculum, per CLAUDE.md/session_handoff.md Section 3K). This file exists so the loader, validator and eligibility-filtering logic can be built and tested now; every question below is a placeholder, not reviewed content.",
+  "note_on_stream_ids": "eligible_stream_ids values must match an 'id' inside data/curriculum_subjects.json's curricula[curriculum].streams[].id (stream-based curricula, e.g. Indian's 'science-pcmb') or .groups[].id (group-based curricula, e.g. IB's 'group4'). An empty array means the question applies to every stream/group within that curriculum. Curricula with no stream/group structure (the curriculum_subjects.json 'Other' bucket) should always use an empty array here.",
+  "questions": [
+    {
+      "id": "stub-indian-physics-medium-001",
+      "curriculum": "Indian",
+      "eligible_stream_ids": ["science-pcm", "science-pcb", "science-pcmb"],
+      "subject": "Physics",
+      "difficulty": "medium",
+      "topic": "Motion",
+      "language": "en",
+      "q": "A cyclist travels 24 metres in 4 seconds at constant speed. What is the speed?",
+      "options": ["4 m/s", "6 m/s", "12 m/s", "24 m/s"],
+      "answer": "6 m/s",
+      "explanation": "Speed = distance / time = 24 / 4 = 6 m/s.",
+      "reviewed_by": null
+    },
+    {
+      "id": "stub-indian-business-medium-001",
+      "curriculum": "Indian",
+      "eligible_stream_ids": ["commerce-with-maths", "commerce-without-maths"],
+      "subject": "Business Studies",
+      "difficulty": "medium",
+      "topic": "Profit",
+      "language": "en",
+      "q": "A product costs AED 60 and sells for AED 80. Ignoring other costs, profit per unit is:",
+      "options": ["AED 10", "AED 20", "AED 40", "AED 60"],
+      "answer": "AED 20",
+      "explanation": "Selling price minus unit cost: 80 - 60 = 20.",
+      "reviewed_by": null
+    },
+    {
+      "id": "stub-ib-sciences-easy-001",
+      "curriculum": "IB",
+      "eligible_stream_ids": ["group4"],
+      "subject": "Biology",
+      "difficulty": "easy",
+      "topic": "Cells",
+      "language": "en",
+      "q": "Which structure controls movement of substances into and out of a cell?",
+      "options": ["Cell membrane", "Nucleus", "Ribosome", "Chromosome"],
+      "answer": "Cell membrane",
+      "explanation": "The membrane selectively controls exchange with the cell's environment.",
+      "reviewed_by": null
+    },
+    {
+      "id": "stub-other-reasoning-easy-001",
+      "curriculum": "Other",
+      "eligible_stream_ids": [],
+      "subject": "Reasoning",
+      "difficulty": "easy",
+      "topic": "Patterns",
+      "language": "en",
+      "q": "Continue the same pattern: 4, 8, 12, ...",
+      "options": ["14", "16", "18", "20"],
+      "answer": "16",
+      "explanation": "Add four each time.",
+      "reviewed_by": null
+    }
+  ]
+}

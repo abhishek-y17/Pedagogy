@@ -24,7 +24,9 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font: 16px/1.6 var(--font);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.6;
 }
 
 button {
@@ -40,7 +42,8 @@ button {
 }
 button:hover:not(:disabled) { transform: translateY(-2px); }
 button:focus-visible { outline: 3px solid #9274c4; outline-offset: 3px; }
-button.is-active { background: var(--green); color: white; font-weight: 700; }
+button.is-active,
+button.primary { background: var(--green); color: white; font-weight: 700; }
 
 .site-header {
   max-width: 1180px;
@@ -52,10 +55,33 @@ button.is-active { background: var(--green); color: white; font-weight: 700; }
   gap: 15px;
 }
 
-.brand-mark { display: block; height: 40px; width: auto; }
+.brand-mark {
+  display: block;
+  height: 40px;
+  width: auto;
+  /* Long-press is the staff-view gate (see app.js) — suppress iOS's
+     text-selection / callout menu so the press reads as a tap-and-hold, not
+     a "copy image" gesture. */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
 
 .site-nav { display: flex; gap: 8px; }
 .site-nav button { background: transparent; font-size: 13px; }
+
+.step-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  margin-top: 20px;
+  background: white;
+}
+.step-panel .step-progress { font-size: 12px; color: var(--muted); margin: 0 0 6px; }
+.step-panel .step-id { font-size: 22px; font-weight: 700; margin: 0 0 18px; }
+.step-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.step-actions .quiet { background: transparent; border: 1px solid var(--line); }
 
 .rehearsal-banner {
   padding: 9px 18px;
