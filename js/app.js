@@ -58,19 +58,27 @@
     el.querySelector('#placeholderNextBtn').addEventListener('click', onNext);
   }
 
-  function renderStep() {
+  function renderStep(direction) {
     const steps = PED.steps.getVisibleSteps(draft);
     const index = PED.steps.getCurrentIndex(draft);
     stepProgressEl.textContent = `Step ${index + 1} / ${steps.length}`;
 
-    const onNext = () => { PED.state.mutateDraft(draft, PED.steps.goNext); renderStep(); };
-    const onBack = () => { PED.state.mutateDraft(draft, PED.steps.goPrev); renderStep(); };
+    const onNext = () => { PED.state.mutateDraft(draft, PED.steps.goNext); renderStep('forward'); };
+    const onBack = () => { PED.state.mutateDraft(draft, PED.steps.goPrev); renderStep('back'); };
 
     const renderer = REAL_RENDERERS[draft.currentStepId];
     if (renderer) {
       renderer(stepContentEl, onNext, onBack);
     } else {
       renderPlaceholder(stepContentEl, draft.currentStepId, onNext, onBack, PED.steps.isFirstStep(draft), PED.steps.isLastStep(draft));
+    }
+
+    // Direction-aware entrance (item 5): re-trigger the CSS animation by removing
+    // and re-adding the class on the next frame.
+    stepContentEl.classList.remove('step-anim-forward-in', 'step-anim-back-in');
+    if (direction) {
+      void stepContentEl.offsetWidth;
+      stepContentEl.classList.add(direction === 'back' ? 'step-anim-back-in' : 'step-anim-forward-in');
     }
   }
 

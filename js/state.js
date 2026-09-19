@@ -23,7 +23,6 @@
         dob: null,
         parentMobile: null,   // mandatory
         studentMobile: null,  // optional
-        contactRole: null,
         school: null,
         schoolKey: null,
         curriculum: null,     // from schools.json tag, or manual fallback

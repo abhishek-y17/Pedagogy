@@ -37,7 +37,7 @@ test('hero loads with no console errors and datasets/question bank validate', as
 
   await page.goto('/');
   await expect(page).toHaveTitle(/Pedagogy/);
-  await expect(page.locator('.hero-logo')).toBeVisible();
+  await expect(page.locator('.logo--hero')).toBeVisible();
   await expect(page.locator('#heroStartBtn')).toBeVisible();
   await expect(page.locator('.prize-banner')).toBeVisible();
 
@@ -81,10 +81,31 @@ test('picking a known school prefills curriculum and skips the manual question',
   await page.locator('#regSchoolInput').fill('Delhi Private School');
   await expect(page.locator('#schoolSuggestions li').first()).toBeVisible();
   await page.locator('#schoolSuggestions li').first().click();
-  await expect(page.locator('#schoolCurriculumNote')).toBeVisible();
-  // the manual curriculum <label> is hidden once a single-tag school is picked
+  // the manual curriculum <select> is replaced by a derived, correctable line
+  await expect(page.locator('#curriculumDerivedLine')).toBeVisible();
+  await expect(page.locator('#curriculumDerivedLine')).toContainText('Not right?');
   const curriculumLabelVisible = await page.locator('#curriculumFieldWrap label').first().isVisible();
   expect(curriculumLabelVisible).toBe(false);
+});
+
+test('derived curriculum line has a working "Change it" to reveal the manual select', async ({ page }) => {
+  await startJourney(page);
+  await page.locator('#regSchoolInput').fill('Delhi Private School');
+  await page.locator('#schoolSuggestions li').first().click();
+  await expect(page.locator('#curriculumFieldWrap label').first()).toBeHidden();
+  await page.locator('#curriculumDerivedLine button').click();
+  await expect(page.locator('#curriculumFieldWrap label').first()).toBeVisible();
+  await expect(page.locator('#curriculumDerivedLine')).toBeHidden();
+});
+
+test('grade options follow the chosen curriculum\'s real naming', async ({ page }) => {
+  await startJourney(page);
+  await page.locator('#regCurriculum').selectOption('British');
+  await expect(page.locator('#regGrade')).toContainText('Year 11');
+  await page.locator('#regCurriculum').selectOption('American');
+  await expect(page.locator('#regGrade')).toContainText('Grade 10');
+  await page.locator('#regCurriculum').selectOption('IB');
+  await expect(page.locator('#regGrade')).toContainText('MYP Year 5');
 });
 
 test('an unrecognized school falls back to manual name + curriculum picker', async ({ page }) => {

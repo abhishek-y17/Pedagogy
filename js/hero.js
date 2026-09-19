@@ -9,12 +9,22 @@
   'use strict';
   window.PED = window.PED || {};
 
+  // Feature-detected haptic tap (no-op on iPadOS Safari, which doesn't implement the
+  // Vibration API — the motion layer below carries the "felt" response there instead).
+  function tapHaptic() {
+    if (typeof navigator.vibrate === 'function') navigator.vibrate(8);
+  }
+
   function wireHero(onStart) {
     const heroScreen = document.getElementById('heroScreen');
     const startBtn = document.getElementById('heroStartBtn');
     const banner = document.getElementById('prizeBanner');
+    const tcsLink = document.getElementById('heroTcsLink');
+    const visual = document.getElementById('heroVisual');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     function start() {
+      tapHaptic();
       heroScreen.classList.add('hero-screen--exit');
       setTimeout(() => {
         heroScreen.hidden = true;
@@ -24,6 +34,25 @@
 
     startBtn.addEventListener('click', start);
     banner.addEventListener('click', start);
+    tcsLink.addEventListener('click', () => {
+      window.PED.modal.open('Terms & Conditions', window.PED.registration.TCS_TEXT);
+    });
+
+    // Pointer parallax on the floating cards + device (transform-only, hardware
+    // accelerated). Skipped entirely under prefers-reduced-motion.
+    if (visual && !reduceMotion && matchMedia('(hover: hover)').matches) {
+      let raf = null;
+      window.addEventListener('pointermove', e => {
+        if (raf) return;
+        raf = requestAnimationFrame(() => {
+          raf = null;
+          const nx = (e.clientX / window.innerWidth - 0.5) * 2;
+          const ny = (e.clientY / window.innerHeight - 0.5) * 2;
+          visual.style.setProperty('--px', nx.toFixed(3));
+          visual.style.setProperty('--py', ny.toFixed(3));
+        });
+      });
+    }
 
     let dragging = false;
     let startY = 0;

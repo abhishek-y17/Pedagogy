@@ -4,6 +4,17 @@
    else). Layout, hero and all illustration below are new, code-drawn work —
    no images anywhere except the logo (assets/logo/). */
 
+/* Self-hosted display face (Anton, latin subset only — English-only app).
+   Local file, no runtime network dependency (see index.html removal of the
+   Google Fonts <link>). font-display: swap avoids a blocking hero repaint. */
+@font-face {
+  font-family: "Anton";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("assets/fonts/Anton-Regular.woff2") format("woff2");
+}
+
 :root {
   --bg: #f6f5ef;
   --ink: #192d24;
@@ -14,11 +25,25 @@
   --lime: #d8ee96;
   --purple: #e6def6;
   --purple-ink: #4a3a72;
+  /* Focus ring: green (matches the form's primary color), not the old lavender
+     which read as unrelated to a green-primary form (item 4c). */
+  --focus-ring: #1f7a4c;
+  /* Brand inks. Measured-from-source value was #2053AE; softened lighter per
+     2026-09-19 live feedback (it read too dark/heavy in the app's UI chrome).
+     This is a deliberate UI tweak, not a re-measurement of the client's mark —
+     flag alongside the mono variants for Pedagogy's sign-off before the real
+     event, same as any other retint of delivered brand colour. The colour logo
+     symbols reference these with a hex fallback, so they still render correctly
+     even if these custom properties were removed. */
+  --pedagogy-blue: #3B68B8;
+  --pedagogy-ink: #141414;
   --radius-sm: 10px;
   --radius-md: 16px;
   --radius-lg: 25px;
   --radius-pill: 999px;
   --font: system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Hero headline only — see index.html's font <link> comment. */
+  --font-display: "Anton", "Arial Narrow", var(--font);
 }
 
 * { box-sizing: border-box; }
@@ -42,12 +67,12 @@ button {
   min-height: 46px;
   background: #e9eee2;
   color: var(--green);
-  transition: transform .15s ease, box-shadow .15s ease;
+  transition: transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .15s ease;
 }
 button:hover:not(:disabled) { transform: translateY(-2px); }
-button:active:not(:disabled) { transform: scale(0.98); }
+button:active:not(:disabled) { transform: scale(0.96); transition-duration: .08s; }
 button:disabled { opacity: .5; cursor: default; transform: none; }
-button:focus-visible { outline: 3px solid #9274c4; outline-offset: 3px; }
+button:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 3px; }
 button.is-active,
 button.primary { background: var(--green); color: white; font-weight: 700; }
 button.quiet { background: transparent; border: 1px solid var(--line); color: var(--ink); }
@@ -67,7 +92,7 @@ textarea, input[type="text"], input[type="tel"], input[type="date"], select {
   min-height: 48px;
 }
 textarea:focus-visible, input:focus-visible, select:focus-visible {
-  outline: 3px solid #9274c4;
+  outline: 3px solid var(--focus-ring);
   outline-offset: 1px;
 }
 label { display: block; font-size: 13px; font-weight: 650; margin: 0 0 16px; }
@@ -92,56 +117,205 @@ label { display: block; font-size: 13px; font-weight: 650; margin: 0 0 16px; }
 }
 .hero-screen--exit { opacity: 0; transform: translateY(-16px); pointer-events: none; }
 
-.hero-header { padding: 24px 28px 0; }
-.hero-logo { display: block; height: 40px; width: auto; }
+.hero-header { padding: 20px 28px 0; }
+/* ============================= LOGO ============================= */
+/* Real vector sprite (see the inline <symbol> defs at the top of <body>,
+   sourced from assets/logo/). Size in CSS only: height is the single lever,
+   width follows via aspect-ratio, so there is never a layout shift while the
+   sprite resolves. Clear space equal to the emblem's own radius, no border,
+   no backing plate, no rounded container — the old raster's white box is gone
+   because there is no raster background left to remove it from.
 
-.hero-content {
-  max-width: 640px;
-  padding: 0 28px;
-  align-self: center;
-  z-index: 2;
+   Responsive collapse (thresholds measured and documented in
+   assets/logo/README.md): the full lockup is legible down to about 180px
+   wide and starts breaking up around 130px, so it only ever renders at a
+   height tall enough to clear that (viewBox 2668:994, so height >= ~67px)
+   and is replaced by the mark below that width. Both the hero and the
+   persistent app-shell nav use the same lockup-above/mark-below pattern (per
+   2026-09-19 feedback: a mark-only nav read as under-branded on the actual
+   registration flow) — the nav's lockup just tops out smaller than the
+   hero's, since it's secondary chrome, not the landing moment. The mark
+   itself is floored at 32px (see logo--nav below) since its counters (the
+   P/E/S negative space) fill in below that. */
+.logo { display: inline-flex; align-items: center; }
+.logo-svg { display: block; width: auto; }
+.logo-svg--lockup, .logo-svg--lockup-mono { aspect-ratio: 2668 / 994; }
+.logo-svg--mark, .logo-svg--mark-mono { aspect-ratio: 1014 / 994; }
+
+.logo--hero .logo-svg--lockup { height: 40px; display: none; }
+.logo--hero .logo-svg--mark { height: 40px; display: block; }
+@media (min-width: 760px) {
+  .logo--hero .logo-svg--lockup { height: clamp(56px, 6vw, 76px); display: block; }
+  .logo--hero .logo-svg--mark { display: none; }
 }
+
+.logo--nav .logo-svg--lockup { height: 34px; display: none; }
+.logo--nav .logo-svg--mark { height: 34px; min-height: 32px; display: block; }
+@media (min-width: 760px) {
+  .logo--nav .logo-svg--lockup { height: clamp(48px, 4.4vw, 64px); display: block; }
+  .logo--nav .logo-svg--mark { display: none; }
+}
+
+/* Footer band uses the full-colour lockup on the page's own cream background
+   (see .site-footer below) — not the mono/white treatment on a green band
+   from the previous pass, which read as "a green logo" (2026-09-19 feedback:
+   keep the logo in its real blue/black ink, no green anywhere). */
+.logo--footer .logo-svg--lockup { height: 60px; }
+
+.hero-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  align-items: center;
+  gap: clamp(24px, 4vw, 64px);
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 clamp(20px, 4vw, 56px);
+  overflow: hidden;
+}
+
+.hero-content { max-width: 660px; z-index: 2; padding-block: 12px; }
+
 .hero-content .eyebrow {
   font-size: 11px;
   letter-spacing: 2px;
   font-weight: 800;
   color: var(--green);
-  margin: 0 0 18px;
+  margin: 0 0 16px;
 }
+
+/* WIN AN iPAD is the largest type on the page, by a clear margin — this is a
+   noisy expo hall, it has to read from across an aisle (see build brief §2).
+   Display face (Anton, see --font-display) instead of a bolded system sans:
+   the condensed poster letterforms are what actually make it stand out, not
+   just size. Anton's glyphs run narrower than the system font at the same
+   point size, so it can go bigger without breaking the line, and its own
+   tracking is tight enough that it doesn't need the old negative
+   letter-spacing hack (that was compensating for the system font, not this one). */
 .hero-title {
-  font-size: clamp(32px, 4.4vw, 56px);
-  line-height: 1.1;
-  letter-spacing: -1.5px;
+  font-family: var(--font-display);
+  font-size: clamp(64px, 8.6vw, 132px);
+  line-height: 0.88;
+  letter-spacing: 0.5px;
+  font-weight: 400;
   margin: 0 0 18px;
+  color: var(--ink);
+  text-transform: uppercase;
 }
-.hero-sub {
-  font-size: 17px;
+.hero-title-accent { color: var(--green); }
+
+.hero-subhead {
+  font-size: 18px;
+  color: var(--muted);
+  max-width: 40ch;
+  margin: 0 0 22px;
+}
+
+.hiw-strip {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin: 0 0 18px;
+  padding: 0;
+}
+.hiw-strip li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.hiw-icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--green);
+  color: white;
+  font-size: 12px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.hero-time-note { font-size: 13px; color: var(--muted); font-weight: 600; margin: 0 0 20px; }
+
+.hero-cta { font-size: 16px; padding: 15px 30px; }
+
+.hero-fineprint {
+  font-size: 12px;
   color: var(--muted);
   max-width: 46ch;
-  margin: 0 0 26px;
+  margin: 16px 0 0;
+  line-height: 1.5;
 }
-.hero-cta { font-size: 15px; padding: 14px 26px; }
+.hero-fineprint .link-btn { font-size: 12px; }
 
-/* Code-drawn visual: two concentric rings + two floating info cards, in brand
-   colors, replacing v2's .orbit/.paper/.ticket illustration with a different
-   composition entirely (per CLAUDE.md, that markup/visual is being retired,
-   not reused). */
-.hero-visual {
-  position: absolute;
-  right: 2%;
-  top: 8%;
-  width: min(46vw, 500px);
-  height: min(46vw, 500px);
-  pointer-events: none;
+/* Staggered entrance: each hero-reveal element carries its own --d index. */
+.hero-reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  animation: hero-reveal-in .6s cubic-bezier(.16,1,.3,1) forwards;
+  animation-delay: calc(var(--d, 0) * 90ms + 80ms);
 }
+@keyframes hero-reveal-in { to { opacity: 1; transform: translateY(0); } }
+
+/* Code-drawn iPad silhouette + two floating info cards, replacing v2's
+   .orbit/.paper/.ticket illustration entirely (per CLAUDE.md, retired not reused).
+   The whole composition drifts with pointer parallax (--px/--py, set from JS,
+   transform-only) and the device itself idles on a slow continuous tilt. */
+.hero-visual {
+  position: relative;
+  z-index: 1;
+  --px: 0;
+  --py: 0;
+  min-height: 420px;
+}
+
 .hv-ring {
   position: absolute;
   border-radius: 50%;
   border: 1px solid #bcc9b3;
+  inset: 6% 10%;
+  transform: translate(calc(var(--px) * 6px), calc(var(--py) * 6px));
 }
-.hv-ring--outer { inset: 0; animation: hv-spin 60s linear infinite; }
-.hv-ring--inner { inset: 14%; border-color: #cdb9ea; animation: hv-spin 40s linear infinite reverse; }
+.hv-ring--outer { animation: hv-spin 60s linear infinite; }
+.hv-ring--inner { inset: 20% 24%; border-color: #cdb9ea; animation: hv-spin 40s linear infinite reverse; }
 @keyframes hv-spin { to { transform: rotate(360deg); } }
+
+.hv-device {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(78%, 420px);
+  transform: translate(-50%, -50%) translate(calc(var(--px) * -10px), calc(var(--py) * -10px));
+}
+.hv-device-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  animation: hv-tilt 7s ease-in-out infinite;
+  transform-origin: 50% 90%;
+}
+@keyframes hv-tilt {
+  0%, 100% { transform: perspective(900px) rotateX(4deg) rotateY(-6deg); }
+  50% { transform: perspective(900px) rotateX(2deg) rotateY(4deg); }
+}
+.hv-device-chassis { fill: #1c2b23; }
+.hv-device-screen { fill: url(#hv-screen-gradient); }
+.hv-device-camera { fill: #46564d; }
+.hv-device-shadow {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: -18px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(25,45,36,.30), transparent 70%);
+  filter: blur(2px);
+}
 
 .hv-card {
   position: absolute;
@@ -153,12 +327,18 @@ label { display: block; font-size: 13px; font-weight: 650; margin: 0 0 16px; }
 }
 .hv-card-eyebrow { display: block; font-size: 10px; letter-spacing: 1.5px; font-weight: 800; color: var(--green); margin-bottom: 6px; }
 .hv-card-title { display: block; font-size: 18px; letter-spacing: -.3px; }
-.hv-card--1 { left: 4%; top: 18%; transform: rotate(-4deg); background: var(--lime); white-space: nowrap; }
-.hv-card--2 { right: 10%; bottom: 10%; transform: rotate(3deg); background: var(--purple); color: var(--purple-ink); animation-delay: -3s; white-space: nowrap; }
+.hv-card--1 {
+  left: -2%; top: 10%;
+  background: var(--lime); white-space: nowrap;
+  transform: rotate(-4deg) translate(calc(var(--px) * 14px), calc(var(--py) * 14px));
+}
+.hv-card--2 {
+  right: -2%; bottom: 6%;
+  background: var(--purple); color: var(--purple-ink); animation-delay: -3s; white-space: nowrap;
+  transform: rotate(3deg) translate(calc(var(--px) * -14px), calc(var(--py) * -14px));
+}
 .hv-card--2 .hv-card-eyebrow { color: var(--purple-ink); }
 @keyframes hv-float { 0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); } 50% { transform: translateY(-10px) rotate(var(--r, 0deg)); } }
-.hv-card--1 { --r: -4deg; }
-.hv-card--2 { --r: 3deg; }
 
 /* Bottom "swipe up to enter" banner — a real sticky-sheet affordance. Tap
    always works (motion is a shortcut, never the only way to trigger it, same
@@ -190,9 +370,11 @@ label { display: block; font-size: 13px; font-weight: 650; margin: 0 0 16px; }
 @keyframes hv-nudge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
 .prize-banner-text { font-weight: 700; font-size: 15px; }
 
-@media (max-width: 860px) {
-  .hero-visual { opacity: .55; right: -20%; top: 4%; }
-  .hero-content { padding: 0 20px; }
+@media (max-width: 980px) {
+  .hero-body { grid-template-columns: 1fr; }
+  .hero-visual { order: -1; min-height: 260px; opacity: .9; }
+  .hero-content { max-width: none; }
+  .hero-title { font-size: clamp(44px, 12vw, 64px); }
 }
 
 /* ========================= APP SHELL / STEPS ========================= */
@@ -208,9 +390,6 @@ label { display: block; font-size: 13px; font-weight: 650; margin: 0 0 16px; }
 }
 
 .brand-mark {
-  display: block;
-  height: 40px;
-  width: auto;
   /* Long-press is the staff-view gate (see app.js) — suppress iOS's
      text-selection / callout menu so the press reads as a tap-and-hold, not
      a "copy image" gesture. */
@@ -237,6 +416,16 @@ main {
   background: white;
 }
 .step-panel .step-progress { font-size: 12px; color: var(--muted); margin: 0 0 16px; }
+.step-panel { overflow: hidden; }
+
+/* Direction-aware step transitions: forward slides one way, back the other, so
+   the already-existing free back-navigation reads as spatial movement rather
+   than a flat swap (motion pass, item 5). app.js toggles these classes. */
+#stepContent { animation-duration: .32s; animation-timing-function: cubic-bezier(.16,1,.3,1); animation-fill-mode: both; }
+#stepContent.step-anim-forward-in { animation-name: step-slide-in-fwd; }
+#stepContent.step-anim-back-in { animation-name: step-slide-in-back; }
+@keyframes step-slide-in-fwd { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes step-slide-in-back { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: translateX(0); } }
 .eyebrow-small { font-size: 10px; letter-spacing: 1.6px; font-weight: 800; color: var(--green); margin: 0 0 10px; }
 .step-heading { font-size: clamp(22px, 3vw, 30px); letter-spacing: -.5px; margin: 0 0 12px; }
 .field-hint { color: var(--muted); font-size: 13px; margin: 0 0 18px; }
@@ -280,13 +469,89 @@ main {
   max-height: 260px;
   overflow-y: auto;
 }
-.school-suggestions li { padding: 10px 12px; border-radius: var(--radius-sm); cursor: pointer; font-size: 14px; }
+.school-suggestions li {
+  padding: 10px 12px; border-radius: var(--radius-sm); cursor: pointer; font-size: 14px;
+  opacity: 0; transform: translateY(-6px);
+  animation: suggestion-in .22s cubic-bezier(.16,1,.3,1) forwards;
+  animation-delay: calc(var(--stagger-i, 0) * 35ms);
+}
+@keyframes suggestion-in { to { opacity: 1; transform: translateY(0); } }
 .school-suggestions li:hover, .school-suggestions li:focus-visible { background: #eef6ea; }
 .school-suggestions li small { display: block; color: var(--muted); font-size: 11px; margin-top: 2px; }
 
+.link-btn {
+  background: none;
+  border: 0;
+  padding: 0;
+  min-height: auto;
+  color: var(--green);
+  font-weight: 700;
+  font-size: 13px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.link-btn:hover { transform: none; }
+
+.curriculum-field { min-width: 0; }
+.derived-line {
+  font-size: 13px;
+  color: var(--muted);
+  background: #eef6ea;
+  border: 1px solid #b9d9a4;
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin: 7px 0 0;
+}
+.field-hint--soft { color: var(--muted); font-style: italic; }
+
 .tcs-block { margin: 8px 0 22px; }
-.check { display: flex; gap: 10px; align-items: flex-start; font-weight: 400; font-size: 14px; }
-.check input { flex-shrink: 0; margin-top: 3px; width: 18px; height: 18px; accent-color: var(--green); }
+/* isolation: own compositing/stacking context, so a neighbouring native <select>
+   popup's paint never bleeds a stray line across this text (item 4b). Real
+   checkbox input stays in the DOM (keyboard/AT operable) but is visually
+   replaced by .check-box, an SVG checkmark that draws itself on check rather
+   than popping in (motion pass, item 5). */
+.check {
+  display: flex; gap: 10px; align-items: flex-start; font-weight: 400; font-size: 14px;
+  position: relative; isolation: isolate; cursor: pointer;
+}
+.check input {
+  position: absolute;
+  z-index: 1;
+  width: 22px; height: 22px;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.check-box {
+  flex-shrink: 0;
+  margin-top: 1px;
+  width: 20px; height: 20px;
+  border-radius: 5px;
+  border: 2px solid #b7c4af;
+  background: #fbfcf8;
+  display: grid;
+  place-items: center;
+  transition: background .15s ease, border-color .15s ease, transform .15s cubic-bezier(.34,1.56,.64,1);
+}
+.check-box svg { width: 13px; height: 13px; overflow: visible; }
+.check-box polyline {
+  fill: none;
+  stroke: white;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 20;
+  stroke-dashoffset: 20;
+  transition: stroke-dashoffset .28s ease .02s;
+}
+.check input:checked + .check-box {
+  background: var(--green);
+  border-color: var(--green);
+  transform: scale(1.06);
+}
+.check input:checked + .check-box polyline { stroke-dashoffset: 0; }
+.check input:focus-visible + .check-box { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+.check:active .check-box { transform: scale(0.92); }
 
 /* Chips — same interaction pattern as reference/pedagogy-expo.html's chips():
    a real checkbox/radio per option, styled as a pill. */
@@ -300,11 +565,12 @@ main {
   border-radius: var(--radius-pill);
   font-size: 13px;
   font-weight: 600;
-  transition: background .15s ease, color .15s ease, transform .1s ease;
+  transition: background .2s cubic-bezier(.34,1.56,.64,1), color .15s ease,
+    border-color .15s ease, transform .2s cubic-bezier(.34,1.56,.64,1);
 }
-.chips input:checked + span { background: var(--green); color: white; }
-.chips input:focus-visible + span { outline: 3px solid #9274c4; outline-offset: 2px; }
-.chips label:active span { transform: scale(0.96); }
+.chips input:checked + span { background: var(--green); color: white; border-color: var(--green); transform: scale(1.04); }
+.chips input:focus-visible + span { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+.chips label:active span { transform: scale(0.94); transition-duration: .08s; }
 
 .exam-group-label { margin-bottom: 4px; font-weight: 700; color: var(--ink); }
 
@@ -328,10 +594,17 @@ main {
 
 .site-footer {
   text-align: center;
-  padding: 20px;
+  padding: 34px 20px;
   font-size: 12px;
   color: var(--muted);
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
 }
+.site-footer p { margin: 0; }
 
 /* ============================= MODAL ============================= */
 .modal-overlay {
