@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "npx serve . -l 5500",
     "build:data": "node scripts/build-data.js",
-    "test": "playwright test"
+    "test": "node tests/data-freshness.test.js && playwright test"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0"

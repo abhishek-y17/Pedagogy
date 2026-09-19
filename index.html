@@ -10,46 +10,84 @@
 </head>
 <body>
 
-<header class="site-header">
-  <div class="brand">
-    <img class="brand-mark" src="assets/logo/pedagogy-logo.svg" alt="Pedagogy Educational Services" width="110" height="46">
+<div class="hero-screen" id="heroScreen">
+  <header class="hero-header">
+    <img class="hero-logo" src="assets/logo/pedagogy-logo.svg" alt="Pedagogy Educational Services" width="110" height="46">
+  </header>
+
+  <div class="hero-content">
+    <p class="eyebrow">SHARJAH &middot; EDUCATION SHOW &middot; 11&ndash;13 OCT 2026</p>
+    <h1 class="hero-title">A little curiosity.<br>A whole new chapter.</h1>
+    <p class="hero-sub">Crack a challenge, explore where your education could take you, and register to win an iPad at our stand.</p>
+    <button type="button" class="primary hero-cta" id="heroStartBtn">Start my journey &rarr;</button>
   </div>
-  <nav class="site-nav" aria-label="Primary">
-    <button type="button" data-view="home" class="is-active">Experience</button>
-    <button type="button" id="newVisitorBtn" class="quiet">New visitor</button>
-  </nav>
-  <!-- Staff dashboard has no visible nav entry — a visitor on a stall device must
-       not be able to reach it. Long-press (hold ~1s) the logo above, then enter
-       the staff PIN. This is a casual deterrent only, not real authentication
-       (see js/app.js STAFF_PIN comment and CLAUDE.md's no-real-auth standing decisions). -->
-</header>
 
-<div class="rehearsal-banner" id="rehearsalBanner">Rehearsal build · this browser only · use fictional details</div>
-
-<main id="app">
-  <section id="view-home" data-view-panel>
-    <div class="scaffold-notice">
-      <p><strong>Phase 0 scaffold.</strong> Landing hero, registration, quiz and staff dashboard are not built yet &mdash; this confirms the shell, palette, logo, datasets and state machine load cleanly with no console errors before Phase 1 begins.</p>
+  <div class="hero-visual" aria-hidden="true">
+    <div class="hv-ring hv-ring--outer"></div>
+    <div class="hv-ring hv-ring--inner"></div>
+    <div class="hv-card hv-card--1">
+      <span class="hv-card-eyebrow">PRIZE DRAW</span>
+      <strong class="hv-card-title">Win an iPad</strong>
     </div>
-    <div class="step-panel" id="stepPanel">
-      <p class="step-progress" id="stepProgress"></p>
-      <p class="step-id" id="stepIdLabel"></p>
-      <div class="step-actions">
-        <button type="button" id="stepBackBtn" class="quiet">&larr; Back</button>
-        <button type="button" id="stepNextBtn" class="primary">Next &rarr;</button>
+    <div class="hv-card hv-card--2">
+      <span class="hv-card-eyebrow">DESTINATIONS</span>
+      <strong class="hv-card-title">India &middot; UK &middot; UAE &middot; more</strong>
+    </div>
+  </div>
+
+  <button type="button" class="prize-banner" id="prizeBanner">
+    <span class="prize-banner-handle" aria-hidden="true"></span>
+    <span class="prize-banner-text">Win an iPad &mdash; tap or swipe up to enter</span>
+  </button>
+</div>
+
+<div id="appShell" hidden>
+  <header class="site-header">
+    <div class="brand">
+      <img class="brand-mark" src="assets/logo/pedagogy-logo.svg" alt="Pedagogy Educational Services" width="110" height="46">
+    </div>
+    <nav class="site-nav" aria-label="Primary">
+      <button type="button" data-view="home" class="is-active">Experience</button>
+      <button type="button" id="newVisitorBtn" class="quiet">New visitor</button>
+    </nav>
+    <!-- Staff dashboard has no visible nav entry — a visitor on a stall device must
+         not be able to reach it. Long-press (hold ~1s) the logo above, then enter
+         the staff PIN. This is a casual deterrent only, not real authentication
+         (see js/app.js STAFF_PIN comment and CLAUDE.md's no-real-auth standing decisions). -->
+  </header>
+
+  <div class="rehearsal-banner" id="rehearsalBanner">Rehearsal build &middot; this browser only &middot; use fictional details</div>
+
+  <main id="app">
+    <section id="view-home" data-view-panel>
+      <div class="step-panel" id="stepPanel">
+        <p class="step-progress" id="stepProgress"></p>
+        <div id="stepContent"></div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section id="view-staff" data-view-panel hidden>
-    <div class="scaffold-notice">
-      <p>Staff dashboard placeholder &mdash; built in Phase 4. You reached this by long-pressing the logo and entering the staff PIN.</p>
-    </div>
-  </section>
-</main>
+    <section id="view-staff" data-view-panel hidden>
+      <div class="scaffold-notice">
+        <p>Staff dashboard placeholder &mdash; built in Phase 4. You reached this by long-pressing the logo and entering the staff PIN.</p>
+      </div>
+    </section>
+  </main>
 
-<footer class="site-footer">Pedagogy Educational Services &middot; Your education. Your next chapter.</footer>
+  <footer class="site-footer">Pedagogy Educational Services &middot; Your education. Your next chapter.</footer>
+</div>
 
-<script type="module" src="js/app.js"></script>
+<script src="js/generated/data.js"></script>
+<script src="js/data.js"></script>
+<script src="js/questions.js"></script>
+<script src="js/steps.js"></script>
+<script src="js/state.js"></script>
+<script src="js/chips.js"></script>
+<script src="js/modal.js"></script>
+<script src="js/schools.js"></script>
+<script src="js/countries.js"></script>
+<script src="js/hero.js"></script>
+<script src="js/registration.js"></script>
+<script src="js/destinations.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>

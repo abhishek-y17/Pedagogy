@@ -1,19 +1,23 @@
 /* Pedagogy · Sharjah Expo app
    Palette + font stack carried forward from reference/pedagogy-expo-v2.html
-   (per CLAUDE.md "Visual design direction" — keep palette/fonts, redo everything else).
-   Layout, hero and all illustration are new, code-drawn work (Phase 1+). */
+   (per CLAUDE.md "Visual design direction" — keep palette/fonts, redo everything
+   else). Layout, hero and all illustration below are new, code-drawn work —
+   no images anywhere except the logo (assets/logo/). */
 
 :root {
   --bg: #f6f5ef;
   --ink: #192d24;
   --green: #2b614b;
+  --green-deep: #1d4a38;
   --muted: #66776b;
   --line: #dce3d7;
   --lime: #d8ee96;
   --purple: #e6def6;
+  --purple-ink: #4a3a72;
   --radius-sm: 10px;
   --radius-md: 16px;
   --radius-lg: 25px;
+  --radius-pill: 999px;
   --font: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
@@ -38,12 +42,160 @@ button {
   min-height: 46px;
   background: #e9eee2;
   color: var(--green);
-  transition: transform .15s ease;
+  transition: transform .15s ease, box-shadow .15s ease;
 }
 button:hover:not(:disabled) { transform: translateY(-2px); }
+button:active:not(:disabled) { transform: scale(0.98); }
+button:disabled { opacity: .5; cursor: default; transform: none; }
 button:focus-visible { outline: 3px solid #9274c4; outline-offset: 3px; }
 button.is-active,
 button.primary { background: var(--green); color: white; font-weight: 700; }
+button.quiet { background: transparent; border: 1px solid var(--line); color: var(--ink); }
+
+a { color: var(--green); }
+
+textarea, input[type="text"], input[type="tel"], input[type="date"], select {
+  font: inherit;
+  display: block;
+  width: 100%;
+  margin-top: 7px;
+  background: #fbfcf8;
+  border: 1px solid #d8e0d2;
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  color: var(--ink);
+  min-height: 48px;
+}
+textarea:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 3px solid #9274c4;
+  outline-offset: 1px;
+}
+label { display: block; font-size: 13px; font-weight: 650; margin: 0 0 16px; }
+
+/* ============================= HERO ============================= */
+/* Design read: an event-stall landing/prize moment for teenage students and
+   parents, premium-but-approachable, code-drawn motion in place of photography
+   (no stock imagery anywhere in this app). Asymmetric split (not centered),
+   max 4 hero text elements (eyebrow, headline, subtext, CTA), motion kept to
+   entrance + slow idle drift + tap feedback — nothing that fights for
+   attention against the actual content. */
+
+.hero-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background: var(--bg);
+  overflow: hidden;
+  transition: opacity .28s ease, transform .28s ease;
+}
+.hero-screen--exit { opacity: 0; transform: translateY(-16px); pointer-events: none; }
+
+.hero-header { padding: 24px 28px 0; }
+.hero-logo { display: block; height: 40px; width: auto; }
+
+.hero-content {
+  max-width: 640px;
+  padding: 0 28px;
+  align-self: center;
+  z-index: 2;
+}
+.hero-content .eyebrow {
+  font-size: 11px;
+  letter-spacing: 2px;
+  font-weight: 800;
+  color: var(--green);
+  margin: 0 0 18px;
+}
+.hero-title {
+  font-size: clamp(32px, 4.4vw, 56px);
+  line-height: 1.1;
+  letter-spacing: -1.5px;
+  margin: 0 0 18px;
+}
+.hero-sub {
+  font-size: 17px;
+  color: var(--muted);
+  max-width: 46ch;
+  margin: 0 0 26px;
+}
+.hero-cta { font-size: 15px; padding: 14px 26px; }
+
+/* Code-drawn visual: two concentric rings + two floating info cards, in brand
+   colors, replacing v2's .orbit/.paper/.ticket illustration with a different
+   composition entirely (per CLAUDE.md, that markup/visual is being retired,
+   not reused). */
+.hero-visual {
+  position: absolute;
+  right: 2%;
+  top: 8%;
+  width: min(46vw, 500px);
+  height: min(46vw, 500px);
+  pointer-events: none;
+}
+.hv-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid #bcc9b3;
+}
+.hv-ring--outer { inset: 0; animation: hv-spin 60s linear infinite; }
+.hv-ring--inner { inset: 14%; border-color: #cdb9ea; animation: hv-spin 40s linear infinite reverse; }
+@keyframes hv-spin { to { transform: rotate(360deg); } }
+
+.hv-card {
+  position: absolute;
+  background: white;
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  box-shadow: 0 18px 40px rgba(25, 45, 36, 0.10);
+  animation: hv-float 6s ease-in-out infinite;
+}
+.hv-card-eyebrow { display: block; font-size: 10px; letter-spacing: 1.5px; font-weight: 800; color: var(--green); margin-bottom: 6px; }
+.hv-card-title { display: block; font-size: 18px; letter-spacing: -.3px; }
+.hv-card--1 { left: 4%; top: 18%; transform: rotate(-4deg); background: var(--lime); white-space: nowrap; }
+.hv-card--2 { right: 10%; bottom: 10%; transform: rotate(3deg); background: var(--purple); color: var(--purple-ink); animation-delay: -3s; white-space: nowrap; }
+.hv-card--2 .hv-card-eyebrow { color: var(--purple-ink); }
+@keyframes hv-float { 0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); } 50% { transform: translateY(-10px) rotate(var(--r, 0deg)); } }
+.hv-card--1 { --r: -4deg; }
+.hv-card--2 { --r: 3deg; }
+
+/* Bottom "swipe up to enter" banner — a real sticky-sheet affordance. Tap
+   always works (motion is a shortcut, never the only way to trigger it, same
+   principle both reference prototypes use for their swipe interactions). */
+.prize-banner {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  border-radius: 0;
+  min-height: 76px;
+  padding: 14px 24px calc(14px + env(safe-area-inset-bottom));
+  background: linear-gradient(135deg, var(--green), var(--green-deep));
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  touch-action: none;
+  cursor: grab;
+}
+.prize-banner-handle {
+  width: 44px;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.55);
+  animation: hv-nudge 2.4s ease-in-out infinite;
+}
+@keyframes hv-nudge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+.prize-banner-text { font-weight: 700; font-size: 15px; }
+
+@media (max-width: 860px) {
+  .hero-visual { opacity: .55; right: -20%; top: 4%; }
+  .hero-content { padding: 0 20px; }
+}
+
+/* ========================= APP SHELL / STEPS ========================= */
 
 .site-header {
   max-width: 1180px;
@@ -70,33 +222,91 @@ button.primary { background: var(--green); color: white; font-weight: 700; }
 
 .site-nav { display: flex; gap: 8px; }
 .site-nav button { background: transparent; font-size: 13px; }
+.site-nav button.is-active { background: var(--green); color: white; }
+
+main {
+  max-width: 900px;
+  padding: 20px 24px 70px;
+  margin: auto;
+}
 
 .step-panel {
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
-  padding: 24px;
-  margin-top: 20px;
+  padding: 28px;
   background: white;
 }
-.step-panel .step-progress { font-size: 12px; color: var(--muted); margin: 0 0 6px; }
-.step-panel .step-id { font-size: 22px; font-weight: 700; margin: 0 0 18px; }
-.step-actions { display: flex; flex-wrap: wrap; gap: 10px; }
-.step-actions .quiet { background: transparent; border: 1px solid var(--line); }
+.step-panel .step-progress { font-size: 12px; color: var(--muted); margin: 0 0 16px; }
+.eyebrow-small { font-size: 10px; letter-spacing: 1.6px; font-weight: 800; color: var(--green); margin: 0 0 10px; }
+.step-heading { font-size: clamp(22px, 3vw, 30px); letter-spacing: -.5px; margin: 0 0 12px; }
+.field-hint { color: var(--muted); font-size: 13px; margin: 0 0 18px; }
 
-.rehearsal-banner {
-  padding: 9px 18px;
-  text-align: center;
-  font-size: 12px;
-  background: #ece9dd;
-  color: #625d48;
-  border-block: 1px solid #dedacb;
-}
+.step-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
 
-main {
-  max-width: 1120px;
-  padding: 45px 24px 70px;
-  margin: auto;
+.field-row.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+
+.contact-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 4px 0 20px; }
+.contact-card {
+  border-radius: var(--radius-md);
+  padding: 18px;
+  border: 1px solid var(--line);
 }
+.contact-card-label { font-size: 13px; font-weight: 700; margin: 0 0 6px; display: flex; align-items: center; gap: 8px; }
+.contact-card--required {
+  background: #eef6ea;
+  border: 1px solid #b9d9a4;
+  border-left: 4px solid var(--green);
+}
+.contact-card--optional {
+  background: #fbfcf8;
+  border-style: dashed;
+}
+.badge { font-size: 10px; letter-spacing: .6px; padding: 3px 8px; border-radius: var(--radius-pill); font-weight: 800; }
+.badge--required { background: var(--green); color: white; }
+.badge--optional { background: var(--line); color: var(--muted); }
+
+.school-field { position: relative; margin-bottom: 4px; }
+.school-suggestions {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 6px;
+  position: absolute;
+  z-index: 5;
+  left: 0; right: 0;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 12px 24px rgba(25, 45, 36, 0.12);
+  max-height: 260px;
+  overflow-y: auto;
+}
+.school-suggestions li { padding: 10px 12px; border-radius: var(--radius-sm); cursor: pointer; font-size: 14px; }
+.school-suggestions li:hover, .school-suggestions li:focus-visible { background: #eef6ea; }
+.school-suggestions li small { display: block; color: var(--muted); font-size: 11px; margin-top: 2px; }
+
+.tcs-block { margin: 8px 0 22px; }
+.check { display: flex; gap: 10px; align-items: flex-start; font-weight: 400; font-size: 14px; }
+.check input { flex-shrink: 0; margin-top: 3px; width: 18px; height: 18px; accent-color: var(--green); }
+
+/* Chips — same interaction pattern as reference/pedagogy-expo.html's chips():
+   a real checkbox/radio per option, styled as a pill. */
+.chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 22px; }
+.chips label { margin: 0; cursor: pointer; }
+.chips input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.chips span {
+  display: block;
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 600;
+  transition: background .15s ease, color .15s ease, transform .1s ease;
+}
+.chips input:checked + span { background: var(--green); color: white; }
+.chips input:focus-visible + span { outline: 3px solid #9274c4; outline-offset: 2px; }
+.chips label:active span { transform: scale(0.96); }
+
+.exam-group-label { margin-bottom: 4px; font-weight: 700; color: var(--ink); }
 
 .scaffold-notice {
   border: 1px dashed var(--line);
@@ -107,6 +317,15 @@ main {
   max-width: 640px;
 }
 
+.rehearsal-banner {
+  padding: 9px 18px;
+  text-align: center;
+  font-size: 12px;
+  background: #ece9dd;
+  color: #625d48;
+  border-block: 1px solid #dedacb;
+}
+
 .site-footer {
   text-align: center;
   padding: 20px;
@@ -114,11 +333,48 @@ main {
   color: var(--muted);
 }
 
+/* ============================= MODAL ============================= */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(25, 45, 36, 0.42);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  max-width: 480px;
+  width: 100%;
+  max-height: 84vh;
+  overflow-y: auto;
+  position: relative;
+}
+.modal-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  background: transparent;
+  min-height: auto;
+  padding: 4px 10px;
+  font-size: 20px;
+  color: var(--muted);
+}
+.modal-title { font-size: 19px; font-weight: 800; margin: 0 0 12px; padding-right: 24px; }
+.modal-body p { font-size: 14px; color: var(--ink); }
+.modal-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
 
 @media (max-width: 720px) {
-  main { padding: 28px 16px 50px; }
+  main { padding: 16px 16px 50px; }
   .site-header { padding: 18px; }
+  .field-row.two-col,
+  .contact-cards { grid-template-columns: 1fr; }
+  .hero-content { padding: 0 20px; }
 }
