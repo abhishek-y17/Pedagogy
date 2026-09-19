@@ -43,6 +43,7 @@
 
     container.querySelectorAll('input[type=checkbox]').forEach(input => {
       input.addEventListener('change', () => {
+        window.PED.haptics.tap();
         const value = input.value;
         if (input.checked) {
           if (exclusiveValues.includes(value)) {

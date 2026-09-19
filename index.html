@@ -117,18 +117,16 @@
   <main id="app">
     <section id="view-home" data-view-panel>
       <div class="step-panel" id="stepPanel">
-        <div class="step-progress-bar" id="stepProgress" role="progressbar" aria-valuemin="0" aria-valuemax="100">
-          <div class="step-progress-fill" id="stepProgressFill"></div>
-          <span class="step-progress-label" id="stepProgressLabel"></span>
-        </div>
+        <p class="step-progress" id="stepProgress"></p>
         <div id="stepContent"></div>
       </div>
     </section>
 
     <section id="view-staff" data-view-panel hidden>
-      <div class="scaffold-notice">
-        <p>Staff dashboard placeholder &mdash; built in Phase 4. You reached this by long-pressing the logo and entering the staff PIN.</p>
-      </div>
+      <!-- Filled by js/staff.js's renderStaffDashboard(), called from app.js's
+           staff-PIN success handler. You reach this view by long-pressing the
+           logo and entering the staff PIN (a casual deterrent, not real auth —
+           see app.js's STAFF_PIN comment). -->
     </section>
   </main>
 
@@ -142,6 +140,7 @@
 
 <script src="js/generated/data.js"></script>
 <script src="js/data.js"></script>
+<script src="js/haptics.js"></script>
 <script src="js/questions.js"></script>
 <script src="js/steps.js"></script>
 <script src="js/state.js"></script>
@@ -158,6 +157,7 @@
 <script src="js/request.js"></script>
 <script src="js/quiz.js"></script>
 <script src="js/review.js"></script>
+<script src="js/staff.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

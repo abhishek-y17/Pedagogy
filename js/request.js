@@ -46,9 +46,15 @@
     const $ = sel => container.querySelector(sel);
 
     container.querySelectorAll('#channelChips input[type=radio]').forEach(input => {
-      input.addEventListener('change', () => window.PED.state.mutateDraft(draft, () => { f.channel = input.value; }));
+      input.addEventListener('change', () => {
+        window.PED.haptics.tap();
+        window.PED.state.mutateDraft(draft, () => { f.channel = input.value; });
+      });
     });
-    $('#marketingOptIn').addEventListener('change', e => window.PED.state.mutateDraft(draft, () => { f.marketing = e.target.checked; }));
+    $('#marketingOptIn').addEventListener('change', e => {
+      window.PED.haptics.tap();
+      window.PED.state.mutateDraft(draft, () => { f.marketing = e.target.checked; });
+    });
     $('#requestNote').addEventListener('input', e => window.PED.state.mutateDraft(draft, () => { f.preferredFollowup = e.target.value; }));
 
     $('#requestBackBtn').addEventListener('click', onBack);

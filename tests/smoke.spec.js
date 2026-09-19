@@ -51,8 +51,7 @@ test('hero loads with no console errors and datasets/question bank validate', as
 test('hero start button opens the app shell on the register step', async ({ page }) => {
   await startJourney(page);
   await expect(page.locator('#stepContent h2')).toHaveText('First, make it yours.');
-  await expect(page.locator('#stepProgressLabel')).toHaveText('Step 1 / 14');
-  await expect(page.locator('#stepProgress')).toHaveAttribute('aria-valuenow', /\d+/);
+  await expect(page.locator('#stepProgress')).toHaveText('Step 1 / 14');
 });
 
 test('prize banner tap also opens the app (not just the CTA button)', async ({ page }) => {
@@ -302,7 +301,7 @@ test('submit is blocked with the non-alarming popup if the parent number is miss
   // listener (js/app.js, for iPad Safari tab discards) correctly fights that
   // kind of tampering by re-saving its known-good in-memory draft.
   const draft = {
-    schema: 'pedagogy.v6', mode: 'full', currentStepId: 'review',
+    schema: 'pedagogy.v7', mode: 'full', currentStepId: 'review',
     registration: {
       name: 'Aisha Rahman', dob: '2009-05-14', parentMobile: '', studentMobile: null,
       school: 'Delhi Private School Dubai', schoolKey: null, curriculum: 'Indian',
@@ -606,4 +605,123 @@ test('skipping an academic question shows the exact approved popup copy, then ad
   await expect(page.locator('.modal-body')).toHaveText('Completing all questions makes your winning chance higher.');
   await page.locator('.modal-actions button', { hasText: 'Skip anyway' }).click();
   await expect(page.locator('#stepContent h2')).toHaveText('Where could your next chapter begin?');
+});
+
+// ===================== Phase 4: staff dashboard =====================
+
+async function enterStaffDashboard(page) {
+  await page.goto('/');
+  await page.locator('#heroStartBtn').click();
+  await expect(page.locator('#appShell')).toBeVisible();
+  page.once('dialog', dialog => dialog.accept('2026'));
+  const logo = page.locator('.brand-mark');
+  const box = await logo.boundingBox();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.waitForTimeout(1000);
+  await page.mouse.up();
+  await expect(page.locator('#view-staff')).toBeVisible();
+}
+
+function makeRecord(overrides) {
+  return {
+    schema: 'pedagogy.v7', mode: 'full', currentStepId: 'review',
+    registration: {
+      name: 'Aisha Rahman', dob: '2009-05-14', parentMobile: '+971501234567', studentMobile: null,
+      school: 'Delhi Private School Dubai', schoolKey: 'delhi-private-school-dubai', curriculum: 'Indian',
+      grade: 'stage10', stream: null, section: null, subjects: [],
+      tcsAccepted: true, tcsAcceptedAt: '2026-09-19T10:00:00.000Z',
+      consentToContact: true, consentToContactAt: '2026-09-19T10:00:05.000Z',
+    },
+    preferences: { destinations: ['India'], destinationsOther: [], competitiveExamPrep: 'no', competitiveExams: {}, courses: ['Medicine'], activities: ['Sport'] },
+    quiz: { selectedQuestionIds: ['q1'], answers: [{ questionId: 'q1', selected: 'Newton', skipped: false, timedOut: false }], timerStartedAt: null, timerElapsedMs: 12000 },
+    followUp: { counselling: true, marketing: true, preferredFollowup: 'Help with engineering options', channel: 'WhatsApp' },
+    meta: { id: 'P-test-1', createdAt: '2026-09-19T10:00:10.000Z', deviceId: null, recordStatus: null, duplicateFlag: false, duplicateOfIds: [], duplicateReviewStatus: null },
+    ...overrides,
+  };
+}
+
+test('staff dashboard shows every field the standing decisions call out as visible to staff', async ({ page }) => {
+  const record = makeRecord();
+  await page.addInitScript(r => localStorage.setItem('pedagogy-expo-records', JSON.stringify([r])), record);
+  await enterStaffDashboard(page);
+
+  const card = page.locator('.staff-record').first();
+  await expect(card).toContainText('Aisha Rahman');
+  await expect(card).toContainText('2009-05-14'); // DOB
+  await expect(card).toContainText('+971501234567'); // parent mobile
+  await expect(card).toContainText('not given'); // student mobile
+  await expect(card).toContainText('Delhi Private School Dubai');
+  await expect(card).toContainText('Indian');
+  await expect(card).toContainText('9/19/2026'); // T&Cs/consent timestamps render via toLocaleString()
+  await expect(card).toContainText('WhatsApp'); // follow-up channel
+  await expect(card).toContainText('Help with engineering options'); // counsellor note
+  await expect(card).toContainText('Yes'); // marketing opt-in
+});
+
+test('staff dashboard shows an empty state when there are no registrations yet', async ({ page }) => {
+  await enterStaffDashboard(page);
+  await expect(page.locator('#view-staff')).toContainText('No registrations yet.');
+});
+
+test('finalizing a second registration that reasonably matches an existing one flags both as duplicates, bidirectionally', async ({ page }) => {
+  const existing = makeRecord({ meta: { id: 'P-existing', createdAt: '2026-09-19T09:00:00.000Z', deviceId: null, recordStatus: null, duplicateFlag: false, duplicateOfIds: [], duplicateReviewStatus: null } });
+  await page.addInitScript(r => localStorage.setItem('pedagogy-expo-records', JSON.stringify([r])), existing);
+  await page.goto('/');
+
+  // Same name + DOB + school as `existing`, submitted as a brand new registration.
+  const draft = makeRecord({ currentStepId: 'review' });
+  draft.meta = { id: null, createdAt: null, deviceId: null, recordStatus: null, duplicateFlag: false, duplicateOfIds: [], duplicateReviewStatus: null };
+  const result = await page.evaluate(d => {
+    const finalized = window.PED.state.finalizeDraft(d);
+    const records = window.PED.state.loadRecords();
+    return { finalized, records };
+  }, draft);
+
+  expect(result.finalized.meta.duplicateFlag).toBe(true);
+  expect(result.finalized.meta.duplicateOfIds).toContain('P-existing');
+  expect(result.finalized.meta.duplicateReviewStatus).toBe('pending');
+  const existingAfter = result.records.find(r => r.meta.id === 'P-existing');
+  expect(existingAfter.meta.duplicateFlag).toBe(true);
+  expect(existingAfter.meta.duplicateOfIds).toContain(result.finalized.meta.id);
+  expect(existingAfter.meta.duplicateReviewStatus).toBe('pending');
+});
+
+test('staff dashboard surfaces a pending duplicate with review actions, and "Mark reviewed" resolves it', async ({ page }) => {
+  const a = makeRecord({ meta: { id: 'P-a', createdAt: '2026-09-19T09:00:00.000Z', deviceId: null, recordStatus: null, duplicateFlag: true, duplicateOfIds: ['P-b'], duplicateReviewStatus: 'pending' } });
+  const b = makeRecord({ meta: { id: 'P-b', createdAt: '2026-09-19T09:05:00.000Z', deviceId: null, recordStatus: null, duplicateFlag: true, duplicateOfIds: ['P-a'], duplicateReviewStatus: 'pending' } });
+  await page.addInitScript(records => localStorage.setItem('pedagogy-expo-records', JSON.stringify(records)), [a, b]);
+  await enterStaffDashboard(page);
+
+  await expect(page.locator('.staff-record--flagged')).toHaveCount(2);
+  await expect(page.locator('.badge--duplicate').first()).toHaveText('Pending review');
+
+  await page.locator('[data-action="reviewed"][data-id="P-a"]').click();
+  await expect(page.locator('[data-id="P-a"]')).toHaveCount(0); // action buttons gone once resolved
+  const storedA = await page.evaluate(() => window.PED.state.loadRecords().find(r => r.meta.id === 'P-a'));
+  expect(storedA.meta.duplicateReviewStatus).toBe('reviewed');
+});
+
+// ===================== Phase 4: haptics =====================
+
+test('a chip tap and a button tap both trigger the feature-detected haptic (stubbed navigator.vibrate)', async ({ page }) => {
+  await page.addInitScript(() => {
+    window.__vibrateCalls = [];
+    Object.defineProperty(window.navigator, 'vibrate', {
+      configurable: true,
+      value: (...args) => { window.__vibrateCalls.push(args); return true; },
+    });
+  });
+  await startJourney(page);
+  await fillValidRegistration(page);
+  await page.locator('#registerNextBtn').click();
+  await expect(page.locator('#quizOptions')).toBeVisible();
+  const afterButtonClick = await page.evaluate(() => window.__vibrateCalls.length);
+  expect(afterButtonClick).toBeGreaterThan(0); // delegated button-click listener (app.js)
+
+  await page.locator('#qNextBtn').click();
+  await expect(page.locator('#stepContent h2')).toHaveText('Where could your next chapter begin?');
+  await page.getByText('India', { exact: true }).click();
+  const afterChipClick = await page.evaluate(() => window.__vibrateCalls.length);
+  expect(afterChipClick).toBeGreaterThan(afterButtonClick); // chips.js's explicit tap on selection
 });

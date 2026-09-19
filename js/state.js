@@ -7,11 +7,12 @@
   'use strict';
   window.PED = window.PED || {};
 
-  // Bumped v5 -> v6 for Phase 2's quiz.selectedQuestionIds addition. Safe to
-  // invalidate old in-progress drafts on load (loadDraft() below just treats a
-  // schema mismatch as "no draft") — this is pre-launch dev/rehearsal data
-  // only, never a real visitor record.
-  const SCHEMA = 'pedagogy.v6';
+  // Bumped v6 -> v7 for Phase 4's staff-dashboard fields (T&Cs/consent
+  // timestamps, duplicate-flag tracking). Safe to invalidate old in-progress
+  // drafts on load (loadDraft() below just treats a schema mismatch as "no
+  // draft") — this is pre-launch dev/rehearsal data only, never a real
+  // visitor record.
+  const SCHEMA = 'pedagogy.v7';
   const RECORDS_KEY = 'pedagogy-expo-records';
   const DRAFT_KEY = 'pedagogy-expo-draft';
 
@@ -35,7 +36,9 @@
         section: null,
         subjects: [],
         tcsAccepted: false,
-        consentToContact: false, // covers WhatsApp / Business API messaging
+        tcsAcceptedAt: null,        // ISO timestamp, set the moment the box is checked
+        consentToContact: false,   // covers WhatsApp / Business API messaging
+        consentToContactAt: null,  // ISO timestamp, same pattern as tcsAcceptedAt
       },
       preferences: {
         destinations: [],              // top-10 chip grid selections (may include the literal "Other")
@@ -68,6 +71,8 @@
         deviceId: null,
         recordStatus: null,   // set on finalize
         duplicateFlag: false,
+        duplicateOfIds: [],          // meta.id of every other record this one reasonably matches
+        duplicateReviewStatus: null, // null | 'pending' | 'reviewed' | 'merged' | 'dismissed'
       },
     };
   }
@@ -118,6 +123,40 @@
     return fresh;
   }
 
+  function normalizeForMatch(v) {
+    return (v || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  }
+
+  /**
+   * Standing decision: "likely duplicate registrations are flagged for staff
+   * review, never silently blocked and never silently allowed to sit as two
+   * active untouched entries." A "reasonable match" is: the same name + date
+   * of birth + school (by schoolKey if both have one, else by normalized
+   * school text), OR the same parent/guardian mobile (already normalized to
+   * +country-code format by registration.js's validation before finalize).
+   * Deliberately loose rather than exact-everything, since real visitors
+   * retype their own details slightly differently between visits (typos,
+   * "Dubai" vs "Dubai " vs a different school spelling) — false positives
+   * just mean one extra staff glance, false negatives mean a duplicate goes
+   * completely unflagged, and the standing decision explicitly prioritizes
+   * against the latter.
+   */
+  function isReasonableMatch(a, b) {
+    if (a.meta.id === b.meta.id) return false;
+    const ra = a.registration, rb = b.registration;
+    if (ra.parentMobile && rb.parentMobile && ra.parentMobile === rb.parentMobile) return true;
+    const sameName = ra.name && rb.name && normalizeForMatch(ra.name) === normalizeForMatch(rb.name);
+    const sameDob = ra.dob && rb.dob && ra.dob === rb.dob;
+    if (!sameName || !sameDob) return false;
+    if (ra.schoolKey && rb.schoolKey) return ra.schoolKey === rb.schoolKey;
+    return !!(ra.school && rb.school && normalizeForMatch(ra.school) === normalizeForMatch(rb.school));
+  }
+
+  /** Every existing record that reasonably matches `candidate` (see above). */
+  function findDuplicateMatches(records, candidate) {
+    return records.filter(r => isReasonableMatch(candidate, r));
+  }
+
   /**
    * Only point at which a draft becomes a saved, finalized record (Phase 2:
    * wired to the review screen's single Submit action — see js/review.js).
@@ -125,6 +164,13 @@
    * and stored per answer for staff-side analytics only — never shown to the
    * participant anywhere in the UI (standing decision), and never used to
    * affect draw odds (equal-odds rule is independent of this).
+   *
+   * Duplicate flagging (Phase 4): computed against every already-finalized
+   * record, in both directions. A new match doesn't just flag the new
+   * record — it re-opens duplicateReviewStatus on every record it matches
+   * back to 'pending' too, even one staff had previously reviewed/dismissed,
+   * because a *new* incoming duplicate is new information staff haven't seen
+   * yet; never silently left unflagged, per the standing decision.
    */
   function finalizeDraft(draft, questions) {
     if (Array.isArray(questions)) {
@@ -137,10 +183,36 @@
     const records = loadRecords();
     draft.meta.id = draft.meta.id || `P-${crypto.randomUUID()}`;
     draft.meta.createdAt = new Date().toISOString();
+
+    const matches = findDuplicateMatches(records, draft);
+    if (matches.length) {
+      draft.meta.duplicateFlag = true;
+      draft.meta.duplicateOfIds = matches.map(m => m.meta.id);
+      draft.meta.duplicateReviewStatus = 'pending';
+      matches.forEach(m => {
+        m.meta.duplicateFlag = true;
+        if (!m.meta.duplicateOfIds.includes(draft.meta.id)) m.meta.duplicateOfIds.push(draft.meta.id);
+        m.meta.duplicateReviewStatus = 'pending';
+      });
+    }
+
     records.push(draft);
     saveRecords(records);
     clearDraft();
     return draft;
+  }
+
+  /** Staff-dashboard mutation (mark reviewed/merged/dismissed) on an already
+   * finalized record — the one place besides finalizeDraft() itself that
+   * touches RECORDS_KEY, so a record can never end up silently untouched
+   * once flagged (js/staff.js is the only caller). */
+  function updateRecord(id, mutator) {
+    const records = loadRecords();
+    const record = records.find(r => r.meta.id === id);
+    if (!record) return null;
+    mutator(record);
+    saveRecords(records);
+    return record;
   }
 
   function loadRecords() {
@@ -172,5 +244,7 @@
     finalizeDraft,
     loadRecords,
     saveRecords,
+    updateRecord,
+    findDuplicateMatches,
   };
 })();

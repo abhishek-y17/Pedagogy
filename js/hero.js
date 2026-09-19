@@ -9,12 +9,6 @@
   'use strict';
   window.PED = window.PED || {};
 
-  // Feature-detected haptic tap (no-op on iPadOS Safari, which doesn't implement the
-  // Vibration API — the motion layer below carries the "felt" response there instead).
-  function tapHaptic() {
-    if (typeof navigator.vibrate === 'function') navigator.vibrate(8);
-  }
-
   function wireHero(onStart) {
     const heroScreen = document.getElementById('heroScreen');
     const startBtn = document.getElementById('heroStartBtn');
@@ -29,7 +23,7 @@
     // all stay the default full-path choice; only the secondary express link
     // below picks 'express'.
     function start(mode) {
-      tapHaptic();
+      window.PED.haptics.tap();
       heroScreen.classList.add('hero-screen--exit');
       setTimeout(() => {
         heroScreen.hidden = true;

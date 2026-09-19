@@ -287,8 +287,24 @@
     });
     $('#regGrade').addEventListener('change', e => window.PED.state.mutateDraft(draft, () => { reg.grade = e.target.value; }));
     $('#regStream').addEventListener('change', e => window.PED.state.mutateDraft(draft, () => { reg.stream = e.target.value; }));
-    $('#regTcs').addEventListener('change', e => window.PED.state.mutateDraft(draft, () => { reg.tcsAccepted = e.target.checked; }));
-    $('#regConsent').addEventListener('change', e => window.PED.state.mutateDraft(draft, () => { reg.consentToContact = e.target.checked; }));
+    // Timestamps (Phase 4 staff-dashboard item: "T&Cs-acceptance and
+    // consent-to-contact timestamps") — recorded the moment each is checked,
+    // cleared back to null if unchecked so a stale timestamp never survives
+    // an unchecked box.
+    $('#regTcs').addEventListener('change', e => {
+      window.PED.haptics.tap();
+      window.PED.state.mutateDraft(draft, () => {
+        reg.tcsAccepted = e.target.checked;
+        reg.tcsAcceptedAt = e.target.checked ? new Date().toISOString() : null;
+      });
+    });
+    $('#regConsent').addEventListener('change', e => {
+      window.PED.haptics.tap();
+      window.PED.state.mutateDraft(draft, () => {
+        reg.consentToContact = e.target.checked;
+        reg.consentToContactAt = e.target.checked ? new Date().toISOString() : null;
+      });
+    });
 
     // --- School autocomplete ---
     const schoolInput = $('#regSchoolInput');
@@ -318,6 +334,7 @@
         // Staggered reveal for the dropdown items (motion pass, item 5).
         li.style.setProperty('--stagger-i', i);
         li.addEventListener('click', () => {
+          window.PED.haptics.tap();
           const school = matches.find(m => m.id === li.dataset.id);
           window.PED.state.mutateDraft(draft, () => {
             reg.school = school.school_name;

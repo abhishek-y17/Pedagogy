@@ -94,6 +94,7 @@
     const $ = sel => container.querySelector(sel);
     container.querySelectorAll('input[name=examPrep]').forEach(r => {
       r.addEventListener('change', () => {
+        window.PED.haptics.tap();
         window.PED.state.mutateDraft(draft, () => { prefs.competitiveExamPrep = r.value; });
       });
     });

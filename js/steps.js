@@ -130,15 +130,6 @@
     return getQuestionStepIds(draft).length;
   }
 
-  /** The step definition's `kind` ('question'/'preference'/'game'/'request'/
-   * 'review', or undefined for register) — used purely for the step panel's
-   * color accent (styles.css's `[data-kind]` rules), not for any navigation
-   * or validation logic. */
-  function getStepKind(draft, stepId) {
-    const def = stepsFor(draft).find(s => s.id === stepId);
-    return (def && def.kind) || 'intro';
-  }
-
   window.PED.steps = {
     FULL_PATH_STEPS,
     EXPRESS_PATH_STEPS,
@@ -152,6 +143,5 @@
     getQuestionStepIds,
     getQuestionIndex,
     getQuestionCount,
-    getStepKind,
   };
 })();

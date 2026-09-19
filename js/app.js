@@ -16,9 +16,6 @@
   const views = document.querySelectorAll('[data-view-panel]');
   const navButtons = document.querySelectorAll('.site-nav button[data-view]');
   const stepProgressEl = document.getElementById('stepProgress');
-  const stepProgressFillEl = document.getElementById('stepProgressFill');
-  const stepProgressLabelEl = document.getElementById('stepProgressLabel');
-  const stepPanelEl = document.getElementById('stepPanel');
   const stepContentEl = document.getElementById('stepContent');
   const newVisitorBtn = document.getElementById('newVisitorBtn');
   const logoEl = document.querySelector('.brand-mark');
@@ -102,16 +99,7 @@
 
     const steps = PED.steps.getVisibleSteps(draft);
     const index = PED.steps.getCurrentIndex(draft);
-    const percent = Math.round(((index + 1) / steps.length) * 100);
-    stepProgressLabelEl.textContent = `Step ${index + 1} / ${steps.length}`;
-    stepProgressFillEl.style.width = `${percent}%`;
-    stepProgressEl.setAttribute('aria-valuenow', String(percent));
-    // Color accent per step kind (question/preference/game/request/review, or
-    // 'intro' for register) — the panel wash, top accent bar and progress
-    // fill all key off this (styles.css `[data-kind]` rules). Purely visual,
-    // extends the hero's color-accent language into every step per Abhi's
-    // 2026-09-19 design feedback.
-    stepPanelEl.dataset.kind = PED.steps.getStepKind(draft, draft.currentStepId);
+    stepProgressEl.textContent = `Step ${index + 1} / ${steps.length}`;
 
     const onNext = () => { PED.state.mutateDraft(draft, PED.steps.goNext); renderStep('forward'); };
     const onBack = () => { PED.state.mutateDraft(draft, PED.steps.goPrev); renderStep('back'); };
@@ -147,13 +135,31 @@
     pressTimer = setTimeout(() => {
       const entered = window.prompt('Staff PIN');
       if (entered === null) return;
-      if (entered === STAFF_PIN) showView('staff');
-      else window.alert('Incorrect PIN.');
+      if (entered === STAFF_PIN) {
+        PED.staff.renderStaffDashboard(document.getElementById('view-staff'), datasets);
+        showView('staff');
+      } else {
+        window.alert('Incorrect PIN.');
+      }
     }, 900);
   }
   function disarmLongPress() { clearTimeout(pressTimer); }
   logoEl.addEventListener('pointerdown', armLongPress);
   ['pointerup', 'pointerleave', 'pointercancel'].forEach(evt => logoEl.addEventListener(evt, disarmLongPress));
+
+  // Haptic tap feedback (Phase 4 haptics pass) on every button anywhere in the
+  // app — one delegated listener covers Back/Next/Continue/Submit/Skip/game
+  // Skip-or-Continue/site-nav/modal actions and anything rendered dynamically
+  // by a step renderer, so a future new button gets this for free without
+  // per-file wiring. Chips/checkboxes/radios aren't <button> elements, so
+  // they're wired individually where they're built (js/chips.js, js/quiz.js,
+  // js/registration.js, js/request.js, js/destinations.js's examPrep toggle).
+  // A true no-op on iPadOS Safari either way (js/haptics.js), never a hard
+  // dependency — the spring/scale visual feedback on every one of those
+  // elements is what actually carries the "felt" response there.
+  document.addEventListener('click', e => {
+    if (e.target.closest('button')) PED.haptics.tap();
+  });
 
   // Belt-and-braces autosave: every step transition already saves via mutateDraft,
   // but iPad Safari can discard a backgrounded tab's JS state without warning, so

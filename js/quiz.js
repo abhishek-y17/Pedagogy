@@ -106,7 +106,10 @@
     `;
 
     container.querySelectorAll('#quizOptions input[type=radio]').forEach(input => {
-      input.addEventListener('change', () => setAnswer(draft, questionId, input.value));
+      input.addEventListener('change', () => {
+        window.PED.haptics.tap();
+        setAnswer(draft, questionId, input.value);
+      });
     });
     container.querySelector('#qBackBtn').addEventListener('click', onBack);
     container.querySelector('#qNextBtn').addEventListener('click', onNext);
