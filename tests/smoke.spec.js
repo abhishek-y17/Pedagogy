@@ -70,6 +70,56 @@ test('registration requires a parent number and explains why instead of blocking
   await expect(page.locator('.modal-overlay')).toBeHidden();
 });
 
+// ===================== Input validation hardening =====================
+test('typing symbols/digits into the name field gets them stripped live, not just rejected at submit', async ({ page }) => {
+  await startJourney(page);
+  await page.locator('#regName').fill('test@gmail.com');
+  await expect(page.locator('#regName')).toHaveValue('testgmail.com'); // @ stripped, letters/period survive
+  await page.locator('#regName').fill('John123');
+  await expect(page.locator('#regName')).toHaveValue('John'); // digits stripped
+});
+
+test('the submit-time NAME_PATTERN check is a real second gate, independent of live sanitization', async ({ page }) => {
+  // Live sanitize-on-input (js/registration.js's #regName listener) already
+  // strips digits/symbols as the visitor types, so an invalid name can't
+  // normally reach validateRegistrationForSubmit() through the DOM at all.
+  // Call the exported validator directly to prove it still rejects one on its
+  // own, in case a future change to the input listener ever regresses that.
+  await startJourney(page);
+  const result = await page.evaluate(() => window.PED.registration.validateRegistrationForSubmit({
+    name: "Mary-Jane O'Brien", dob: '2009-05-14', tcsAccepted: true, consentToContact: true, parentMobile: '+971501234567',
+  }));
+  expect(result.ok).toBe(true); // hyphen/apostrophe names are explicitly allowed
+
+  const rejected = await page.evaluate(() => window.PED.registration.validateRegistrationForSubmit({
+    name: 'not@aname', dob: '2009-05-14', tcsAccepted: true, consentToContact: true, parentMobile: '+971501234567',
+  }));
+  expect(rejected.ok).toBe(false);
+  expect(rejected.message).toContain('numbers or symbols');
+});
+
+test('a date of birth implying an implausible age (~40) is rejected', async ({ page }) => {
+  await startJourney(page);
+  const tooOldDob = `${new Date().getFullYear() - 40}-05-14`;
+  await fillValidRegistration(page, { dob: tooOldDob });
+  await page.locator('#registerNextBtn').click();
+  await expect(page.locator('.modal-body')).toContainText("doesn't look right for a Class 10–12 student");
+});
+
+test('a future date of birth is rejected', async ({ page }) => {
+  await startJourney(page);
+  const futureDob = `${new Date().getFullYear() + 1}-01-01`;
+  await fillValidRegistration(page, { dob: futureDob });
+  await page.locator('#registerNextBtn').click();
+  await expect(page.locator('.modal-body')).toContainText('in the future');
+});
+
+test('typing symbols into the phone fields gets them stripped live', async ({ page }) => {
+  await startJourney(page);
+  await page.locator('#regParentMobile').fill('+971abc501234567');
+  await expect(page.locator('#regParentMobile')).toHaveValue('+971501234567');
+});
+
 test('T&Cs opens a real modal, not an inline expandable block', async ({ page }) => {
   await startJourney(page);
   await page.locator('#tcsLink').click();

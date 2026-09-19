@@ -59,6 +59,36 @@
     return /^\+[1-9]\d{7,14}$/.test(s) ? s : null;
   }
 
+  // Letters (incl. accented), spaces, hyphens, apostrophes, periods only — covers
+  // "Mary-Jane", "O'Brien", "Md. Rahman", rejects digits/symbols like "test@gmail.com".
+  const NAME_PATTERN = /^[\p{L}][\p{L}\s'.-]*$/u;
+
+  // Live-filtering helpers: strip disallowed characters as the visitor types,
+  // rather than only rejecting at submit. normalizePhone() above stays the
+  // real format check at submit — these just keep junk characters out along the way.
+  function sanitizeName(v) {
+    return (v || '').replace(/[^\p{L}\s'.-]/gu, '');
+  }
+  function sanitizePhoneInput(v) {
+    return (v || '').replace(/[^\d+\-\s()]/g, '');
+  }
+
+  // Deliberately generous bounds (not a strict 15–18) — this is a fat-finger
+  // guard against a typo'd DOB (e.g. landing in 1990) or a future date, not a
+  // precise age gate, since a held-back or skipped-ahead real Class 10–12
+  // student can legitimately fall outside a tight range.
+  const MIN_AGE = 12;
+  const MAX_AGE = 24;
+  function ageFromDob(dobStr) {
+    const dob = new Date(dobStr);
+    if (isNaN(dob.getTime())) return null;
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) age--;
+    return age;
+  }
+
   function renderOptions(list) {
     return list.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
   }
@@ -74,7 +104,11 @@
    */
   function validateRegistrationForSubmit(reg) {
     if (!reg.name || reg.name.trim().length < 2) return { ok: false, kind: 'alert', message: 'Please enter your full name.' };
+    if (!NAME_PATTERN.test(reg.name.trim())) return { ok: false, kind: 'alert', message: 'That name has numbers or symbols in it — please use letters only (hyphens and apostrophes are fine).' };
     if (!reg.dob) return { ok: false, kind: 'alert', message: 'Please enter a date of birth.' };
+    if (new Date(reg.dob) > new Date()) return { ok: false, kind: 'alert', message: 'That date of birth is in the future — please check it.' };
+    const age = ageFromDob(reg.dob);
+    if (age === null || age < MIN_AGE || age > MAX_AGE) return { ok: false, kind: 'alert', message: `That date of birth doesn't look right for a Class 10–12 student — please double-check it.` };
     if (!reg.tcsAccepted) return { ok: false, kind: 'alert', message: 'Please accept the Terms & Conditions to continue.' };
     if (!reg.consentToContact) return { ok: false, kind: 'alert', message: 'Please agree to be contacted (including via WhatsApp) to continue.' };
 
@@ -127,6 +161,12 @@
     const { schools, curriculumSubjects } = datasets;
     const reg = draft.registration;
 
+    // Defense-in-depth on top of the JS age-range check: bound the native
+    // date picker itself so it can't even offer an implausible date.
+    const today = new Date();
+    const dobMax = new Date(today.getFullYear() - MIN_AGE, today.getMonth(), today.getDate()).toISOString().slice(0, 10);
+    const dobMin = new Date(today.getFullYear() - MAX_AGE, today.getMonth(), today.getDate()).toISOString().slice(0, 10);
+
     container.innerHTML = `
       <p class="eyebrow-small">YOUR JOURNEY STARTS HERE</p>
       <h2 class="step-heading">First, make it yours.</h2>
@@ -139,7 +179,7 @@
         </label>
         <label>Date of birth
           <input type="date" id="regDob" required value="${escapeHtml(reg.dob || '')}"
-            autocomplete="off-dob-x">
+            min="${dobMin}" max="${dobMax}" autocomplete="off-dob-x">
         </label>
       </div>
       <p class="field-hint field-hint--soft" id="nameHint" hidden>Just checking &mdash; is that the full name? Single names are fine if that is what's on record.</p>
@@ -161,7 +201,7 @@
       <div class="school-field">
         <label>School name
           <input type="text" id="regSchoolInput" placeholder="Start typing your school's name" value="${escapeHtml(reg.school || '')}"
-            autocomplete="off-school-x" spellcheck="false" autocorrect="off" autocapitalize="words">
+            maxlength="120" autocomplete="off-school-x" spellcheck="false" autocorrect="off" autocapitalize="words">
         </label>
         <ul class="school-suggestions" id="schoolSuggestions" hidden></ul>
         <p class="field-hint" id="schoolCurriculumNote" hidden></p>
@@ -276,10 +316,22 @@
       setCurriculum(reg.curriculum || null, null);
     })();
 
-    $('#regName').addEventListener('input', e => window.PED.state.mutateDraft(draft, () => { reg.name = e.target.value; }));
+    $('#regName').addEventListener('input', e => {
+      const clean = sanitizeName(e.target.value);
+      if (clean !== e.target.value) e.target.value = clean;
+      window.PED.state.mutateDraft(draft, () => { reg.name = clean; });
+    });
     $('#regDob').addEventListener('change', e => window.PED.state.mutateDraft(draft, () => { reg.dob = e.target.value; }));
-    $('#regParentMobile').addEventListener('input', e => window.PED.state.mutateDraft(draft, () => { reg.parentMobile = e.target.value; }));
-    $('#regStudentMobile').addEventListener('input', e => window.PED.state.mutateDraft(draft, () => { reg.studentMobile = e.target.value; }));
+    $('#regParentMobile').addEventListener('input', e => {
+      const clean = sanitizePhoneInput(e.target.value);
+      if (clean !== e.target.value) e.target.value = clean;
+      window.PED.state.mutateDraft(draft, () => { reg.parentMobile = clean; });
+    });
+    $('#regStudentMobile').addEventListener('input', e => {
+      const clean = sanitizePhoneInput(e.target.value);
+      if (clean !== e.target.value) e.target.value = clean;
+      window.PED.state.mutateDraft(draft, () => { reg.studentMobile = clean; });
+    });
     $('#regCurriculum').addEventListener('change', e => {
       window.PED.state.mutateDraft(draft, () => { reg.curriculum = e.target.value; reg.stream = null; });
       refreshGradeOptions();
@@ -398,5 +450,6 @@
   window.PED.registration = {
     renderRegister, gradeOptionsFor, getStreamOptions, normalizePhone, TCS_TEXT,
     validateRegistrationForSubmit, presentValidationFailure,
+    NAME_PATTERN, sanitizeName, sanitizePhoneInput, MIN_AGE, MAX_AGE, ageFromDob,
   };
 })();

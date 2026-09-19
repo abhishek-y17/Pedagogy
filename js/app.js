@@ -136,7 +136,7 @@
       const entered = window.prompt('Staff PIN');
       if (entered === null) return;
       if (entered === STAFF_PIN) {
-        PED.staff.renderStaffDashboard(document.getElementById('view-staff'), datasets);
+        PED.staff.renderStaffDashboard(document.getElementById('view-staff'), datasets, jumpToQuizForTesting);
         showView('staff');
       } else {
         window.alert('Incorrect PIN.');
@@ -168,6 +168,37 @@
     if (document.visibilityState === 'hidden' && draft) PED.state.saveDraft(draft);
   });
   window.addEventListener('pagehide', () => { if (draft) PED.state.saveDraft(draft); });
+
+  // TEST ONLY — REMOVE BEFORE THE REAL EVENT (11-13 Oct 2026), see CLAUDE.md.
+  // Staff-gated shortcut (same long-press-logo + PIN gate as the rest of the
+  // staff dashboard, no separate gating mechanism) that seeds a fake-but-valid
+  // draft and jumps straight to q1, so the quiz/games/review flow can be
+  // tested without re-typing a full registration every time.
+  function jumpToQuizForTesting() {
+    draft = PED.state.resetForNewVisitor('full');
+    const today = new Date();
+    const testDob = new Date(today.getFullYear() - 16, today.getMonth(), today.getDate()).toISOString().slice(0, 10);
+    const nowIso = new Date().toISOString();
+    PED.state.mutateDraft(draft, d => {
+      d.registration.name = 'Test Visitor';
+      d.registration.dob = testDob;
+      d.registration.parentMobile = '+971501234567';
+      d.registration.school = null;
+      d.registration.schoolKey = null;
+      d.registration.curriculum = 'Indian';
+      d.registration.grade = 'stage11';
+      d.registration.stream = null;
+      d.registration.tcsAccepted = true;
+      d.registration.tcsAcceptedAt = nowIso;
+      d.registration.consentToContact = true;
+      d.registration.consentToContactAt = nowIso;
+      d.currentStepId = 'q1';
+    });
+    heroScreen.hidden = true;
+    appShell.hidden = false;
+    showView('home');
+    renderStep();
+  }
 
   function boot() {
     datasets = PED.data.loadDatasets();

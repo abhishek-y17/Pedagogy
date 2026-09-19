@@ -131,7 +131,7 @@
         <p class="eyebrow-small">YOUR STUDY PLANS</p>
         <h2 class="step-heading">Which exam(s) are you preparing for?</h2>
         <p class="field-hint">Tell us in your own words &mdash; a counsellor will follow up with specifics for your destination.</p>
-        <textarea id="examFreeText" rows="3" placeholder="e.g. TestAS for Germany">${escapeHtml(prefs.competitiveExams.Other || '')}</textarea>
+        <textarea id="examFreeText" rows="3" maxlength="200" placeholder="e.g. TestAS for Germany">${escapeHtml(prefs.competitiveExams.Other || '')}</textarea>
         <div class="step-actions">
           <button type="button" class="quiet" id="examListBackBtn">&larr; Back</button>
           <button type="button" class="primary" id="examListNextBtn">Continue &rarr;</button>

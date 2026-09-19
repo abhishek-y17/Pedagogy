@@ -34,7 +34,7 @@
       </label>
 
       <label>Anything specific you'd like a counsellor to help with? <span class="field-hint field-hint--soft" style="display:inline;margin:0 0 0 4px;">(optional)</span>
-        <textarea id="requestNote" rows="3" placeholder="e.g. Engineering options in Germany">${escapeHtml(f.preferredFollowup || '')}</textarea>
+        <textarea id="requestNote" rows="3" maxlength="300" placeholder="e.g. Engineering options in Germany">${escapeHtml(f.preferredFollowup || '')}</textarea>
       </label>
 
       <div class="step-actions">

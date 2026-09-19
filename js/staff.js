@@ -95,7 +95,21 @@
     `;
   }
 
-  function renderStaffDashboard(container, datasets) {
+  // TEST ONLY — REMOVE BEFORE THE REAL EVENT (11-13 Oct 2026), see CLAUDE.md.
+  // Renders the dev-only "jump to quiz" test button. `jumpToQuizForTesting` is
+  // defined in js/app.js (near boot()) since only that file's closure has
+  // access to draft/appShell/heroScreen/renderStep.
+  function renderJumpToQuizButton(container, jumpToQuizForTesting) {
+    if (!jumpToQuizForTesting) return '';
+    return `
+      <div class="dev-only">
+        <p class="field-hint">TEST ONLY — remove before the real event (11–13 Oct 2026).</p>
+        <button type="button" class="quiet" id="jumpToQuizTestBtn">Jump to quiz (test)</button>
+      </div>
+    `;
+  }
+
+  function renderStaffDashboard(container, datasets, jumpToQuizForTesting) {
     const records = window.PED.state.loadRecords();
 
     if (!records.length) {
@@ -103,7 +117,11 @@
         <p class="eyebrow-small">STAFF DASHBOARD</p>
         <h2 class="step-heading">No registrations yet.</h2>
         <p class="field-hint">Finalized entries will appear here as visitors submit the review screen.</p>
+        ${renderJumpToQuizButton(container, jumpToQuizForTesting)}
       `;
+      // TEST ONLY — REMOVE BEFORE THE REAL EVENT (11-13 Oct 2026), see CLAUDE.md.
+      const jumpBtn = container.querySelector('#jumpToQuizTestBtn');
+      if (jumpBtn) jumpBtn.addEventListener('click', jumpToQuizForTesting);
       return;
     }
 
@@ -126,17 +144,22 @@
       <div class="step-actions">
         <button type="button" class="quiet" id="staffRefreshBtn">Refresh</button>
       </div>
+      ${renderJumpToQuizButton(container, jumpToQuizForTesting)}
       <div id="staffRecordList">${sorted.map(r => renderRecordCard(r, datasets)).join('')}</div>
     `;
 
-    container.querySelector('#staffRefreshBtn').addEventListener('click', () => renderStaffDashboard(container, datasets));
+    container.querySelector('#staffRefreshBtn').addEventListener('click', () => renderStaffDashboard(container, datasets, jumpToQuizForTesting));
+
+    // TEST ONLY — REMOVE BEFORE THE REAL EVENT (11-13 Oct 2026), see CLAUDE.md.
+    const jumpBtn = container.querySelector('#jumpToQuizTestBtn');
+    if (jumpBtn) jumpBtn.addEventListener('click', jumpToQuizForTesting);
 
     container.querySelectorAll('[data-action]').forEach(btn => {
       btn.addEventListener('click', () => {
         window.PED.state.updateRecord(btn.dataset.id, record => {
           record.meta.duplicateReviewStatus = btn.dataset.action;
         });
-        renderStaffDashboard(container, datasets);
+        renderStaffDashboard(container, datasets, jumpToQuizForTesting);
       });
     });
   }
