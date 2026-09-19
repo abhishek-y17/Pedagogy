@@ -1,0 +1,94 @@
+{
+  "schema": "pedagogy.destination-exams.v1",
+  "purpose": "Maps each of the app's 10 destination-country options to the competitive/entrance exams relevant to studying there, so the 'Are you preparing for any competitive exam?' question can show only exams relevant to the country/countries the visitor already picked in the destinations step, instead of one long undifferentiated list.",
+  "researched": "2026-09-19",
+  "country_list_note": "This is the same 10-option destination list already used in the app (9 named countries + Other), matching the stakeholder's 'top 10 countries' request.",
+  "destinations": {
+    "India": {
+      "exams": [
+        { "name": "JEE Main", "for": "Engineering (NITs, most engineering colleges)" },
+        { "name": "JEE Advanced", "for": "Engineering (IITs) — requires qualifying JEE Main first" },
+        { "name": "NEET-UG", "for": "Medicine, dentistry, AYUSH courses" },
+        { "name": "CLAT", "for": "Law (National Law Universities)" },
+        { "name": "CUET (UG)", "for": "Central universities and many state/private universities, all streams" },
+        { "name": "State CET (e.g. KCET, MHT-CET, WBJEE, COMEDK)", "for": "State engineering/professional colleges — ask which state" },
+        { "name": "BITSAT", "for": "BITS Pilani campuses" },
+        { "name": "VITEEE", "for": "VIT campuses" }
+      ],
+      "note": "This is Pedagogy's core counselling territory (NEET/JEE/CET already named in the business context) — this list should be treated as the most important one to get right and to keep current each cycle."
+    },
+    "United Arab Emirates": {
+      "exams": [
+        { "name": "EmSAT", "for": "Mandatory placement/admission test (Math, Physics, Chemistry, Biology, Arabic, English) for UAE federal universities (e.g. UAEU, HCT) and many private universities — required regardless of A-Level/IB/CBSE results" },
+        { "name": "SAT", "for": "Optional but strengthens applications and scholarship eligibility, especially for American-curriculum-track private universities" }
+      ],
+      "note": "English proficiency (IELTS/TOEFL) is commonly also requested but is a language test, not a competitive/subject exam — keep it out of this list unless the app later adds a separate language-requirements question."
+    },
+    "United Kingdom": {
+      "exams": [
+        { "name": "UCAT", "for": "Medicine and dentistry (BMAT was discontinued after the 2024 admissions cycle — UCAT is now the standard test)" },
+        { "name": "LNAT", "for": "Law at several top law schools" },
+        { "name": "TMUA", "for": "Mathematics and some Computer Science courses at a number of universities" },
+        { "name": "ESAT", "for": "Engineering/Natural Sciences/Computer Science at a small group of universities (e.g. Cambridge, Imperial) — replaced the older ENGAA/NSAA tests from 2024 entry" }
+      ],
+      "note": "Most UK applicants don't sit any admissions test at all — these apply only to specific competitive courses/universities. Verify against the specific university before finalizing question copy."
+    },
+    "Germany": {
+      "exams": [
+        { "name": "TestAS", "for": "Mandatory for non-EU/EEA applicants to bachelor's degrees at many German public universities; optional but useful as a tiebreaker for EU applicants to competitive Numerus-Clausus programs (medicine, dentistry, psychology, top Computer Science)" },
+        { "name": "APS Certificate", "for": "Not an exam — a mandatory academic-credentials verification process/interview required for Indian (and Chinese, Vietnamese) students before a German student visa can be issued. Commonly asked about in the same breath as TestAS, so keep it listed here even though it isn't a test to 'prepare for' in the usual sense." },
+        { "name": "TestDaF / DSH", "for": "German-language proficiency — only relevant if the chosen program is taught in German rather than English" }
+      ]
+    },
+    "Singapore": {
+      "exams": [
+        { "name": "SAT", "for": "Used by NUS, NTU and SMU to evaluate applicants presenting non-Singaporean qualifications (e.g. Indian CBSE/ISC/CISCE boards) — the standard extra requirement for Indian applicants" }
+      ],
+      "note": "There is no separate Singapore-national entrance exam for foreign applicants — admission is mainly on board results (A-Level/IB/CBSE/etc.) plus SAT."
+    },
+    "Ireland": {
+      "exams": [
+        { "name": "HPAT-Ireland", "for": "Medicine and some health-profession programmes at 6 Irish universities (Trinity, UCD, UCC, Galway, Limerick, RCSI) — note: international/non-EU applicants are often exempt depending on the university and programme, so this needs a follow-up question or counsellor check rather than being assumed" }
+      ],
+      "note": "CAO (the points-based admissions system) applies to Irish/EU Leaving Certificate students, not to international applicants presenting other qualifications, so it isn't listed here as an 'exam.'"
+    },
+    "Canada": {
+      "exams": [
+        { "name": "SAT / ACT", "for": "Optional at most Canadian universities but strengthens applications and scholarship chances" },
+        { "name": "MCAT", "for": "Medicine (graduate-entry)" },
+        { "name": "LSAT", "for": "Law" },
+        { "name": "GRE / GMAT", "for": "Graduate programmes and MBA" }
+      ],
+      "note": "English-proficiency tests (IELTS/TOEFL/PTE/CELPIP/CAEL) are also commonly required but are language tests, not competitive/subject exams — kept out of this list for the same reason as UAE."
+    },
+    "Australia": {
+      "exams": [
+        { "name": "UCAT ANZ", "for": "Medicine and dentistry — mandatory for most direct-entry undergraduate medical programmes" },
+        { "name": "ISAT", "for": "An alternate pathway test used by some medicine/health-science programmes" },
+        { "name": "GAMSAT", "for": "Graduate-entry medicine and veterinary science" },
+        { "name": "SAT / ACT", "for": "Optional for general undergraduate admission" },
+        { "name": "GRE / GMAT", "for": "Graduate programmes and MBA" }
+      ]
+    },
+    "United States": {
+      "exams": [
+        { "name": "SAT / ACT", "for": "Undergraduate admission (many US universities are now test-optional — still worth asking, since a strong score still helps scholarships)" },
+        { "name": "GRE", "for": "Most graduate (Master's/PhD) programmes" },
+        { "name": "GMAT", "for": "MBA and business Master's programmes" },
+        { "name": "MCAT", "for": "Medical school" },
+        { "name": "LSAT", "for": "Law school" }
+      ]
+    },
+    "Other": {
+      "exams": [],
+      "note": "No fixed list — when 'Other' is the only or an additional destination, show a free-text 'Which exam(s)?' field instead of a chip list, and flag the record for a counsellor to follow up rather than guessing at a country-specific list."
+    }
+  },
+  "app_integration_notes": [
+    "New question, gated by a simple Yes/No: 'Are you preparing for any competitive exam?' Show it after the destination-country selection (Path Swipe deck / grid step) is answered, since it depends on that answer.",
+    "If Yes: build the exam chip list dynamically from this file, keyed off whichever countries the visitor selected in the destinations step. If they selected more than one country, union the exam lists (dedupe exact name matches like 'SAT / ACT' or 'GRE / GMAT' that appear under multiple countries) and group them under their country/subheading so it's clear which exam applies where, rather than one flattened list.",
+    "If No: skip straight past this question, same as any other optional preference step — don't force an answer.",
+    "If 'Other' is the only destination chosen (or included alongside named countries with no exam data), fall back to a free-text field per the 'Other' entry's note above.",
+    "This reuses the same interaction pattern as the destinations step itself (tap chips, not swipe) — see the structural-reference note in CLAUDE.md / session_handoff.md about using reference/pedagogy-expo.html's chip-based preferences(2) step (which already had a flat, non-country-aware 'exams' chip list) as the starting point, now made country-aware using this file."
+  ]
+}

@@ -1,0 +1,4740 @@
+{
+  "schema": "pedagogy.schools.v1",
+  "generated_from": [
+    "dubai.csv",
+    "abudhabi.csv",
+    "sharjah.csv"
+  ],
+  "canonical_curriculum_tags": [
+    "IB",
+    "British",
+    "American",
+    "Indian",
+    "UAE MoE",
+    "SABIS",
+    "French",
+    "German",
+    "Iranian",
+    "Pakistani",
+    "Philippine",
+    "Canadian",
+    "Bangladeshi",
+    "Spanish",
+    "Italian",
+    "Japanese",
+    "Russian",
+    "Australian",
+    "Unspecified"
+  ],
+  "counts": {
+    "total_schools": 518,
+    "by_emirate": {
+      "Dubai": 173,
+      "Abu Dhabi": 219,
+      "Sharjah": 126
+    },
+    "by_curriculum_tag": {
+      "British": 132,
+      "American": 130,
+      "UAE MoE": 95,
+      "Indian": 83,
+      "IB": 39,
+      "SABIS": 10,
+      "Philippine": 9,
+      "Pakistani": 8,
+      "Iranian": 6,
+      "Australian": 6,
+      "French": 5,
+      "Canadian": 4,
+      "German": 3,
+      "Japanese": 2,
+      "Russian": 2,
+      "Bangladeshi": 1,
+      "Spanish": 1,
+      "Italian": 1
+    }
+  },
+  "schools": [
+    {
+      "school_name": "Adab Iranian Private School - Boys",
+      "emirate": "Dubai",
+      "curriculum_raw": "Iranian",
+      "curriculum_tags": [
+        "Iranian"
+      ],
+      "id": "sch_0001"
+    },
+    {
+      "school_name": "Adab Iranian Private School - Girls",
+      "emirate": "Dubai",
+      "curriculum_raw": "Iranian",
+      "curriculum_tags": [
+        "Iranian"
+      ],
+      "id": "sch_0002"
+    },
+    {
+      "school_name": "Al Ameen Private School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0003"
+    },
+    {
+      "school_name": "Al Arqam Private School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0004"
+    },
+    {
+      "school_name": "Al Basateen Kindergarten - Al Khawaneej",
+      "emirate": "Dubai",
+      "curriculum_raw": "UAE MoE / Arabic",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0005"
+    },
+    {
+      "school_name": "Al Basateen Kindergarten - Hatta",
+      "emirate": "Dubai",
+      "curriculum_raw": "UAE MoE / Arabic",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0006"
+    },
+    {
+      "school_name": "Al Diyafah High School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0007"
+    },
+    {
+      "school_name": "Al Eman Private School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UAE MoE / Arabic",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0008"
+    },
+    {
+      "school_name": "Al Ittihad Private School - Al Mamzar",
+      "emirate": "Dubai",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0009"
+    },
+    {
+      "school_name": "Al Ittihad Private School - Jumeirah",
+      "emirate": "Dubai",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0010"
+    },
+    {
+      "school_name": "Al Khaleej National School",
+      "emirate": "Dubai",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0011"
+    },
+    {
+      "school_name": "Al Maaref Private School",
+      "emirate": "Dubai",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0012"
+    },
+    {
+      "school_name": "Al Mawakeb School - Al Barsha",
+      "emirate": "Dubai",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0013"
+    },
+    {
+      "school_name": "Al Mawakeb School - Al Garhoud",
+      "emirate": "Dubai",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0014"
+    },
+    {
+      "school_name": "Al Rashid Al Saleh Private School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UAE MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0015"
+    },
+    {
+      "school_name": "Al Sadiq Islamic English School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0016"
+    },
+    {
+      "school_name": "Al Safa Private School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0017"
+    },
+    {
+      "school_name": "Al Salam Private School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0018"
+    },
+    {
+      "school_name": "Al Shorouq Private School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UAE MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0019"
+    },
+    {
+      "school_name": "Ambassador Kindergarten",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0020"
+    },
+    {
+      "school_name": "Al Mizhar American Academy Private School for Girls",
+      "emirate": "Dubai",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0021"
+    },
+    {
+      "school_name": "American International School",
+      "emirate": "Dubai",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0022"
+    },
+    {
+      "school_name": "American School of Dubai",
+      "emirate": "Dubai",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0023"
+    },
+    {
+      "school_name": "Apple International School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0024"
+    },
+    {
+      "school_name": "Arab Unity School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0025"
+    },
+    {
+      "school_name": "Bradenton Preparatory Academy",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0026"
+    },
+    {
+      "school_name": "Buds Public School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0027"
+    },
+    {
+      "school_name": "Cambridge International School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0028"
+    },
+    {
+      "school_name": "Collegiate American School",
+      "emirate": "Dubai",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0029"
+    },
+    {
+      "school_name": "Crescent English School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0030"
+    },
+    {
+      "school_name": "Dar Al Marefa Private School",
+      "emirate": "Dubai",
+      "curriculum_raw": "IB / International",
+      "curriculum_tags": [
+        "IB"
+      ],
+      "id": "sch_0031"
+    },
+    {
+      "school_name": "Deira International School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / IB",
+      "curriculum_tags": [
+        "IB",
+        "British"
+      ],
+      "id": "sch_0032"
+    },
+    {
+      "school_name": "Deira Private School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0033"
+    },
+    {
+      "school_name": "Delhi Private School Dubai",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0034"
+    },
+    {
+      "school_name": "GEMS Dubai American Academy",
+      "emirate": "Dubai",
+      "curriculum_raw": "American / IB",
+      "curriculum_tags": [
+        "IB",
+        "American"
+      ],
+      "id": "sch_0035"
+    },
+    {
+      "school_name": "Dubai Arab American Private School",
+      "emirate": "Dubai",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0036"
+    },
+    {
+      "school_name": "Dubai British School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0037"
+    },
+    {
+      "school_name": "Dubai Carmel School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0038"
+    },
+    {
+      "school_name": "Dubai College",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0039"
+    },
+    {
+      "school_name": "Dubai English Speaking College",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0040"
+    },
+    {
+      "school_name": "Dubai English Speaking School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0041"
+    },
+    {
+      "school_name": "Dubai Gem Private School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0042"
+    },
+    {
+      "school_name": "Dubai International Academy",
+      "emirate": "Dubai",
+      "curriculum_raw": "IB",
+      "curriculum_tags": [
+        "IB"
+      ],
+      "id": "sch_0043"
+    },
+    {
+      "school_name": "Dubai International School - Al Garhoud",
+      "emirate": "Dubai",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0044"
+    },
+    {
+      "school_name": "Dubai International School - Al Quoz",
+      "emirate": "Dubai",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0045"
+    },
+    {
+      "school_name": "Dubai Modern Education School",
+      "emirate": "Dubai",
+      "curriculum_raw": "American / UAE MoE",
+      "curriculum_tags": [
+        "American",
+        "UAE MoE"
+      ],
+      "id": "sch_0046"
+    },
+    {
+      "school_name": "GEMS Modern Academy",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / Indian-IB",
+      "curriculum_tags": [
+        "IB",
+        "Indian"
+      ],
+      "id": "sch_0047"
+    },
+    {
+      "school_name": "Dubai National School - Al Barsha",
+      "emirate": "Dubai",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0048"
+    },
+    {
+      "school_name": "Dubai National School - Al Twar",
+      "emirate": "Dubai",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0049"
+    },
+    {
+      "school_name": "Dubai Police Kindergarten - Deira",
+      "emirate": "Dubai",
+      "curriculum_raw": "UAE MoE / Arabic",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0050"
+    },
+    {
+      "school_name": "Dubai Scholars Private School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0051"
+    },
+    {
+      "school_name": "Dubai Women's College High School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UAE MoE / Technical",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0052"
+    },
+    {
+      "school_name": "Emirates English Speaking School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0053"
+    },
+    {
+      "school_name": "Emirates International School - Jumeirah",
+      "emirate": "Dubai",
+      "curriculum_raw": "IB",
+      "curriculum_tags": [
+        "IB"
+      ],
+      "id": "sch_0054"
+    },
+    {
+      "school_name": "Emirates International School - Meadows",
+      "emirate": "Dubai",
+      "curriculum_raw": "IB",
+      "curriculum_tags": [
+        "IB"
+      ],
+      "id": "sch_0055"
+    },
+    {
+      "school_name": "English Language Private School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0056"
+    },
+    {
+      "school_name": "GEMS Jumeira Primary School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0057"
+    },
+    {
+      "school_name": "GEMS Royal Dubai School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0058"
+    },
+    {
+      "school_name": "GEMS Wellington Academy - DSO",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / IB",
+      "curriculum_tags": [
+        "IB",
+        "British"
+      ],
+      "id": "sch_0059"
+    },
+    {
+      "school_name": "GEMS Wellington International School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / IB / IB DP",
+      "curriculum_tags": [
+        "IB",
+        "British"
+      ],
+      "id": "sch_0060"
+    },
+    {
+      "school_name": "GEMS Wellington Primary School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0061"
+    },
+    {
+      "school_name": "GEMS Winchester School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0062"
+    },
+    {
+      "school_name": "GEMS World Academy",
+      "emirate": "Dubai",
+      "curriculum_raw": "IB",
+      "curriculum_tags": [
+        "IB"
+      ],
+      "id": "sch_0063"
+    },
+    {
+      "school_name": "German International School Dubai",
+      "emirate": "Dubai",
+      "curriculum_raw": "German",
+      "curriculum_tags": [
+        "German"
+      ],
+      "id": "sch_0064"
+    },
+    {
+      "school_name": "Ambassador School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0065"
+    },
+    {
+      "school_name": "Grammar School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0066"
+    },
+    {
+      "school_name": "Greenfield Community School",
+      "emirate": "Dubai",
+      "curriculum_raw": "IB",
+      "curriculum_tags": [
+        "IB"
+      ],
+      "id": "sch_0067"
+    },
+    {
+      "school_name": "Greenwood International School",
+      "emirate": "Dubai",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0068"
+    },
+    {
+      "school_name": "Gulf Indian High School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0069"
+    },
+    {
+      "school_name": "Gulf Model School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0070"
+    },
+    {
+      "school_name": "His Highness Shaikh Rashid Al Maktoum Pakistani School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Pakistani",
+      "curriculum_tags": [
+        "Pakistani"
+      ],
+      "id": "sch_0071"
+    },
+    {
+      "school_name": "Horizon English School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0072"
+    },
+    {
+      "school_name": "Institute of Applied Technology",
+      "emirate": "Dubai",
+      "curriculum_raw": "UAE MoE / Technical",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0073"
+    },
+    {
+      "school_name": "International Academic School",
+      "emirate": "Dubai",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0074"
+    },
+    {
+      "school_name": "International School of Arts and Sciences",
+      "emirate": "Dubai",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0075"
+    },
+    {
+      "school_name": "Islamic School for Education and Training",
+      "emirate": "Dubai",
+      "curriculum_raw": "UAE MoE / Arabic",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0076"
+    },
+    {
+      "school_name": "Japanese School in Dubai",
+      "emirate": "Dubai",
+      "curriculum_raw": "Japanese",
+      "curriculum_tags": [
+        "Japanese"
+      ],
+      "id": "sch_0077"
+    },
+    {
+      "school_name": "Jebel Ali Primary School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0078"
+    },
+    {
+      "school_name": "JSS International School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0079"
+    },
+    {
+      "school_name": "JSS Private School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0080"
+    },
+    {
+      "school_name": "Jumeira Baccalaureate School",
+      "emirate": "Dubai",
+      "curriculum_raw": "IB",
+      "curriculum_tags": [
+        "IB"
+      ],
+      "id": "sch_0081"
+    },
+    {
+      "school_name": "Jumeirah College",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0082"
+    },
+    {
+      "school_name": "Jumeirah English Speaking School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0083"
+    },
+    {
+      "school_name": "Jumeirah English Speaking School - Arabian Ranches",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0084"
+    },
+    {
+      "school_name": "K12 International Academy",
+      "emirate": "Dubai",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0085"
+    },
+    {
+      "school_name": "Khadija Al Kobra Iranian School for Girls",
+      "emirate": "Dubai",
+      "curriculum_raw": "Iranian",
+      "curriculum_tags": [
+        "Iranian"
+      ],
+      "id": "sch_0086"
+    },
+    {
+      "school_name": "Kings' Dubai",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0087"
+    },
+    {
+      "school_name": "Latifa School for Girls",
+      "emirate": "Dubai",
+      "curriculum_raw": "UAE MoE / Arabic",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0088"
+    },
+    {
+      "school_name": "Little Flowers English School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0089"
+    },
+    {
+      "school_name": "Lycee Francais International School",
+      "emirate": "Dubai",
+      "curriculum_raw": "French",
+      "curriculum_tags": [
+        "French"
+      ],
+      "id": "sch_0090"
+    },
+    {
+      "school_name": "Lycee Georges Pompidou High School",
+      "emirate": "Dubai",
+      "curriculum_raw": "French",
+      "curriculum_tags": [
+        "French"
+      ],
+      "id": "sch_0091"
+    },
+    {
+      "school_name": "Lycee Georges Pompidou Primary School",
+      "emirate": "Dubai",
+      "curriculum_raw": "French",
+      "curriculum_tags": [
+        "French"
+      ],
+      "id": "sch_0092"
+    },
+    {
+      "school_name": "Lycee Libanais Francophone Prive",
+      "emirate": "Dubai",
+      "curriculum_raw": "French",
+      "curriculum_tags": [
+        "French"
+      ],
+      "id": "sch_0093"
+    },
+    {
+      "school_name": "Mirdif Private School",
+      "emirate": "Dubai",
+      "curriculum_raw": "American / UAE MoE",
+      "curriculum_tags": [
+        "American",
+        "UAE MoE"
+      ],
+      "id": "sch_0094"
+    },
+    {
+      "school_name": "National Charity School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UAE MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0095"
+    },
+    {
+      "school_name": "New Academy School",
+      "emirate": "Dubai",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0096"
+    },
+    {
+      "school_name": "New Indian Model School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0097"
+    },
+    {
+      "school_name": "New World Private School",
+      "emirate": "Dubai",
+      "curriculum_raw": "IB / UAE MoE historical",
+      "curriculum_tags": [
+        "IB",
+        "UAE MoE"
+      ],
+      "id": "sch_0098"
+    },
+    {
+      "school_name": "Nibras International School",
+      "emirate": "Dubai",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0099"
+    },
+    {
+      "school_name": "North American International School",
+      "emirate": "Dubai",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0100"
+    },
+    {
+      "school_name": "GEMS Our Own English High School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0101"
+    },
+    {
+      "school_name": "Our Own High School - Dubai",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0102"
+    },
+    {
+      "school_name": "GEMS Our Own Indian School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0103"
+    },
+    {
+      "school_name": "Pakistan Education Academy",
+      "emirate": "Dubai",
+      "curriculum_raw": "Pakistani",
+      "curriculum_tags": [
+        "Pakistani"
+      ],
+      "id": "sch_0104"
+    },
+    {
+      "school_name": "Philadelphia Private School",
+      "emirate": "Dubai",
+      "curriculum_raw": "American / IB",
+      "curriculum_tags": [
+        "IB",
+        "American"
+      ],
+      "id": "sch_0105"
+    },
+    {
+      "school_name": "Pristine Private School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0106"
+    },
+    {
+      "school_name": "Queen International School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0107"
+    },
+    {
+      "school_name": "Raffles International School - South Campus",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0108"
+    },
+    {
+      "school_name": "Raffles World Academy",
+      "emirate": "Dubai",
+      "curriculum_raw": "IB / International",
+      "curriculum_tags": [
+        "IB"
+      ],
+      "id": "sch_0109"
+    },
+    {
+      "school_name": "Rajagiri International School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0110"
+    },
+    {
+      "school_name": "Rashid School for Boys",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British / IB",
+      "curriculum_tags": [
+        "IB",
+        "British"
+      ],
+      "id": "sch_0111"
+    },
+    {
+      "school_name": "Regent International School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0112"
+    },
+    {
+      "school_name": "Repton School Dubai",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / IB",
+      "curriculum_tags": [
+        "IB",
+        "British"
+      ],
+      "id": "sch_0113"
+    },
+    {
+      "school_name": "Russian International School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Russian",
+      "curriculum_tags": [
+        "Russian"
+      ],
+      "id": "sch_0114"
+    },
+    {
+      "school_name": "Salman Al Farsi Iranian School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Iranian",
+      "curriculum_tags": [
+        "Iranian"
+      ],
+      "id": "sch_0115"
+    },
+    {
+      "school_name": "School of Modern Skills",
+      "emirate": "Dubai",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0116"
+    },
+    {
+      "school_name": "Sharjah American International School",
+      "emirate": "Dubai",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0117"
+    },
+    {
+      "school_name": "St. Mary's Catholic High School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0118"
+    },
+    {
+      "school_name": "Star International School - Al Twar",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0119"
+    },
+    {
+      "school_name": "Star International School - Mirdif",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0120"
+    },
+    {
+      "school_name": "Horizon International Schoool",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0121"
+    },
+    {
+      "school_name": "The Central School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0122"
+    },
+    {
+      "school_name": "The Children's Garden",
+      "emirate": "Dubai",
+      "curriculum_raw": "International / Early Years",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0123"
+    },
+    {
+      "school_name": "The City School International",
+      "emirate": "Dubai",
+      "curriculum_raw": "British / International",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0124"
+    },
+    {
+      "school_name": "The Elite English School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0125"
+    },
+    {
+      "school_name": "The English College - Dubai",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0126"
+    },
+    {
+      "school_name": "The Indian Academy",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0127"
+    },
+    {
+      "school_name": "The Indian High School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0128"
+    },
+    {
+      "school_name": "The Indian High School - Branch",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0129"
+    },
+    {
+      "school_name": "The Indian International School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0130"
+    },
+    {
+      "school_name": "The International School of Choueifat - DIP",
+      "emirate": "Dubai",
+      "curriculum_raw": "SABIS",
+      "curriculum_tags": [
+        "SABIS"
+      ],
+      "id": "sch_0131"
+    },
+    {
+      "school_name": "The International School of Choueifat - Dubai",
+      "emirate": "Dubai",
+      "curriculum_raw": "SABIS",
+      "curriculum_tags": [
+        "SABIS"
+      ],
+      "id": "sch_0132"
+    },
+    {
+      "school_name": "The Kindergarten Starters",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0133"
+    },
+    {
+      "school_name": "The Millennium School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0134"
+    },
+    {
+      "school_name": "The Oxford School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0135"
+    },
+    {
+      "school_name": "The Philippine School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Philippine",
+      "curriculum_tags": [
+        "Philippine"
+      ],
+      "id": "sch_0136"
+    },
+    {
+      "school_name": "Sheikh Rashid Bin Saeed Islamic Institute",
+      "emirate": "Dubai",
+      "curriculum_raw": "UAE MoE / Arabic",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0137"
+    },
+    {
+      "school_name": "The School of Research Science",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0138"
+    },
+    {
+      "school_name": "The Sheffield Private School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0139"
+    },
+    {
+      "school_name": "The Westminster School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0140"
+    },
+    {
+      "school_name": "The Winchester School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0141"
+    },
+    {
+      "school_name": "Towheed Iranian School for Boys",
+      "emirate": "Dubai",
+      "curriculum_raw": "Iranian",
+      "curriculum_tags": [
+        "Iranian"
+      ],
+      "id": "sch_0142"
+    },
+    {
+      "school_name": "Towheed Iranian School for Girls",
+      "emirate": "Dubai",
+      "curriculum_raw": "Iranian",
+      "curriculum_tags": [
+        "Iranian"
+      ],
+      "id": "sch_0143"
+    },
+    {
+      "school_name": "United International Private School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Philippine",
+      "curriculum_tags": [
+        "Philippine"
+      ],
+      "id": "sch_0144"
+    },
+    {
+      "school_name": "Universal American School",
+      "emirate": "Dubai",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0145"
+    },
+    {
+      "school_name": "Uptown School",
+      "emirate": "Dubai",
+      "curriculum_raw": "IB",
+      "curriculum_tags": [
+        "IB"
+      ],
+      "id": "sch_0146"
+    },
+    {
+      "school_name": "Delhi Private School Academy",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0147"
+    },
+    {
+      "school_name": "GEMS New Millennium School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / UK",
+      "curriculum_tags": [
+        "British",
+        "Indian"
+      ],
+      "id": "sch_0148"
+    },
+    {
+      "school_name": "Sabari Indian School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0149"
+    },
+    {
+      "school_name": "Springdales School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0150"
+    },
+    {
+      "school_name": "Victory Heights Primary School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0151"
+    },
+    {
+      "school_name": "Foremarke School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0152"
+    },
+    {
+      "school_name": "International Concept for Education",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0153"
+    },
+    {
+      "school_name": "GEMS Wellington Academy - Al Khail",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / IB",
+      "curriculum_tags": [
+        "IB",
+        "British"
+      ],
+      "id": "sch_0154"
+    },
+    {
+      "school_name": "Oasis School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British (historical)",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0155"
+    },
+    {
+      "school_name": "GEMS International School - Al Khail",
+      "emirate": "Dubai",
+      "curriculum_raw": "IB",
+      "curriculum_tags": [
+        "IB"
+      ],
+      "id": "sch_0156"
+    },
+    {
+      "school_name": "Credence High School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0157"
+    },
+    {
+      "school_name": "Bilva Indian School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0158"
+    },
+    {
+      "school_name": "GEMS FirstPoint School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0159"
+    },
+    {
+      "school_name": "Kings Nad Al Sheba",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0160"
+    },
+    {
+      "school_name": "Ontario International Canadian School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Canadian",
+      "curriculum_tags": [
+        "Canadian"
+      ],
+      "id": "sch_0161"
+    },
+    {
+      "school_name": "Nord Anglia International School Dubai",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / IB",
+      "curriculum_tags": [
+        "IB",
+        "British"
+      ],
+      "id": "sch_0162"
+    },
+    {
+      "school_name": "Kings' Al Barsha",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0163"
+    },
+    {
+      "school_name": "GEMS Metropole School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0164"
+    },
+    {
+      "school_name": "Safa Community School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0165"
+    },
+    {
+      "school_name": "Dovecote Green Primary",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0166"
+    },
+    {
+      "school_name": "Capital School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0167"
+    },
+    {
+      "school_name": "Amled School",
+      "emirate": "Dubai",
+      "curriculum_raw": "Indian / CBSE",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0168"
+    },
+    {
+      "school_name": "Swiss International Scientific School",
+      "emirate": "Dubai",
+      "curriculum_raw": "IB",
+      "curriculum_tags": [
+        "IB"
+      ],
+      "id": "sch_0169"
+    },
+    {
+      "school_name": "Hartland International School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / IB",
+      "curriculum_tags": [
+        "IB",
+        "British"
+      ],
+      "id": "sch_0170"
+    },
+    {
+      "school_name": "St Mary High Catholic School - Branch",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0171"
+    },
+    {
+      "school_name": "Dubai British School - Jumeirah Park",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0172"
+    },
+    {
+      "school_name": "Ranches Primary School",
+      "emirate": "Dubai",
+      "curriculum_raw": "UK / British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0173"
+    },
+    {
+      "school_name": "American Community School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0174"
+    },
+    {
+      "school_name": "The Sheikh Zayed Private Academy For Boys",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0175"
+    },
+    {
+      "school_name": "The Sheikh Zayed Private Academy For Girls",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0176"
+    },
+    {
+      "school_name": "Abu Dhabi International Private School - Karamah",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0177"
+    },
+    {
+      "school_name": "Abu Dhabi International Private School - Mbz",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0178"
+    },
+    {
+      "school_name": "Al Dhafra Private Academy",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0179"
+    },
+    {
+      "school_name": "Al Dhafra Private Schools",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0180"
+    },
+    {
+      "school_name": "Al Dhafra Private Schools - Mbz",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0181"
+    },
+    {
+      "school_name": "Al Ittihad National Private School - Khalifa",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0182"
+    },
+    {
+      "school_name": "Al Ittihad National Private School - Shakhbout",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0183"
+    },
+    {
+      "school_name": "Emirates Falcon International Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0184"
+    },
+    {
+      "school_name": "Emirates National Schools - Al Ain",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0185"
+    },
+    {
+      "school_name": "Emirates National Schools - Manhal",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0186"
+    },
+    {
+      "school_name": "Emirates National Schools - Mbz",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0187"
+    },
+    {
+      "school_name": "Gems American Academy",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0188"
+    },
+    {
+      "school_name": "International Community Schools - Mushrif",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0189"
+    },
+    {
+      "school_name": "Liwa International School - Falaj Hazaa",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0190"
+    },
+    {
+      "school_name": "Liwa International School For Girls",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0191"
+    },
+    {
+      "school_name": "Sharjah American International School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0192"
+    },
+    {
+      "school_name": "Summit International School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0193"
+    },
+    {
+      "school_name": "Abu Dhabi Island International Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0194"
+    },
+    {
+      "school_name": "Adnoc Schools - Ghayathi",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0195"
+    },
+    {
+      "school_name": "Adnoc Schools - Ruwais - Branch 2",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0196"
+    },
+    {
+      "school_name": "Adnoc Schools - Sas Al Nakhl",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0197"
+    },
+    {
+      "school_name": "Ain Al Khaleej Private",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0198"
+    },
+    {
+      "school_name": "Ajyal International School - Falah",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0199"
+    },
+    {
+      "school_name": "Al Adhwa Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0200"
+    },
+    {
+      "school_name": "Al Ain American Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0201"
+    },
+    {
+      "school_name": "Al Bateen Scientific Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0202"
+    },
+    {
+      "school_name": "Al Ittihad National Private School - Falaj Hazza",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0203"
+    },
+    {
+      "school_name": "Al Nahda National - Boys",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0204"
+    },
+    {
+      "school_name": "Al Nahda National - Girls",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0205"
+    },
+    {
+      "school_name": "Al Sanawbar School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0206"
+    },
+    {
+      "school_name": "Al Yasat Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0207"
+    },
+    {
+      "school_name": "Aldar Academies-West Yas School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0208"
+    },
+    {
+      "school_name": "American National School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0209"
+    },
+    {
+      "school_name": "Baniyas International Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0210"
+    },
+    {
+      "school_name": "Baraaim Al Ain Private",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0211"
+    },
+    {
+      "school_name": "Elite Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0212"
+    },
+    {
+      "school_name": "Emirates National Schools - Al Nahyan",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0213"
+    },
+    {
+      "school_name": "Emirates Private School - Ad",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US / UK",
+      "curriculum_tags": [
+        "British",
+        "American"
+      ],
+      "id": "sch_0214"
+    },
+    {
+      "school_name": "Future International Academy",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0215"
+    },
+    {
+      "school_name": "Future International School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0216"
+    },
+    {
+      "school_name": "Future Leaders International Private School - Madinat Zayed",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0217"
+    },
+    {
+      "school_name": "Horizon Private School - Branch",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0218"
+    },
+    {
+      "school_name": "International Community Schools - Khalifa",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0219"
+    },
+    {
+      "school_name": "International Jubilee Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0220"
+    },
+    {
+      "school_name": "Liwa International School - Mushrif",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0221"
+    },
+    {
+      "school_name": "Liwa International School - Qattarah",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0222"
+    },
+    {
+      "school_name": "Madar International School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0223"
+    },
+    {
+      "school_name": "Manor Hall International School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0224"
+    },
+    {
+      "school_name": "Mohammed Bin Khalid Al Nahyan Generations School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0225"
+    },
+    {
+      "school_name": "Rawafed Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0226"
+    },
+    {
+      "school_name": "Royal American School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0227"
+    },
+    {
+      "school_name": "The American International School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0228"
+    },
+    {
+      "school_name": "The Gulf International Private Academy",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0229"
+    },
+    {
+      "school_name": "United Private School - Yahar",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0230"
+    },
+    {
+      "school_name": "Virginia International Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0231"
+    },
+    {
+      "school_name": "Adnoc Schools - Madinat Zayed",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0232"
+    },
+    {
+      "school_name": "Al Yahar Private School And Kg",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US / MOE",
+      "curriculum_tags": [
+        "American",
+        "UAE MoE"
+      ],
+      "id": "sch_0233"
+    },
+    {
+      "school_name": "California American School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0234"
+    },
+    {
+      "school_name": "Future Leaders International Private School - Baniyas",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0235"
+    },
+    {
+      "school_name": "Future Leaders International Private School - Rabdan",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0236"
+    },
+    {
+      "school_name": "International Academic School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0237"
+    },
+    {
+      "school_name": "International Community Schools - Falah",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0238"
+    },
+    {
+      "school_name": "Pinnacle American School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0239"
+    },
+    {
+      "school_name": "United Private School - Baniyas",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0240"
+    },
+    {
+      "school_name": "Alia International Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0241"
+    },
+    {
+      "school_name": "Arzana Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0242"
+    },
+    {
+      "school_name": "Knowledge International School - L.L.C",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "US",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0243"
+    },
+    {
+      "school_name": "Bateen World Academy",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0244"
+    },
+    {
+      "school_name": "Cranleigh School Abu Dhabi",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0245"
+    },
+    {
+      "school_name": "Merryland International School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0246"
+    },
+    {
+      "school_name": "Muna British Academy",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0247"
+    },
+    {
+      "school_name": "Repton Foundation School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0248"
+    },
+    {
+      "school_name": "Yasmina British Academy",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0249"
+    },
+    {
+      "school_name": "Abu Dhabi International Pvt",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0250"
+    },
+    {
+      "school_name": "Ajyal International School - Mbz",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0251"
+    },
+    {
+      "school_name": "Al Dhafra Private Schools - Muwaiji",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0252"
+    },
+    {
+      "school_name": "Al Rabeeh School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0253"
+    },
+    {
+      "school_name": "Gems Winchester School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0254"
+    },
+    {
+      "school_name": "Pearl British Academy",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0255"
+    },
+    {
+      "school_name": "Abc Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0256"
+    },
+    {
+      "school_name": "Al Ain Juniors Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0257"
+    },
+    {
+      "school_name": "Al Maharat Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0258"
+    },
+    {
+      "school_name": "Al Nahda National School For Boys",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0259"
+    },
+    {
+      "school_name": "Al Nahda National School For Girls",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0260"
+    },
+    {
+      "school_name": "Al Najah Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK / IB",
+      "curriculum_tags": [
+        "IB",
+        "British"
+      ],
+      "id": "sch_0261"
+    },
+    {
+      "school_name": "Al Shohub Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0262"
+    },
+    {
+      "school_name": "Emirates Private British",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0263"
+    },
+    {
+      "school_name": "Excel International School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0264"
+    },
+    {
+      "school_name": "Garden City British School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0265"
+    },
+    {
+      "school_name": "Global English School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0266"
+    },
+    {
+      "school_name": "Islamiya English School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0267"
+    },
+    {
+      "school_name": "Our Own English High School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK / Indian",
+      "curriculum_tags": [
+        "British",
+        "Indian"
+      ],
+      "id": "sch_0268"
+    },
+    {
+      "school_name": "Wales International School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0269"
+    },
+    {
+      "school_name": "Zakher Private British",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0270"
+    },
+    {
+      "school_name": "Abdulla Bin Al Zubair Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0271"
+    },
+    {
+      "school_name": "Al Murooj Scientific Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0272"
+    },
+    {
+      "school_name": "Crescent International Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0273"
+    },
+    {
+      "school_name": "Good Will Children Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0274"
+    },
+    {
+      "school_name": "Manar Al Ilm School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0275"
+    },
+    {
+      "school_name": "Rowad Al Dhafra British",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0276"
+    },
+    {
+      "school_name": "Universal Private British",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0277"
+    },
+    {
+      "school_name": "Al Manahel Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0278"
+    },
+    {
+      "school_name": "British Oak Montessori Kg",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0279"
+    },
+    {
+      "school_name": "Gems Founders School Ad",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0280"
+    },
+    {
+      "school_name": "Noya British School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0281"
+    },
+    {
+      "school_name": "Yasmina British Academy Br",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "UK",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0282"
+    },
+    {
+      "school_name": "Abu Dhabi Indian School - Wathba",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0283"
+    },
+    {
+      "school_name": "Al Saad Indian School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0284"
+    },
+    {
+      "school_name": "Bright Riders School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0285"
+    },
+    {
+      "school_name": "Mayoor Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0286"
+    },
+    {
+      "school_name": "Private International English School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0287"
+    },
+    {
+      "school_name": "Saint Joseph Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0288"
+    },
+    {
+      "school_name": "Abu Dhabi Indian School - Muroor",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0289"
+    },
+    {
+      "school_name": "Al Ain Juniors School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0290"
+    },
+    {
+      "school_name": "Asian International Private School - Madinat Zayed",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0291"
+    },
+    {
+      "school_name": "Asian International Private School - Ruwais",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0292"
+    },
+    {
+      "school_name": "Bhavans Pearl Wisdom School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0293"
+    },
+    {
+      "school_name": "Dunes International School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0294"
+    },
+    {
+      "school_name": "Emirates Future International Academy",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0295"
+    },
+    {
+      "school_name": "Gems United Indian School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0296"
+    },
+    {
+      "school_name": "Global Indian International School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0297"
+    },
+    {
+      "school_name": "Grace Valley Indian School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0298"
+    },
+    {
+      "school_name": "Indian School - Al Ain",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0299"
+    },
+    {
+      "school_name": "International Indian School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0300"
+    },
+    {
+      "school_name": "New Indian Model School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0301"
+    },
+    {
+      "school_name": "Oasis International School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0302"
+    },
+    {
+      "school_name": "Shining Star International School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0303"
+    },
+    {
+      "school_name": "Sunrise English Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0304"
+    },
+    {
+      "school_name": "Al Marfaa International",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0305"
+    },
+    {
+      "school_name": "Darul Huda Islamic School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0306"
+    },
+    {
+      "school_name": "Model Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0307"
+    },
+    {
+      "school_name": "Ryan International School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0308"
+    },
+    {
+      "school_name": "Sunrise International School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0309"
+    },
+    {
+      "school_name": "The Model Private",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0310"
+    },
+    {
+      "school_name": "Al Andalus Private Academy",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0311"
+    },
+    {
+      "school_name": "Al Bashair Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0312"
+    },
+    {
+      "school_name": "Baraem Al Ain Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0313"
+    },
+    {
+      "school_name": "Rosary Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0314"
+    },
+    {
+      "school_name": "Ain Al Khaleej Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0315"
+    },
+    {
+      "school_name": "Al Dhabiania Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0316"
+    },
+    {
+      "school_name": "Al Eman Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0317"
+    },
+    {
+      "school_name": "Al Hamdaniya Grand Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0318"
+    },
+    {
+      "school_name": "Al Khalil International Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0319"
+    },
+    {
+      "school_name": "Al Manara Private School - Mbz",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0320"
+    },
+    {
+      "school_name": "Al Minhaj Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0321"
+    },
+    {
+      "school_name": "Al Muneera Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0322"
+    },
+    {
+      "school_name": "Ashabal Al Quds Secondary Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0323"
+    },
+    {
+      "school_name": "Bait Al Maqdes International Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0324"
+    },
+    {
+      "school_name": "Baraem Al Ain Private Schools - Muwaiji",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0325"
+    },
+    {
+      "school_name": "Emirates Private School - Muroor",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0326"
+    },
+    {
+      "school_name": "Emirates Private School - Muwaiji",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0327"
+    },
+    {
+      "school_name": "Horizon Private School (Moe) - Khalifa",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0328"
+    },
+    {
+      "school_name": "Tawam Private Model School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0329"
+    },
+    {
+      "school_name": "Vision Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0330"
+    },
+    {
+      "school_name": "Zakher Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0331"
+    },
+    {
+      "school_name": "Al Awael Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0332"
+    },
+    {
+      "school_name": "Al Dar Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0333"
+    },
+    {
+      "school_name": "Al Ekhlass Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0334"
+    },
+    {
+      "school_name": "Al Israa Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0335"
+    },
+    {
+      "school_name": "Al Manara Private School - Shamkhah",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0336"
+    },
+    {
+      "school_name": "Al Manhal International Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0337"
+    },
+    {
+      "school_name": "Al Marfa International School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0338"
+    },
+    {
+      "school_name": "Al Seddique Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0339"
+    },
+    {
+      "school_name": "Al Tafawwuq Al Ilmi Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0340"
+    },
+    {
+      "school_name": "Al Tharawat National Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0341"
+    },
+    {
+      "school_name": "Dar Al Uloom Private School - Falaj Hazza",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0342"
+    },
+    {
+      "school_name": "Emirates Education Academy",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0343"
+    },
+    {
+      "school_name": "Emirates Private School - Baniyas",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0344"
+    },
+    {
+      "school_name": "Ibn Khaldoun Private Science",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0345"
+    },
+    {
+      "school_name": "International Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0346"
+    },
+    {
+      "school_name": "Lebanon First School And Kg",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0347"
+    },
+    {
+      "school_name": "Rowad Al Dhafra Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0348"
+    },
+    {
+      "school_name": "Universal Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0349"
+    },
+    {
+      "school_name": "Yas Academy School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0350"
+    },
+    {
+      "school_name": "Dar Al Uloom Private School - Baniyas",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0351"
+    },
+    {
+      "school_name": "Al Falah Academy - Al Danah",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0352"
+    },
+    {
+      "school_name": "Al Falah Academy - Khibeesi",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0353"
+    },
+    {
+      "school_name": "Al Falah Academy - Mbz",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0354"
+    },
+    {
+      "school_name": "Al Falah Academy Al Jimi",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0355"
+    },
+    {
+      "school_name": "Al Falah Academy Bani Yas",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "MOE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0356"
+    },
+    {
+      "school_name": "Al Bateen School-Al Mushrif",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "IB",
+      "curriculum_tags": [
+        "IB"
+      ],
+      "id": "sch_0357"
+    },
+    {
+      "school_name": "The British International Ad",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "IB",
+      "curriculum_tags": [
+        "IB"
+      ],
+      "id": "sch_0358"
+    },
+    {
+      "school_name": "Abu Dhabi International School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "IB",
+      "curriculum_tags": [
+        "IB"
+      ],
+      "id": "sch_0359"
+    },
+    {
+      "school_name": "Emirates National",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "IB",
+      "curriculum_tags": [
+        "IB"
+      ],
+      "id": "sch_0360"
+    },
+    {
+      "school_name": "Emirates National School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "IB",
+      "curriculum_tags": [
+        "IB"
+      ],
+      "id": "sch_0361"
+    },
+    {
+      "school_name": "Gems American Academy Llc",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "IB",
+      "curriculum_tags": [
+        "IB"
+      ],
+      "id": "sch_0362"
+    },
+    {
+      "school_name": "Gems World Academy",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "IB",
+      "curriculum_tags": [
+        "IB"
+      ],
+      "id": "sch_0363"
+    },
+    {
+      "school_name": "International Community School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "IB",
+      "curriculum_tags": [
+        "IB"
+      ],
+      "id": "sch_0364"
+    },
+    {
+      "school_name": "Raha International School - Gardens",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "IB",
+      "curriculum_tags": [
+        "IB"
+      ],
+      "id": "sch_0365"
+    },
+    {
+      "school_name": "Aspen Heights British School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "IB",
+      "curriculum_tags": [
+        "IB"
+      ],
+      "id": "sch_0366"
+    },
+    {
+      "school_name": "Australian School Of Abu Dhabi",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "IB",
+      "curriculum_tags": [
+        "IB"
+      ],
+      "id": "sch_0367"
+    },
+    {
+      "school_name": "Emirates National Schools- Br2",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "IB",
+      "curriculum_tags": [
+        "IB"
+      ],
+      "id": "sch_0368"
+    },
+    {
+      "school_name": "Raha International School - Khalifa",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "IB",
+      "curriculum_tags": [
+        "IB"
+      ],
+      "id": "sch_0369"
+    },
+    {
+      "school_name": "The American International Ad",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "IB",
+      "curriculum_tags": [
+        "IB"
+      ],
+      "id": "sch_0370"
+    },
+    {
+      "school_name": "Canadian International School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Canadian",
+      "curriculum_tags": [
+        "Canadian"
+      ],
+      "id": "sch_0371"
+    },
+    {
+      "school_name": "German International School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "German",
+      "curriculum_tags": [
+        "German"
+      ],
+      "id": "sch_0372"
+    },
+    {
+      "school_name": "International School Of Choueifat - Khalifa",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "SABIS",
+      "curriculum_tags": [
+        "SABIS"
+      ],
+      "id": "sch_0373"
+    },
+    {
+      "school_name": "International School Of Choueifat - Mushrif",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "SABIS",
+      "curriculum_tags": [
+        "SABIS"
+      ],
+      "id": "sch_0374"
+    },
+    {
+      "school_name": "International School Of Choueifat - Muwaiji",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "SABIS",
+      "curriculum_tags": [
+        "SABIS"
+      ],
+      "id": "sch_0375"
+    },
+    {
+      "school_name": "Japanese School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Japanese",
+      "curriculum_tags": [
+        "Japanese"
+      ],
+      "id": "sch_0376"
+    },
+    {
+      "school_name": "Abu Dhabi Grammar School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Canadian (Nova Scotia)",
+      "curriculum_tags": [
+        "Canadian"
+      ],
+      "id": "sch_0377"
+    },
+    {
+      "school_name": "Maplewood Canadian International School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Canadian",
+      "curriculum_tags": [
+        "Canadian"
+      ],
+      "id": "sch_0378"
+    },
+    {
+      "school_name": "Pakistan Community Welfare School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Pakistani",
+      "curriculum_tags": [
+        "Pakistani"
+      ],
+      "id": "sch_0379"
+    },
+    {
+      "school_name": "Pakistani Islamic Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Pakistani",
+      "curriculum_tags": [
+        "Pakistani"
+      ],
+      "id": "sch_0380"
+    },
+    {
+      "school_name": "Sabis International School - Ruwais",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "SABIS",
+      "curriculum_tags": [
+        "SABIS"
+      ],
+      "id": "sch_0381"
+    },
+    {
+      "school_name": "Sabis International School - Yas",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "SABIS",
+      "curriculum_tags": [
+        "SABIS"
+      ],
+      "id": "sch_0382"
+    },
+    {
+      "school_name": "Philippine Emirates Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Philippine",
+      "curriculum_tags": [
+        "Philippine"
+      ],
+      "id": "sch_0383"
+    },
+    {
+      "school_name": "Shaikh Khalifa Bin Zayed Bangladesh Islamia Private School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Bangladeshi",
+      "curriculum_tags": [
+        "Bangladeshi"
+      ],
+      "id": "sch_0384"
+    },
+    {
+      "school_name": "Sheikh Khalifa Bin Zayed Arab Pakistani School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Pakistani",
+      "curriculum_tags": [
+        "Pakistani"
+      ],
+      "id": "sch_0385"
+    },
+    {
+      "school_name": "The Philippine Global School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Philippine",
+      "curriculum_tags": [
+        "Philippine"
+      ],
+      "id": "sch_0386"
+    },
+    {
+      "school_name": "The Philippine School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Philippine",
+      "curriculum_tags": [
+        "Philippine"
+      ],
+      "id": "sch_0387"
+    },
+    {
+      "school_name": "The Spanish School Of Abu Dhabi",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Spanish",
+      "curriculum_tags": [
+        "Spanish"
+      ],
+      "id": "sch_0388"
+    },
+    {
+      "school_name": "Universal Philippine School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Philippine",
+      "curriculum_tags": [
+        "Philippine"
+      ],
+      "id": "sch_0389"
+    },
+    {
+      "school_name": "Italian International School",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Italian",
+      "curriculum_tags": [
+        "Italian"
+      ],
+      "id": "sch_0390"
+    },
+    {
+      "school_name": "Sabis International School - Al Bateen - L.L.C - S.P.C",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "SABIS",
+      "curriculum_tags": [
+        "SABIS"
+      ],
+      "id": "sch_0391"
+    },
+    {
+      "school_name": "The Russian School Of Abu Dhabi",
+      "emirate": "Abu Dhabi",
+      "curriculum_raw": "Russian",
+      "curriculum_tags": [
+        "Russian"
+      ],
+      "id": "sch_0392"
+    },
+    {
+      "school_name": "AL Ahliah Charity Pvt. School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0393"
+    },
+    {
+      "school_name": "AL Ahliah Charity Pvt. School - Branch 2",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0394"
+    },
+    {
+      "school_name": "AL AHLIAH CHARITY PVT. SCHOOL - FALAJ BRANCH",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0395"
+    },
+    {
+      "school_name": "Al Ahliah Charity Pvt. School For Boys – BR4",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0396"
+    },
+    {
+      "school_name": "Al Ahliah Charity Pvt. School For Girls – BR3",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0397"
+    },
+    {
+      "school_name": "Al Ahliah Pvt. Schools LLC.",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0398"
+    },
+    {
+      "school_name": "Al Ahliah Pvt. Schools LLC.BR1",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0399"
+    },
+    {
+      "school_name": "Al Amaal English High School (PVT)",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Pakistani",
+      "curriculum_tags": [
+        "Pakistani"
+      ],
+      "id": "sch_0400"
+    },
+    {
+      "school_name": "Al Amal School For The Deaf",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0401"
+    },
+    {
+      "school_name": "Al Amana Private School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0402"
+    },
+    {
+      "school_name": "Al Ansar int.pvt.School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0403"
+    },
+    {
+      "school_name": "AL ANSAR NATIONAL PVT SCHOOL",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0404"
+    },
+    {
+      "school_name": "Al Basaier Pvt. School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0405"
+    },
+    {
+      "school_name": "Al Bayan National School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0406"
+    },
+    {
+      "school_name": "Al Bayan Pvt.School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0407"
+    },
+    {
+      "school_name": "Al Choueifat Int. School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "SABIS",
+      "curriculum_tags": [
+        "SABIS"
+      ],
+      "id": "sch_0408"
+    },
+    {
+      "school_name": "Al Dhaid Pvt. School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0409"
+    },
+    {
+      "school_name": "AL DHIA AL SCIENTIFIC PRIVATE SCHOOL LLC",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0410"
+    },
+    {
+      "school_name": "AL DURRAH INTERNATIONAL SCHOOL LLC",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0411"
+    },
+    {
+      "school_name": "Al Falah Private School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0412"
+    },
+    {
+      "school_name": "Al Istiqlal Private School L.L.C",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0413"
+    },
+    {
+      "school_name": "Al Itqan American School Pvt",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0414"
+    },
+    {
+      "school_name": "Al Kamal American Private INT School - BR1",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0415"
+    },
+    {
+      "school_name": "Al Kamal American Private NT School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0416"
+    },
+    {
+      "school_name": "Al kamal American Private NT School - Branch 2",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0417"
+    },
+    {
+      "school_name": "Al Marifa Int. Private School (American)",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0418"
+    },
+    {
+      "school_name": "Al Mawahib British Pvt. School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0419"
+    },
+    {
+      "school_name": "Al Murooj (Pvt) Eng. Kindergarten & School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0420"
+    },
+    {
+      "school_name": "Al Mustaqbal Pvt. School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0421"
+    },
+    {
+      "school_name": "AL Najma Private School.LLC.",
+      "emirate": "Sharjah",
+      "curriculum_raw": "British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0422"
+    },
+    {
+      "school_name": "Al Noor Int. School L.L.C",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0423"
+    },
+    {
+      "school_name": "Al Qemah Private School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0424"
+    },
+    {
+      "school_name": "Al Resalah American International School LLC",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0425"
+    },
+    {
+      "school_name": "Al Resalah International private School of Science LLC",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0426"
+    },
+    {
+      "school_name": "Al Rowad British private school",
+      "emirate": "Sharjah",
+      "curriculum_raw": "British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0427"
+    },
+    {
+      "school_name": "Al Rushed American Private School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0428"
+    },
+    {
+      "school_name": "Al Sabah Indian Pvt. School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0429"
+    },
+    {
+      "school_name": "AL SALEH PRIVATE SCHOOL FOR GIRLS",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0430"
+    },
+    {
+      "school_name": "Al Shola Pvt. School LLC",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0431"
+    },
+    {
+      "school_name": "Al Shola Pvt.School LLC.BR1",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0432"
+    },
+    {
+      "school_name": "AL TAFAWQ PRIVATE SCHOOL",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0433"
+    },
+    {
+      "school_name": "AL ULLA PRIVATE SCHOOL LLC.",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0434"
+    },
+    {
+      "school_name": "Al Wahda (P.V.T) School LLC",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0435"
+    },
+    {
+      "school_name": "Al Zehour Private School LLC",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0436"
+    },
+    {
+      "school_name": "Alsedra Private School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0437"
+    },
+    {
+      "school_name": "Ambassador School LLC",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0438"
+    },
+    {
+      "school_name": "American Gulf School L.L.C",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0439"
+    },
+    {
+      "school_name": "American Private School of Kalba",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0440"
+    },
+    {
+      "school_name": "American School of Creative Science Pvt Per Person Company. LLC",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0441"
+    },
+    {
+      "school_name": "American School of Creative Scince Pvt - Branch 1",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0442"
+    },
+    {
+      "school_name": "Amity Pvt. School LLC",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0443"
+    },
+    {
+      "school_name": "APEX VISION MODEL SCHOOL L.L.C",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0444"
+    },
+    {
+      "school_name": "Aspam Indian Int. Pvt. School. LLC",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0445"
+    },
+    {
+      "school_name": "Australian International Pvt. School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Australian",
+      "curriculum_tags": [
+        "Australian"
+      ],
+      "id": "sch_0446"
+    },
+    {
+      "school_name": "Beaconhouse Al Khaleej International School LLC",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0447"
+    },
+    {
+      "school_name": "Bhavans Pearl Wisdom School L.L.C",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0448"
+    },
+    {
+      "school_name": "Bin Khaldun Pvt. School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0449"
+    },
+    {
+      "school_name": "Brilliant Int. Private School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0450"
+    },
+    {
+      "school_name": "Darb Al Saada Private School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0451"
+    },
+    {
+      "school_name": "Delhi Pvt.School LLC.",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0452"
+    },
+    {
+      "school_name": "East Coast Eng school",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0453"
+    },
+    {
+      "school_name": "ELITE SCHOOL.LLC",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0454"
+    },
+    {
+      "school_name": "Emirates American School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0455"
+    },
+    {
+      "school_name": "Emirates National School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0456"
+    },
+    {
+      "school_name": "Emirates National Schools",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0457"
+    },
+    {
+      "school_name": "EMIRATES PRIVATE SCHOOL L.L.C",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0458"
+    },
+    {
+      "school_name": "ENGLISH PRIVATE SCHOOL OF KALBA",
+      "emirate": "Sharjah",
+      "curriculum_raw": "British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0459"
+    },
+    {
+      "school_name": "Far Eastern Pvt. School - Branch 1",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Pilipinas",
+      "curriculum_tags": [
+        "Philippine"
+      ],
+      "id": "sch_0460"
+    },
+    {
+      "school_name": "Far Eastern Pvt.School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Pilipinas",
+      "curriculum_tags": [
+        "Philippine"
+      ],
+      "id": "sch_0461"
+    },
+    {
+      "school_name": "French International Private School - SHJ",
+      "emirate": "Sharjah",
+      "curriculum_raw": "French",
+      "curriculum_tags": [
+        "French"
+      ],
+      "id": "sch_0462"
+    },
+    {
+      "school_name": "FUTURE GATE INDIAN PRIVATE SCHOOL L.L.C",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0463"
+    },
+    {
+      "school_name": "Gems Cambridge International Private School Sharjah",
+      "emirate": "Sharjah",
+      "curriculum_raw": "British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0464"
+    },
+    {
+      "school_name": "Gems Millennium Private School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0465"
+    },
+    {
+      "school_name": "Gems Westminster School Sharjah LLC",
+      "emirate": "Sharjah",
+      "curriculum_raw": "British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0466"
+    },
+    {
+      "school_name": "German INT. School Sharjah",
+      "emirate": "Sharjah",
+      "curriculum_raw": "German",
+      "curriculum_tags": [
+        "German"
+      ],
+      "id": "sch_0467"
+    },
+    {
+      "school_name": "Gulf Asian English Schools LLC",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0468"
+    },
+    {
+      "school_name": "Happy Home Eng. School L.L.C",
+      "emirate": "Sharjah",
+      "curriculum_raw": "British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0469"
+    },
+    {
+      "school_name": "Ibn Seena English High School L.L.C.",
+      "emirate": "Sharjah",
+      "curriculum_raw": "British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0470"
+    },
+    {
+      "school_name": "IMPACT AMERICAN INTERNATIONAL SCHOOL",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0471"
+    },
+    {
+      "school_name": "INDEX Private School L.L.C S.P",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0472"
+    },
+    {
+      "school_name": "India International School LLC",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0473"
+    },
+    {
+      "school_name": "Indian Excellent Pvt. School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0474"
+    },
+    {
+      "school_name": "International School of Creative Science Pvt",
+      "emirate": "Sharjah",
+      "curriculum_raw": "British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0475"
+    },
+    {
+      "school_name": "Khalifah Al Hamza American Private School - L - L.L.C - S.P",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0476"
+    },
+    {
+      "school_name": "Leaders Private School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0477"
+    },
+    {
+      "school_name": "Manarat Al Sharjah Private School. LLC",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0478"
+    },
+    {
+      "school_name": "Manthena American School L.L.C",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0479"
+    },
+    {
+      "school_name": "Masar Private School L.L.C",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0480"
+    },
+    {
+      "school_name": "New Indian Model School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0481"
+    },
+    {
+      "school_name": "Nibras Al Iman Pvt. School LLC",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0482"
+    },
+    {
+      "school_name": "Our Own English High School - B1",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0483"
+    },
+    {
+      "school_name": "Our Own English High School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0484"
+    },
+    {
+      "school_name": "Pace British School L.L.C",
+      "emirate": "Sharjah",
+      "curriculum_raw": "British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0485"
+    },
+    {
+      "school_name": "Pace International School LLC",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0486"
+    },
+    {
+      "school_name": "Pakistan Islamia Higher Secondary School -SHJ.LLC",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Pakistani",
+      "curriculum_tags": [
+        "Pakistani"
+      ],
+      "id": "sch_0487"
+    },
+    {
+      "school_name": "Pamir Private School L.L.C S.P",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Pakistani",
+      "curriculum_tags": [
+        "Pakistani"
+      ],
+      "id": "sch_0488"
+    },
+    {
+      "school_name": "Private School of Scientific Innovation",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0489"
+    },
+    {
+      "school_name": "Progressive Eng. School LLC",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0490"
+    },
+    {
+      "school_name": "Providence English Private School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0491"
+    },
+    {
+      "school_name": "Radiant Indian School for Girls & Boys",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0492"
+    },
+    {
+      "school_name": "RAFFLES INTERNATIONAL SCHOOL L L C - SHJ. BR 1",
+      "emirate": "Sharjah",
+      "curriculum_raw": "IB / International Baccalaureate",
+      "curriculum_tags": [
+        "IB"
+      ],
+      "id": "sch_0493"
+    },
+    {
+      "school_name": "Rosary private School L.L.C. - BR1",
+      "emirate": "Sharjah",
+      "curriculum_raw": "British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0494"
+    },
+    {
+      "school_name": "Rosary School LLC",
+      "emirate": "Sharjah",
+      "curriculum_raw": "British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0495"
+    },
+    {
+      "school_name": "RUSHMORE AMERICAN SCHOOL L.L.C",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0496"
+    },
+    {
+      "school_name": "Ryan Intl. Priv. School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0497"
+    },
+    {
+      "school_name": "Sabis International Private School LLC- Aljada",
+      "emirate": "Sharjah",
+      "curriculum_raw": "SABIS",
+      "curriculum_tags": [
+        "SABIS"
+      ],
+      "id": "sch_0498"
+    },
+    {
+      "school_name": "Salman al farsi school",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0499"
+    },
+    {
+      "school_name": "Sama American Private School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0500"
+    },
+    {
+      "school_name": "Shj. British Int .Pvt. School (American)",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0501"
+    },
+    {
+      "school_name": "SHJ. INT. PVT. SCHOOL (British)",
+      "emirate": "Sharjah",
+      "curriculum_raw": "British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0502"
+    },
+    {
+      "school_name": "SHJ. INT. PVT. SCHOOL (MoE)",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0503"
+    },
+    {
+      "school_name": "SHJ.PVT.SCHOOL.",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0504"
+    },
+    {
+      "school_name": "Spring dale Indian School LLC",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Indian",
+      "curriculum_tags": [
+        "Indian"
+      ],
+      "id": "sch_0505"
+    },
+    {
+      "school_name": "Sunaa Al ghad School L.L.C",
+      "emirate": "Sharjah",
+      "curriculum_raw": "MoE",
+      "curriculum_tags": [
+        "UAE MoE"
+      ],
+      "id": "sch_0506"
+    },
+    {
+      "school_name": "Taryam American Private School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0507"
+    },
+    {
+      "school_name": "The City School International PVT L.L.C",
+      "emirate": "Sharjah",
+      "curriculum_raw": "British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0508"
+    },
+    {
+      "school_name": "THE HOPE ENGLISH SCHOOL L.L.C-S.P",
+      "emirate": "Sharjah",
+      "curriculum_raw": "British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0509"
+    },
+    {
+      "school_name": "The Modern American Int. Pvt. School L.L.C",
+      "emirate": "Sharjah",
+      "curriculum_raw": "American",
+      "curriculum_tags": [
+        "American"
+      ],
+      "id": "sch_0510"
+    },
+    {
+      "school_name": "The New Filipino Pvt School LLC",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Pilipinas",
+      "curriculum_tags": [
+        "Philippine"
+      ],
+      "id": "sch_0511"
+    },
+    {
+      "school_name": "Victoria English Pvt. School LLC",
+      "emirate": "Sharjah",
+      "curriculum_raw": "British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0512"
+    },
+    {
+      "school_name": "Victoria Int. shj . School",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Australian",
+      "curriculum_tags": [
+        "Australian"
+      ],
+      "id": "sch_0513"
+    },
+    {
+      "school_name": "VICTORIA INT. SHJ . SCHOOL PROPRITORSHIP L.L.C - BR3 ( KHURFKAN)",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Australian",
+      "curriculum_tags": [
+        "Australian"
+      ],
+      "id": "sch_0514"
+    },
+    {
+      "school_name": "VICTORIA INT. SHJ . SCHOOL PROPRITORSHIP L.L.C (KALBA)",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Australian",
+      "curriculum_tags": [
+        "Australian"
+      ],
+      "id": "sch_0515"
+    },
+    {
+      "school_name": "Victoria INT. SHJ. School Propritorship L.L.C Branch4 (Tilal Primary)",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Australian",
+      "curriculum_tags": [
+        "Australian"
+      ],
+      "id": "sch_0516"
+    },
+    {
+      "school_name": "Victoria INT.SHJ.School - Almanthiqa Alwastha",
+      "emirate": "Sharjah",
+      "curriculum_raw": "Australian",
+      "curriculum_tags": [
+        "Australian"
+      ],
+      "id": "sch_0517"
+    },
+    {
+      "school_name": "Wes green Int. Pvt. School. LLC",
+      "emirate": "Sharjah",
+      "curriculum_raw": "British",
+      "curriculum_tags": [
+        "British"
+      ],
+      "id": "sch_0518"
+    }
+  ]
+}

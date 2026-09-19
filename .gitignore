@@ -1,0 +1,13 @@
+# Not part of the app codebase — internal planning/reference material, keep out of git
+reference/
+session_handoff.md
+
+# Standard
+node_modules/
+.next/
+dist/
+build/
+.env
+.env.local
+.DS_Store
+*.log
