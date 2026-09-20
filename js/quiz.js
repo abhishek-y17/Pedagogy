@@ -17,10 +17,11 @@
   function ensureSelection(draft, datasets) {
     if (draft.quiz.selectedQuestionIds.length) return;
     const count = window.PED.steps.getQuestionCount(draft);
-    const picked = window.PED.questions.selectQuizQuestions(datasets.questions, count, {
+    let picked = window.PED.questions.selectQuizQuestions(datasets.questions, count, {
       curriculum: draft.registration.curriculum,
       streamId: draft.registration.stream || null,
     });
+    picked = window.PED.questions.maybeSubstituteAptitude(picked, datasets.questions);
     window.PED.state.mutateDraft(draft, () => {
       draft.quiz.selectedQuestionIds = picked.map(q => q.id);
     });

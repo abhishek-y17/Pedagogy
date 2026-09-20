@@ -24,11 +24,14 @@
     return a;
   }
 
-  /** Shared shell: heading/hint/body, a status line, and a Back + Skip button.
-   * The Skip button doubles as "Continue →" once the puzzle is solved (same
-   * pattern as the reference prototype's skipGame button) — either way it just
-   * calls onNext, so there's exactly one way forward regardless of whether the
-   * visitor actually finished the puzzle. */
+  /** Shared shell: heading/hint/body, a status line, and a Back + Continue
+   * button. Round C item 3: Continue starts disabled and only enables once
+   * the puzzle is actually solved (markComplete below) — these used to have
+   * a "Skip puzzle" button that always called onNext regardless of
+   * completion; that free skip is gone, matching every other chip/radio step
+   * in this round's mandatory-selection pass. Quiz questions (q1-q5) are the
+   * one deliberate exception to this rule elsewhere in the app — games are
+   * not exempt. */
   function renderGameShell(container, { eyebrow, heading, hint, bodyHtml, onBack, onNext }) {
     container.innerHTML = `
       <p class="eyebrow-small">${eyebrow}</p>
@@ -38,63 +41,77 @@
       <p class="field-hint field-hint--soft" id="gameStatus" role="status"></p>
       <div class="step-actions">
         <button type="button" class="quiet" id="gameBackBtn">&larr; Back</button>
-        <button type="button" class="quiet" id="gameSkipBtn">Skip puzzle</button>
+        <button type="button" class="quiet" id="gameNextBtn" disabled>Continue &rarr;</button>
       </div>
     `;
     container.querySelector('#gameBackBtn').addEventListener('click', onBack);
-    const skipBtn = container.querySelector('#gameSkipBtn');
-    skipBtn.addEventListener('click', onNext);
-    return { statusEl: container.querySelector('#gameStatus'), skipBtn };
+    const nextBtn = container.querySelector('#gameNextBtn');
+    nextBtn.addEventListener('click', onNext);
+    return { statusEl: container.querySelector('#gameStatus'), skipBtn: nextBtn };
   }
 
   function markComplete(skipBtn, message, statusEl) {
     statusEl.textContent = message;
-    skipBtn.textContent = 'Continue →';
+    skipBtn.disabled = false;
     skipBtn.classList.remove('quiet');
     skipBtn.classList.add('primary');
   }
 
-  /** PUZZLE 1 · NUMBER TRAIL — a shuffled 1..12 grid, tapped in ascending
-   * order. Mis-taps are tracked only as a local counter for the status line's
-   * wording ("Try N next") — never displayed as a count, never a score. */
+  /** Picks `count` distinct random integers in [min, max] (inclusive). */
+  function randomDistinctInts(count, min, max) {
+    const set = new Set();
+    while (set.size < count) set.add(min + Math.floor(Math.random() * (max - min + 1)));
+    return Array.from(set);
+  }
+
+  /** PUZZLE 1 · NUMBER TRAIL — 5 fresh random 3-digit numbers (200-999) every
+   * time this renders, tapped smallest to largest. Mis-taps are tracked only
+   * as a local counter for the status line's wording ("Try N next") — never
+   * displayed as a count, never a score. */
   function renderGame1(container, draft, onNext, onBack) {
-    const COUNT = 12;
-    const nums = shuffle(Array.from({ length: COUNT }, (_, i) => i + 1));
-    let expected = 1;
+    const COUNT = 5;
+    const values = randomDistinctInts(COUNT, 200, 999);
+    const ascending = values.slice().sort((a, b) => a - b);
+    const tiles = shuffle(values);
+    let expectedIndex = 0;
 
     const { statusEl, skipBtn } = renderGameShell(container, {
       eyebrow: 'PUZZLE 1 &middot; NUMBER TRAIL',
       heading: 'Tap the numbers from smallest to largest.',
       hint: 'No timer here &mdash; take your time.',
-      bodyHtml: `<div class="tiles" id="trailTiles">${nums.map(n => `<button type="button" class="tile" data-n="${n}">${n}</button>`).join('')}</div>`,
+      bodyHtml: `<div class="tiles" id="trailTiles">${tiles.map(n => `<button type="button" class="tile" data-n="${n}">${n}</button>`).join('')}</div>`,
       onBack,
       onNext,
     });
-    statusEl.textContent = 'Start with 1.';
+    statusEl.textContent = `Start with ${ascending[0]}.`;
 
     container.querySelectorAll('#trailTiles [data-n]').forEach(btn => {
       btn.addEventListener('click', () => {
-        if (Number(btn.dataset.n) === expected) {
+        if (Number(btn.dataset.n) === ascending[expectedIndex]) {
           btn.disabled = true;
           btn.classList.add('tile--correct');
-          expected++;
-          if (expected > COUNT) markComplete(skipBtn, 'Nice work — trail complete!', statusEl);
-          else statusEl.textContent = `Next: ${expected}`;
+          expectedIndex++;
+          if (expectedIndex >= COUNT) markComplete(skipBtn, 'Nice work — trail complete!', statusEl);
+          else statusEl.textContent = `Next: ${ascending[expectedIndex]}`;
         } else {
           btn.classList.add('tile--miss');
           setTimeout(() => btn.classList.remove('tile--miss'), 220);
-          statusEl.textContent = `Try ${expected} next.`;
+          statusEl.textContent = `Try ${ascending[expectedIndex]} next.`;
         }
       });
     });
   }
 
+  // Round D follow-up: reverted from round C's Greek-letter pattern (felt too
+  // hard for a fast stall interaction) back to plain geometry shapes — same
+  // set and mechanic as the original build.
+  const SYMBOLS = ['●', '▲', '■', '★'];
+  const NAMES = ['Circle', 'Triangle', 'Square', 'Star'];
+
   /** PUZZLE 2 · PATTERN RECALL — study a symbol sequence, hide it, tap it back
    * from memory. A mistake resets the attempt and re-shows the sequence
    * (retry-on-mistake), same as the reference prototype. */
   function renderGame2(container, draft, onNext, onBack) {
-    const SYMBOLS = ['●', '▲', '■', '★'];
-    const NAMES = ['Circle', 'Triangle', 'Square', 'Star'];
     const LENGTH = 5;
     const target = Array.from({ length: LENGTH }, () => SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)]);
     let index = 0;

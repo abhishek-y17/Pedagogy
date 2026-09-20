@@ -190,11 +190,13 @@
           <p class="field-hint">Needed so a parent can be reached to arrange prize handover to a minor.</p>
           <input type="tel" id="regParentMobile" placeholder="+971 5xxxxxxxx" value="${escapeHtml(reg.parentMobile || '')}"
             autocomplete="off-parent-mobile-x" spellcheck="false" autocorrect="off">
+          <p class="field-hint field-hint--soft">We may reach out on WhatsApp &mdash; please make sure this number is active on WhatsApp.</p>
         </div>
         <div class="contact-card contact-card--optional">
           <p class="contact-card-label">Student mobile</p>
           <input type="tel" id="regStudentMobile" placeholder="+971 5xxxxxxxx" value="${escapeHtml(reg.studentMobile || '')}"
             autocomplete="off-student-mobile-x" spellcheck="false" autocorrect="off">
+          <p class="field-hint field-hint--soft">We may reach out on WhatsApp &mdash; please make sure this number is active on WhatsApp.</p>
         </div>
       </div>
 
@@ -231,7 +233,8 @@
         <label class="check">
           <input type="checkbox" id="regTcs"${reg.tcsAccepted ? ' checked' : ''}>
           <span class="check-box" aria-hidden="true"><svg viewBox="0 0 16 16"><polyline points="3,8.5 6.5,12 13,4.5"/></svg></span>
-          <span class="check-text">I have read and accept the <a href="#" id="tcsLink">Terms &amp; Conditions</a>.</span>
+          <span class="check-text">I have read and accept the <a href="#" id="tcsLink">Terms &amp; Conditions</a>, and I'd like to
+          receive updates about Pedagogy's programs and offers.</span>
         </label>
         <label class="check">
           <input type="checkbox" id="regConsent"${reg.consentToContact ? ' checked' : ''}>
@@ -342,12 +345,17 @@
     // Timestamps (Phase 4 staff-dashboard item: "T&Cs-acceptance and
     // consent-to-contact timestamps") — recorded the moment each is checked,
     // cleared back to null if unchecked so a stale timestamp never survives
-    // an unchecked box.
+    // an unchecked box. Round D follow-up: the T&Cs checkbox was merged with
+    // marketing opt-in into a single checkbox (Abhi's explicit call — checking
+    // T&Cs now also opts the visitor into marketing updates; it's no longer
+    // independently optional/trackable) — both fields are set together here.
     $('#regTcs').addEventListener('change', e => {
       window.PED.haptics.tap();
       window.PED.state.mutateDraft(draft, () => {
         reg.tcsAccepted = e.target.checked;
         reg.tcsAcceptedAt = e.target.checked ? new Date().toISOString() : null;
+        reg.marketingOptIn = e.target.checked;
+        reg.marketingOptInAt = e.target.checked ? new Date().toISOString() : null;
       });
     });
     $('#regConsent').addEventListener('change', e => {

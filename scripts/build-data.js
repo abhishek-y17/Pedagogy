@@ -71,5 +71,5 @@ console.log(
   `Wrote js/generated/data.js (${raw.schools.schools.length} schools, ` +
   `${Object.keys(raw.curriculum_subjects.curricula).length} curricula, ` +
   `${Object.keys(raw.destination_exams.destinations).length} destination-exam entries, ` +
-  `${raw.question_bank.questions.length} stub questions)`
+  `${raw.question_bank.questions.length} questions)`
 );

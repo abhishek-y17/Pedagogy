@@ -31,6 +31,39 @@ async function fillValidRegistration(page, overrides) {
   await page.locator('#regConsent').check();
 }
 
+/** Round C item 3: solves game 1 (Number Trail) by reading each tile's real
+ * random value off the DOM and tapping them smallest-to-largest, then clicks
+ * the now-enabled Continue button. Works regardless of which 5 numbers were
+ * randomly dealt this round. */
+async function playGame1(page) {
+  await expect(page.locator('#trailTiles')).toBeVisible();
+  await expect(page.locator('#gameNextBtn')).toBeDisabled();
+  const nums = await page.locator('#trailTiles [data-n]').evaluateAll(els => els.map(e => Number(e.dataset.n)).sort((a, b) => a - b));
+  for (const n of nums) {
+    await page.locator(`#trailTiles [data-n="${n}"]`).click();
+  }
+  await expect(page.locator('#gameNextBtn')).toBeEnabled();
+  await page.locator('#gameNextBtn').click();
+}
+
+/** Solves game 2 (Pattern Recall) by reading the shape target sequence off
+ * the DOM before it's hidden, then tapping it back, then clicks the
+ * now-enabled Continue button. Works regardless of which shapes/order were
+ * randomly dealt this round. */
+async function playGame2(page) {
+  await expect(page.locator('#patternDisplay')).toBeVisible();
+  await expect(page.locator('#gameNextBtn')).toBeDisabled();
+  const sequenceText = await page.locator('#patternDisplay').textContent();
+  const symbols = sequenceText.trim().split(/\s+/);
+  await page.locator('#patternReadyBtn').click();
+  await expect(page.locator('#patternKeys')).toBeVisible();
+  for (const symbol of symbols) {
+    await page.locator(`#patternKeys [data-symbol="${symbol}"]`).click();
+  }
+  await expect(page.locator('#gameNextBtn')).toBeEnabled();
+  await page.locator('#gameNextBtn').click();
+}
+
 test('hero loads with no console errors and datasets/question bank validate', async ({ page }) => {
   const errors = [];
   page.on('pageerror', err => errors.push(err.message));
@@ -51,7 +84,11 @@ test('hero loads with no console errors and datasets/question bank validate', as
 test('hero start button opens the app shell on the register step', async ({ page }) => {
   await startJourney(page);
   await expect(page.locator('#stepContent h2')).toHaveText('First, make it yours.');
-  await expect(page.locator('#stepProgress')).toHaveText('Step 1 / 14');
+  // Full path, register through review: register, q1, destinations, examPrep,
+  // (examList hidden until "Yes"), game1, q2, q3, game2, q4, q5, review = 11
+  // visible steps — courses/activities/request are gone entirely (round C
+  // items 5/7/8), so this is 11, not the old 14.
+  await expect(page.locator('#stepProgress')).toHaveText('Step 1 / 11');
 });
 
 test('prize banner tap also opens the app (not just the CTA button)', async ({ page }) => {
@@ -68,6 +105,48 @@ test('registration requires a parent number and explains why instead of blocking
   await expect(page.locator('.modal-body')).toContainText('handed over through a parent');
   await page.locator('.modal-close').click();
   await expect(page.locator('.modal-overlay')).toBeHidden();
+});
+
+// ===================== Round C item 8: WhatsApp note replaces the request step =====================
+test('registration mobile fields carry a WhatsApp-reachability note, replacing the removed follow-up step', async ({ page }) => {
+  await startJourney(page);
+  const hints = await page.locator('.contact-card .field-hint--soft').allTextContents();
+  const whatsappHints = hints.filter(t => /WhatsApp/i.test(t));
+  expect(whatsappHints.length).toBe(2); // parent card + student card
+  expect(whatsappHints[0]).toContain('active on WhatsApp');
+});
+
+test('the removed courses/activities/request steps no longer exist on either path', async ({ page }) => {
+  await startJourney(page);
+  const stepIds = await page.evaluate(() =>
+    window.PED.steps.FULL_PATH_STEPS.map(s => s.id).concat(window.PED.steps.EXPRESS_PATH_STEPS.map(s => s.id))
+  );
+  expect(stepIds).not.toContain('courses');
+  expect(stepIds).not.toContain('activities');
+  expect(stepIds).not.toContain('request');
+});
+
+// ===================== Round D: marketing opt-in merged into the T&Cs checkbox =====================
+test('marketing opt-in is merged into the T&Cs checkbox (Abhi\'s explicit call) and is reflected on review', async ({ page }) => {
+  await startJourney(page);
+  // Defaults unchecked.
+  await expect(page.locator('#regTcs')).not.toBeChecked();
+  await expect(page.locator('#regConsent')).not.toBeChecked();
+  // No separate marketing checkbox exists anymore.
+  await expect(page.locator('#regMarketingOptIn')).toHaveCount(0);
+  await expect(page.locator('label:has(#regTcs)')).toContainText("updates about Pedagogy's programs and offers");
+
+  await fillValidRegistration(page); // checks #regTcs and #regConsent
+  await page.locator('#registerNextBtn').click();
+  await page.locator('#quizOptions label').first().click();
+  await page.locator('#qNextBtn').click();
+  await walkDestinationsToReview(page);
+
+  // Checking T&Cs (mandatory to register) also opts the visitor into
+  // marketing updates — the two are the same checkbox now, so this is always
+  // "Yes, please" for any successfully-submitted registration.
+  await expect(page.locator('.review-section', { hasText: 'Registration' })).toContainText('Updates about programs & offers');
+  await expect(page.locator('.review-section', { hasText: 'Registration' })).toContainText('Yes, please');
 });
 
 // ===================== Input validation hardening =====================
@@ -219,6 +298,38 @@ test('destinations "Other" search overlay finds and adds a specific country', as
   await expect(page.locator('#otherPicksWrap')).toContainText('Japan');
 });
 
+// ===================== Round C item 1: destinations "Other" dialog bug =====================
+test('destinations "Other" dialog opens only on the off->on transition, never from an unrelated chip toggle', async ({ page }) => {
+  await startJourney(page);
+  await completeRegistrationToDestinations(page);
+
+  // Selecting "Other" opens the dialog (a real off->on transition).
+  await page.getByText('Other', { exact: true }).click();
+  await expect(page.locator('.modal-title')).toHaveText('Choose a country');
+  await page.locator('.modal-close').click();
+  await expect(page.locator('.modal-overlay')).toBeHidden();
+
+  // Toggling an unrelated destination chip while "Other" stays selected must
+  // NOT reopen it — this was the actual bug (chips.js's onChange fires on
+  // every toggle in the grid, and the old check just asked "is Other still
+  // selected", which stayed true here).
+  await page.getByText('India', { exact: true }).click();
+  await expect(page.locator('.modal-overlay')).toBeHidden();
+  await page.getByText('United Kingdom', { exact: true }).click();
+  await expect(page.locator('.modal-overlay')).toBeHidden();
+
+  // Unchecking "Other" itself must just clear the selection, not reopen it.
+  await page.getByText('Other', { exact: true }).click();
+  await expect(page.locator('.modal-overlay')).toBeHidden();
+
+  // Re-checking "Other" again is a real off->on transition and legitimately
+  // reopens it — and it must start completely fresh (empty search box, no
+  // leftover results from the earlier open).
+  await page.getByText('Other', { exact: true }).click();
+  await expect(page.locator('.modal-title')).toHaveText('Choose a country');
+  await expect(page.locator('#countrySearchInput')).toHaveValue('');
+});
+
 test('draft persists across a reload (survives a backgrounded-tab discard)', async ({ page }) => {
   await startJourney(page);
   await completeRegistrationToDestinations(page);
@@ -263,38 +374,32 @@ test('new visitor reset clears the draft back to the register step', async ({ pa
 // ===================== Phase 2: review + timer + filtering =====================
 
 /** From the destinations step (where completeRegistrationToDestinations leaves
- * off), clicks through every remaining full-path step to reach review.
- * examPrep is left unanswered on purpose — that skips the conditional
- * examList step, which keeps this walker generic. game1/game2 are skipped via
- * their own "Skip puzzle" button (real content, Phase 3) rather than played;
- * dedicated tests below actually play them. Only 'request' is still a
- * placeholder. */
+ * off), clicks/plays through every remaining full-path step to reach review:
+ * pick a destination, answer exam-prep "No" (skips the conditional examList
+ * step, keeping this walker generic), then game1 -> q2 -> q3 -> game2 -> q4 ->
+ * q5 -> review. Both games are actually solved now (round C item 3 removed
+ * the free "Skip puzzle" — Continue is gated on completion), via the
+ * playGame1/playGame2 helpers above. */
 async function walkDestinationsToReview(page) {
+  await page.getByText('India', { exact: true }).click();
   await page.locator('#destNextBtn').click();
   await expect(page.locator('#stepContent h2')).toHaveText('Are you preparing for any competitive exam?');
+  await page.locator('input[name=examPrep][value=no]').check();
   await page.locator('#examPrepNextBtn').click();
-  // game1, q2, courses, game2, q3, activities, q4, q5, request -> review (9 steps).
-  // `force: true`: button:hover's translateY(-2px) (styles.css) fights
-  // WebKit's hover-based actionability retry when clicking through many
-  // buttons this fast in a row — real UX polish, not a bug (a real visitor's
-  // finger doesn't "hover" the way a synthetic mouse-move retry loop does),
-  // so the test bypasses that check here rather than working around the CSS.
-  for (let i = 0; i < 15; i++) {
-    if (await page.locator('.review-section').first().isVisible().catch(() => false)) break;
-    if (await page.locator('#quizOptions').isVisible().catch(() => false)) {
-      await page.locator('#qNextBtn').click({ force: true });
-    } else if (await page.locator('#gameSkipBtn').isVisible().catch(() => false)) {
-      await page.locator('#gameSkipBtn').click({ force: true });
-    } else if (await page.locator('#coursesNextBtn').isVisible().catch(() => false)) {
-      await page.locator('#coursesNextBtn').click({ force: true });
-    } else if (await page.locator('#activitiesNextBtn').isVisible().catch(() => false)) {
-      await page.locator('#activitiesNextBtn').click({ force: true });
-    } else if (await page.locator('#requestNextBtn').isVisible().catch(() => false)) {
-      await page.locator('#requestNextBtn').click({ force: true });
-    } else {
-      await page.locator('#placeholderNextBtn').click({ force: true });
-    }
-  }
+
+  await playGame1(page);
+  await expect(page.locator('#quizOptions')).toBeVisible(); // q2
+  await page.locator('#qNextBtn').click({ force: true });
+  await expect(page.locator('#quizOptions')).toBeVisible(); // q3
+  await page.locator('#qNextBtn').click({ force: true });
+
+  await playGame2(page);
+  await expect(page.locator('#quizOptions')).toBeVisible(); // q4
+  await page.locator('#qNextBtn').click({ force: true });
+  await expect(page.locator('#quizOptions')).toBeVisible(); // q5
+  await page.locator('#qNextBtn').click({ force: true });
+
+  await expect(page.locator('.review-section').first()).toBeVisible();
 }
 
 test('final review screen shows registration, preferences and quiz answers', async ({ page }) => {
@@ -351,16 +456,15 @@ test('submit is blocked with the non-alarming popup if the parent number is miss
   // listener (js/app.js, for iPad Safari tab discards) correctly fights that
   // kind of tampering by re-saving its known-good in-memory draft.
   const draft = {
-    schema: 'pedagogy.v7', mode: 'full', currentStepId: 'review',
+    schema: 'pedagogy.v9', mode: 'full', currentStepId: 'review',
     registration: {
       name: 'Aisha Rahman', dob: '2009-05-14', parentMobile: '', studentMobile: null,
       school: 'Delhi Private School Dubai', schoolKey: null, curriculum: 'Indian',
       grade: 'stage10', stream: null, section: null, subjects: [],
-      tcsAccepted: true, consentToContact: true,
+      tcsAccepted: true, consentToContact: true, marketingOptIn: false, marketingOptInAt: null,
     },
-    preferences: { destinations: [], destinationsOther: [], competitiveExamPrep: null, competitiveExams: {}, courses: [], activities: [] },
+    preferences: { destinations: [], destinationsOther: [], competitiveExamPrep: null, competitiveExams: {} },
     quiz: { selectedQuestionIds: [], answers: [], timerStartedAt: null, timerElapsedMs: 0 },
-    followUp: { counselling: false, marketing: false, preferredFollowup: null, channel: null },
     meta: { id: null, createdAt: null, deviceId: null, recordStatus: null, duplicateFlag: false },
   };
   await page.addInitScript(d => localStorage.setItem('pedagogy-expo-draft', JSON.stringify(d)), draft);
@@ -413,7 +517,15 @@ test('quiz filtering: an Indian PCM-stream visitor is served PCM-eligible questi
   await page.locator('#registerNextBtn').click();
 
   const questionText = await page.locator('#stepContent h2').textContent();
-  const commerceOnlyQuestions = ['A product costs AED 60 and sells for AED 80. Ignoring other costs, profit per unit is:'];
+  // Derived from the live bank rather than hardcoded, so this doesn't rot when
+  // the question bank is regenerated (see scripts/merge-question-bank.js).
+  const commerceOnlyQuestions = await page.evaluate(() =>
+    window.PED.GENERATED.QUESTION_BANK.questions
+      .filter(q => q.curriculum === 'Indian' && q.eligible_stream_ids.length &&
+        q.eligible_stream_ids.every(s => s.startsWith('commerce')))
+      .map(q => q.q)
+  );
+  expect(commerceOnlyQuestions.length).toBeGreaterThan(0); // sanity: the bank actually has commerce-only questions to exclude
   expect(commerceOnlyQuestions).not.toContain(questionText);
 });
 
@@ -438,22 +550,15 @@ test('express entry point: hero secondary link starts a real 1-question, ~60s ex
   await page.locator('#quizOptions label').first().click();
   await page.locator('#qNextBtn').click();
 
-  // express path per steps.js: destinations -> examPrep -> (examList) -> courses -> activities -> request -> review
+  // express path per steps.js: destinations -> examPrep -> (examList) -> review
+  // (no games, no courses/activities/request — round C removed the latter
+  // three entirely, and express never had games to begin with).
   await expect(page.locator('#stepContent h2')).toHaveText('Where could your next chapter begin?');
+  await page.getByText('India', { exact: true }).click();
   await page.locator('#destNextBtn').click();
+  await page.locator('input[name=examPrep][value=no]').check();
   await page.locator('#examPrepNextBtn').click();
-  for (let i = 0; i < 10; i++) {
-    if (await page.locator('.review-section').first().isVisible().catch(() => false)) break;
-    if (await page.locator('#coursesNextBtn').isVisible().catch(() => false)) {
-      await page.locator('#coursesNextBtn').click({ force: true });
-    } else if (await page.locator('#activitiesNextBtn').isVisible().catch(() => false)) {
-      await page.locator('#activitiesNextBtn').click({ force: true });
-    } else if (await page.locator('#requestNextBtn').isVisible().catch(() => false)) {
-      await page.locator('#requestNextBtn').click({ force: true });
-    } else {
-      await page.locator('#placeholderNextBtn').click({ force: true });
-    }
-  }
+
   await expect(page.locator('.review-section').first()).toBeVisible();
   await expect(page.locator('.review-fields--quiz div')).toHaveCount(1); // exactly 1 question on express
 
@@ -479,114 +584,154 @@ test('hero primary CTA still creates a full-mode draft (express link is additive
   expect(mode).toBe('full');
 });
 
-// ===================== Phase 3: mini-games =====================
+// ===================== Mini-games (round C items 3, 4, 6) =====================
 async function reachGame1(page) {
   await startJourney(page);
   await completeRegistrationToDestinations(page);
+  await page.getByText('India', { exact: true }).click(); // mandatory (round C item 3)
   await page.locator('#destNextBtn').click();
+  await page.locator('input[name=examPrep][value=no]').check(); // mandatory (round C item 3)
   await page.locator('#examPrepNextBtn').click();
   await expect(page.locator('#trailTiles')).toBeVisible();
 }
 
-test('game 1 (number trail): tapping 1..12 in order completes it and turns Skip into Continue', async ({ page }) => {
+test('game 1 (number trail): 5 fresh random 3-digit numbers every round, tapped smallest to largest', async ({ page }) => {
   await reachGame1(page);
-  for (let n = 1; n <= 12; n++) {
-    await page.locator(`#trailTiles [data-n="${n}"]`).click();
+  const nums = await page.locator('#trailTiles [data-n]').evaluateAll(els => els.map(e => Number(e.dataset.n)));
+  expect(nums.length).toBe(5); // round C item 4: exactly 5 tiles, not 12
+  const unique = new Set(nums);
+  expect(unique.size).toBe(5); // no duplicate values
+  for (const n of nums) {
+    expect(n).toBeGreaterThanOrEqual(200);
+    expect(n).toBeLessThanOrEqual(999);
   }
-  await expect(page.locator('#gameStatus')).toHaveText('Nice work — trail complete!');
-  await expect(page.locator('#gameSkipBtn')).toHaveText('Continue →');
-  await page.locator('#gameSkipBtn').click();
+
+  await playGame1(page);
   await expect(page.locator('#quizOptions')).toBeVisible(); // q2, the next real step after game1
+});
+
+test('game 1: numbers are freshly randomized on each fresh entry into the puzzle', async ({ page }) => {
+  await reachGame1(page);
+  const first = await page.locator('#trailTiles [data-n]').evaluateAll(els => els.map(e => Number(e.dataset.n)).sort());
+  await page.locator('#gameBackBtn').click();
+  await page.locator('#examPrepNextBtn').click(); // re-enter game1 (examPrep's answer already persisted)
+  await expect(page.locator('#trailTiles')).toBeVisible();
+  const second = await page.locator('#trailTiles [data-n]').evaluateAll(els => els.map(e => Number(e.dataset.n)).sort());
+  // Not a hard guarantee (two random 5-of-800 draws could theoretically
+  // collide), but overwhelmingly likely to differ — confirms this isn't a
+  // fixed/repeating set, per round C item 4.
+  expect(second).not.toEqual(first);
 });
 
 test('game 1: a mis-tap does not complete the puzzle or reveal any error count', async ({ page }) => {
   await reachGame1(page);
-  // Tap the highest-numbered tile first — guaranteed wrong since 1 is expected.
-  const tiles = page.locator('#trailTiles [data-n]');
-  const count = await tiles.count();
-  let wrongTile = null;
-  for (let i = 0; i < count; i++) {
-    if (await tiles.nth(i).getAttribute('data-n') !== '1') { wrongTile = tiles.nth(i); break; }
-  }
+  const nums = await page.locator('#trailTiles [data-n]').evaluateAll(els => els.map(e => Number(e.dataset.n)));
+  const smallest = Math.min(...nums);
+  const wrongTile = page.locator(`#trailTiles [data-n]:not([data-n="${smallest}"])`).first();
   await wrongTile.click();
-  await expect(page.locator('#gameStatus')).toHaveText('Try 1 next.');
+  await expect(page.locator('#gameStatus')).toHaveText(`Try ${smallest} next.`);
   const bodyText = await page.locator('#appShell').innerText();
   expect(bodyText).not.toMatch(/\berror(s)?\b/i);
+  await expect(page.locator('#gameNextBtn')).toBeDisabled();
 });
 
-test('game 1: Back navigates away without breaking state, and Skip puzzle advances without completing it', async ({ page }) => {
+// ===================== Round C item 3: mandatory selection (games are no longer skippable) =====================
+test('game 1: Continue stays disabled — no free "Skip puzzle" anymore, even across Back + re-entry', async ({ page }) => {
   await reachGame1(page);
+  await expect(page.locator('#gameNextBtn')).toBeDisabled();
   await page.locator('#gameBackBtn').click();
   await expect(page.locator('#stepContent h2')).toHaveText('Are you preparing for any competitive exam?');
   await page.locator('#examPrepNextBtn').click();
   await expect(page.locator('#trailTiles')).toBeVisible(); // re-entering re-deals a fresh puzzle, no crash
-  await page.locator('#gameSkipBtn').click();
-  await expect(page.locator('#stepContent h2')).not.toHaveText('');
+  await expect(page.locator('#gameNextBtn')).toBeDisabled(); // still gated, no way around it
 });
 
-test('game 2 (pattern recall): studying, hiding and tapping the sequence back completes it', async ({ page }) => {
+test('game 2 (pattern recall): geometry shapes (reverted from Greek letters, round D), studying/hiding/tapping the sequence back completes it', async ({ page }) => {
   await reachGame1(page);
-  await page.locator('#gameSkipBtn').click(); // skip game 1
+  await playGame1(page);
   await expect(page.locator('#quizOptions')).toBeVisible(); // q2
-  await page.locator('#qNextBtn').click();
-  await expect(page.locator('#coursesChipGrid .chips')).toBeVisible(); // courses, between game1 and game2
-  await page.locator('#coursesNextBtn').click();
+  await page.locator('#qNextBtn').click({ force: true }); // q2 -> q3
+  await expect(page.locator('#quizOptions')).toBeVisible(); // q3
+  await page.locator('#qNextBtn').click({ force: true }); // q3 -> game2
+
   await expect(page.locator('#patternDisplay')).toBeVisible();
   const sequenceText = await page.locator('#patternDisplay').textContent();
   const symbols = sequenceText.trim().split(/\s+/);
+  expect(symbols.length).toBe(5);
+  const SHAPES = ['●', '▲', '■', '★'];
+  symbols.forEach(s => expect(SHAPES).toContain(s));
+
   await page.locator('#patternReadyBtn').click();
   await expect(page.locator('#patternKeys')).toBeVisible();
+  const keyCount = await page.locator('#patternKeys [data-symbol]').count();
+  expect(keyCount).toBe(4); // the fixed 4-shape key panel, not one button per sequence slot
   for (const symbol of symbols) {
     await page.locator(`#patternKeys [data-symbol="${symbol}"]`).click();
   }
   await expect(page.locator('#gameStatus')).toHaveText('Sequence complete — nicely done!');
-  await expect(page.locator('#gameSkipBtn')).toHaveText('Continue →');
+  await expect(page.locator('#gameNextBtn')).toBeEnabled();
 });
 
-// ===================== Phase 3: courses / activities chip steps =====================
-async function reachCourses(page) {
-  await reachGame1(page);
-  await page.locator('#gameSkipBtn').click();
-  await page.locator('#qNextBtn').click(); // q2
-  await expect(page.locator('#coursesChipGrid .chips')).toBeVisible();
-}
-
-test('courses step: tap-chip multi-select with "Undecided" clearing other picks', async ({ page }) => {
-  await reachCourses(page);
-  await page.locator('#coursesChipGrid label', { hasText: 'Medicine' }).click();
-  await page.locator('#coursesChipGrid label', { hasText: 'Law' }).click();
-  await page.locator('#coursesChipGrid label', { hasText: 'Undecided' }).click();
-  const checked = await page.locator('#coursesChipGrid input:checked').evaluateAll(els => els.map(e => e.value));
-  expect(checked).toEqual(['Undecided']);
-});
-
-test('courses step: an Indian PCM-stream visitor sees Engineering/Computing marked as suggested', async ({ page }) => {
+// ===================== Round C item 3: mandatory selection on chip/radio steps =====================
+test('destinations Continue is disabled until at least one destination is picked', async ({ page }) => {
   await startJourney(page);
-  await fillValidRegistration(page, { school: false });
-  await page.locator('#regCurriculum').selectOption('Indian');
-  await page.locator('#regStream').selectOption('science-pcm');
-  await page.locator('#regTcs').check();
-  await page.locator('#regConsent').check();
-  await page.locator('#registerNextBtn').click();
-  await page.locator('#qNextBtn').click(); // q1
-  await page.locator('#destNextBtn').click();
-  await page.locator('#examPrepNextBtn').click();
-  await page.locator('#gameSkipBtn').click(); // game1
-  await page.locator('#qNextBtn').click(); // q2
-  await expect(page.locator('#coursesChipGrid .chips')).toBeVisible();
-  await expect(page.locator('#coursesChipGrid span.chip-suggested', { hasText: 'Engineering' })).toBeVisible();
+  await completeRegistrationToDestinations(page);
+  await expect(page.locator('#destNextBtn')).toBeDisabled();
+  await expect(page.locator('#destValidationHint')).toBeVisible();
+  await page.getByText('India', { exact: true }).click();
+  await expect(page.locator('#destNextBtn')).toBeEnabled();
+  await expect(page.locator('#destValidationHint')).toBeHidden();
 });
 
-test('activities step: plain tap-chip multi-select, no exclusivity', async ({ page }) => {
-  await reachCourses(page);
-  await page.locator('#coursesNextBtn').click();
-  await page.locator('#gameSkipBtn').click(); // game2
-  await page.locator('#qNextBtn').click(); // q3
-  await expect(page.locator('#activitiesChipGrid .chips')).toBeVisible();
-  await page.locator('#activitiesChipGrid label', { hasText: 'Sport' }).click();
-  await page.locator('#activitiesChipGrid label', { hasText: 'Music' }).click();
-  const checked = await page.locator('#activitiesChipGrid input:checked').evaluateAll(els => els.map(e => e.value));
-  expect(checked.sort()).toEqual(['Music', 'Sport']);
+test('exam-prep Continue is disabled until Yes/No is answered', async ({ page }) => {
+  await startJourney(page);
+  await completeRegistrationToDestinations(page);
+  await page.getByText('India', { exact: true }).click();
+  await page.locator('#destNextBtn').click();
+  await expect(page.locator('#examPrepNextBtn')).toBeDisabled();
+  await expect(page.locator('#examPrepValidationHint')).toBeVisible();
+  await page.locator('input[name=examPrep][value=no]').check();
+  await expect(page.locator('#examPrepNextBtn')).toBeEnabled();
+  await expect(page.locator('#examPrepValidationHint')).toBeHidden();
+});
+
+test('exam list Continue is disabled until at least one exam chip is picked', async ({ page }) => {
+  await startJourney(page);
+  await completeRegistrationToDestinations(page);
+  await page.getByText('India', { exact: true }).click();
+  await page.locator('#destNextBtn').click();
+  await page.locator('input[name=examPrep][value=yes]').check();
+  await page.locator('#examPrepNextBtn').click();
+  await expect(page.locator('#examListNextBtn')).toBeDisabled();
+  await expect(page.locator('#examListValidationHint')).toBeVisible();
+  await page.getByText('NEET-UG', { exact: true }).click();
+  await expect(page.locator('#examListNextBtn')).toBeEnabled();
+  await expect(page.locator('#examListValidationHint')).toBeHidden();
+});
+
+test('exam list free-text fallback ("Other" only destination) gates Continue on non-empty text', async ({ page }) => {
+  await startJourney(page);
+  await completeRegistrationToDestinations(page);
+  await page.getByText('Other', { exact: true }).click();
+  await page.locator('.modal-close').click();
+  await page.locator('#destNextBtn').click();
+  await page.locator('input[name=examPrep][value=yes]').check();
+  await page.locator('#examPrepNextBtn').click();
+  await expect(page.locator('#examListNextBtn')).toBeDisabled();
+  await page.locator('#examFreeText').fill('TestAS');
+  await expect(page.locator('#examListNextBtn')).toBeEnabled();
+  await page.locator('#examFreeText').fill('   '); // whitespace-only doesn't count as an answer
+  await expect(page.locator('#examListNextBtn')).toBeDisabled();
+});
+
+test('quiz question steps (q1-q5) keep their skip-allowed behavior — the one deliberate exception to round C item 3', async ({ page }) => {
+  await startJourney(page);
+  await fillValidRegistration(page);
+  await page.locator('#registerNextBtn').click();
+  // Next is enabled immediately on a question step, with nothing selected —
+  // unlike every chip/radio step above, this must NOT be gated (equal-odds
+  // draw regardless of quiz completion, a standing decision).
+  await expect(page.locator('#qNextBtn')).toBeEnabled();
 });
 
 // ===================== Phase 3: skip only on academic questions =====================
@@ -600,6 +745,7 @@ test('no skip button anywhere on data-collection/preference steps', async ({ pag
   await page.locator('#qNextBtn').click();
   await expect(page.locator('#stepContent h2')).toHaveText('Where could your next chapter begin?');
   expect(await page.locator('button', { hasText: /^Skip$/ }).count()).toBe(0);
+  expect(await page.locator('button', { hasText: /Skip puzzle/ }).count()).toBe(0); // round C item 3: games lost their free-skip wording too
 });
 
 // ===================== Final build: no dev/rehearsal scaffolding left visible =====================
@@ -612,38 +758,6 @@ test('no rehearsal banner, "fictional details" copy, or PLACEHOLDER text anywher
   await page.locator('#registerNextBtn').click();
   const questionText = await page.locator('#appShell').innerText();
   expect(questionText).not.toMatch(/PLACEHOLDER/);
-});
-
-test('request step (final before review): channel + marketing opt-in + note are captured and shown on review', async ({ page }) => {
-  await startJourney(page);
-  await completeRegistrationToDestinations(page);
-  await walkDestinationsToReview(page);
-  // walkDestinationsToReview already clicked past request with its defaults;
-  // re-verify the fields it left on the draft actually reached review.
-  await expect(page.locator('.review-section', { hasText: 'Follow-up preferences' })).toBeVisible();
-});
-
-test('request step lets a visitor set a contact channel and a note for the counsellor', async ({ page }) => {
-  await startJourney(page);
-  await fillValidRegistration(page);
-  await page.locator('#registerNextBtn').click();
-  await page.locator('#qNextBtn').click();
-  await page.locator('#destNextBtn').click();
-  await page.locator('#examPrepNextBtn').click();
-  await page.locator('#gameSkipBtn').click();
-  await page.locator('#qNextBtn').click();
-  await page.locator('#coursesNextBtn').click();
-  await page.locator('#gameSkipBtn').click();
-  await page.locator('#qNextBtn').click();
-  await page.locator('#activitiesNextBtn').click();
-  await page.locator('#qNextBtn').click();
-  await page.locator('#qNextBtn').click();
-  await expect(page.locator('#stepContent h2')).toHaveText('One last thing before you go.');
-  await page.locator('label[for="channel-1"]').click(); // WhatsApp
-  await page.locator('#requestNote').fill('Interested in engineering in Germany.');
-  await page.locator('#requestNextBtn').click();
-  await expect(page.locator('.review-section', { hasText: 'Follow-up preferences' })).toContainText('WhatsApp');
-  await expect(page.locator('.review-section', { hasText: 'Follow-up preferences' })).toContainText('Interested in engineering in Germany.');
 });
 
 test('skipping an academic question shows the exact approved popup copy, then advances', async ({ page }) => {
@@ -675,17 +789,17 @@ async function enterStaffDashboard(page) {
 
 function makeRecord(overrides) {
   return {
-    schema: 'pedagogy.v7', mode: 'full', currentStepId: 'review',
+    schema: 'pedagogy.v9', mode: 'full', currentStepId: 'review',
     registration: {
       name: 'Aisha Rahman', dob: '2009-05-14', parentMobile: '+971501234567', studentMobile: null,
       school: 'Delhi Private School Dubai', schoolKey: 'delhi-private-school-dubai', curriculum: 'Indian',
       grade: 'stage10', stream: null, section: null, subjects: [],
       tcsAccepted: true, tcsAcceptedAt: '2026-09-19T10:00:00.000Z',
       consentToContact: true, consentToContactAt: '2026-09-19T10:00:05.000Z',
+      marketingOptIn: true, marketingOptInAt: '2026-09-19T10:00:07.000Z',
     },
-    preferences: { destinations: ['India'], destinationsOther: [], competitiveExamPrep: 'no', competitiveExams: {}, courses: ['Medicine'], activities: ['Sport'] },
+    preferences: { destinations: ['India'], destinationsOther: [], competitiveExamPrep: 'no', competitiveExams: {} },
     quiz: { selectedQuestionIds: ['q1'], answers: [{ questionId: 'q1', selected: 'Newton', skipped: false, timedOut: false }], timerStartedAt: null, timerElapsedMs: 12000 },
-    followUp: { counselling: true, marketing: true, preferredFollowup: 'Help with engineering options', channel: 'WhatsApp' },
     meta: { id: 'P-test-1', createdAt: '2026-09-19T10:00:10.000Z', deviceId: null, recordStatus: null, duplicateFlag: false, duplicateOfIds: [], duplicateReviewStatus: null },
     ...overrides,
   };
@@ -703,15 +817,51 @@ test('staff dashboard shows every field the standing decisions call out as visib
   await expect(card).toContainText('not given'); // student mobile
   await expect(card).toContainText('Delhi Private School Dubai');
   await expect(card).toContainText('Indian');
-  await expect(card).toContainText('9/19/2026'); // T&Cs/consent timestamps render via toLocaleString()
-  await expect(card).toContainText('WhatsApp'); // follow-up channel
-  await expect(card).toContainText('Help with engineering options'); // counsellor note
-  await expect(card).toContainText('Yes'); // marketing opt-in
+  await expect(card).toContainText('9/19/2026'); // T&Cs/consent/marketing-opt-in timestamps render via toLocaleString()
+  await expect(card).toContainText('India'); // destinations
+  await expect(card).toContainText('Marketing opt-in'); // round D item 1: back as a registration field
+  // Round C item 8: follow-up channel/note are still gone — that step's data
+  // collection was removed and the card no longer renders those fields
+  // (marketing opt-in itself moved to Registration instead, see above).
+  await expect(card).not.toContainText('Follow-up channel');
+  await expect(card).not.toContainText('Note for counsellor');
+  // Round C items 5/7: courses/activities rows are gone too.
+  await expect(card).not.toContainText('Courses of interest');
+  await expect(card).not.toContainText('Activities');
 });
 
 test('staff dashboard shows an empty state when there are no registrations yet', async ({ page }) => {
   await enterStaffDashboard(page);
   await expect(page.locator('#view-staff')).toContainText('No registrations yet.');
+  // Round C item 9b's fix: Refresh is present even in the empty state.
+  await expect(page.locator('#staffRefreshBtn')).toBeVisible();
+});
+
+// ===================== Round C item 9b: staff dashboard refresh bug =====================
+test('staff dashboard Refresh re-reads localStorage immediately, including the empty->populated transition', async ({ page }) => {
+  await enterStaffDashboard(page);
+  await expect(page.locator('#view-staff')).toContainText('No registrations yet.');
+
+  // Root cause of the original bug: the empty-state branch never rendered a
+  // Refresh button at all, so a dashboard opened before any registrations
+  // existed had no way to pick up new submissions without fully closing and
+  // re-entering the PIN. Confirm the control now exists in every state...
+  await expect(page.locator('#staffRefreshBtn')).toBeVisible();
+
+  // ...and that clicking it actually re-reads localStorage and re-renders.
+  const record = makeRecord();
+  await page.evaluate(r => localStorage.setItem('pedagogy-expo-records', JSON.stringify([r])), record);
+  await page.locator('#staffRefreshBtn').click();
+  await expect(page.locator('#view-staff')).toContainText('1 registration');
+  await expect(page.locator('.staff-record')).toContainText('Aisha Rahman');
+
+  // A second change + a second click must also work (not a one-shot fix).
+  const second = makeRecord({ meta: { ...makeRecord().meta, id: 'P-test-2' }, registration: { ...makeRecord().registration, name: 'Second Visitor' } });
+  await page.evaluate(([r1, r2]) => localStorage.setItem('pedagogy-expo-records', JSON.stringify([r1, r2])), [record, second]);
+  await page.locator('#staffRefreshBtn').click();
+  await expect(page.locator('#view-staff')).toContainText('2 registrations');
+  await expect(page.locator('.staff-record')).toHaveCount(2);
+  await expect(page.locator('#view-staff')).toContainText('Second Visitor');
 });
 
 test('finalizing a second registration that reasonably matches an existing one flags both as duplicates, bidirectionally', async ({ page }) => {

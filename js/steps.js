@@ -28,6 +28,12 @@
   'use strict';
   window.PED = window.PED || {};
 
+  // Round C (item 5/7/8): 'courses', 'activities' and 'request' are removed
+  // entirely — only data points that predict course interest and openness to
+  // studying abroad stay in scope. The remaining 5 academic questions are now
+  // grouped 1/2/2 around the two games (q1 alone, then q2+q3, then q4+q5)
+  // instead of trailing off as 3 questions in a row once 'activities' (which
+  // used to sit between q3 and q4) was deleted — see round C item 9a.
   const FULL_PATH_STEPS = [
     { id: 'register' },
     { id: 'q1', kind: 'question' },
@@ -40,21 +46,19 @@
     },
     { id: 'game1', kind: 'game' },
     { id: 'q2', kind: 'question' },
-    { id: 'courses', kind: 'preference' },
-    { id: 'game2', kind: 'game' },
     { id: 'q3', kind: 'question' },
-    { id: 'activities', kind: 'preference' },
+    { id: 'game2', kind: 'game' },
     { id: 'q4', kind: 'question' },
     { id: 'q5', kind: 'question' },
-    { id: 'request', kind: 'request' },
     { id: 'review', kind: 'review' },
   ];
 
   // Express stays fast per session_handoff.md Section 3C's default (1 academic
   // question, PLAN.md Phase 1): no games (they're the main time cost of the full
-  // path), but the same lead-capture preference/exam data is still worth
+  // path), but the destinations/exam-prep lead-capture data is still worth
   // collecting since it's the whole point of the stall, not something to cut
-  // for speed. Only one question total.
+  // for speed. Only one question total; nothing to interleave (round C item 9a
+  // is moot here — there was never more than one question on this path).
   const EXPRESS_PATH_STEPS = [
     { id: 'register' },
     { id: 'q1', kind: 'question' },
@@ -65,9 +69,6 @@
       kind: 'preference',
       isVisible: draft => draft.preferences.competitiveExamPrep === 'yes',
     },
-    { id: 'courses', kind: 'preference' },
-    { id: 'activities', kind: 'preference' },
-    { id: 'request', kind: 'request' },
     { id: 'review', kind: 'review' },
   ];
 

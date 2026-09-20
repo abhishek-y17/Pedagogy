@@ -7,12 +7,15 @@
   'use strict';
   window.PED = window.PED || {};
 
-  // Bumped v6 -> v7 for Phase 4's staff-dashboard fields (T&Cs/consent
-  // timestamps, duplicate-flag tracking). Safe to invalidate old in-progress
-  // drafts on load (loadDraft() below just treats a schema mismatch as "no
-  // draft") — this is pre-launch dev/rehearsal data only, never a real
-  // visitor record.
-  const SCHEMA = 'pedagogy.v7';
+  // Bumped v8 -> v9 for round D item 1: the marketing opt-in (flagged as
+  // orphaned dead data in round C, under followUp.marketing) now lives on
+  // Registration as a real checkbox — see js/registration.js. Renamed to
+  // registration.marketingOptIn since "followUp" no longer means anything
+  // once that step is gone; the followUp object itself is removed (it would
+  // otherwise be empty). Safe to invalidate old in-progress drafts on load
+  // (loadDraft() below just treats a schema mismatch as "no draft") — this is
+  // pre-launch dev/rehearsal data only, never a real visitor record.
+  const SCHEMA = 'pedagogy.v9';
   const RECORDS_KEY = 'pedagogy-expo-records';
   const DRAFT_KEY = 'pedagogy-expo-draft';
 
@@ -39,14 +42,19 @@
         tcsAcceptedAt: null,        // ISO timestamp, set the moment the box is checked
         consentToContact: false,   // covers WhatsApp / Business API messaging
         consentToContactAt: null,  // ISO timestamp, same pattern as tcsAcceptedAt
+        // Merged with the T&Cs checkbox (Abhi's explicit round D follow-up call):
+        // checking T&Cs sets both tcsAccepted and marketingOptIn together — it is
+        // no longer an independently optional/trackable choice. Kept as its own
+        // field (mirroring tcsAccepted) rather than folded away, so staff/review
+        // still show an explicit marketing-consent record.
+        marketingOptIn: false,
+        marketingOptInAt: null,    // ISO timestamp, same pattern as tcsAcceptedAt; null if never checked
       },
       preferences: {
         destinations: [],              // top-10 chip grid selections (may include the literal "Other")
         destinationsOther: [],         // specific countries picked via the "Other" search overlay
         competitiveExamPrep: null,     // 'yes' | 'no' | null (unanswered)
         competitiveExams: {},          // { [country]: [examName, ...] } or { Other: freeText }
-        courses: [],
-        activities: [],
       },
       quiz: {
         selectedQuestionIds: [], // fixed at first entry into a question step, so free
@@ -58,12 +66,6 @@
         timerStartedAt: null,   // epoch ms; null while paused (not on a question step)
         timerElapsedMs: 0,      // pooled budget consumed so far, counts only while a
                                  // question is on screen (js/timer.js owns start/pause)
-      },
-      followUp: {
-        counselling: false,
-        marketing: false,
-        preferredFollowup: null,
-        channel: null,
       },
       meta: {
         id: null,

@@ -31,9 +31,10 @@
   navButtons.forEach(btn => btn.addEventListener('click', () => showView(btn.dataset.view)));
 
   // --- Step rendering ---------------------------------------------------
-  // Every step in the full and express paths now has real content —
-  // 'request' (follow-up channel + optional note) was the last one still
-  // showing the generic dev placeholder, closed out for the final build.
+  // Every step in the full and express paths has real content. 'courses',
+  // 'activities' and 'request' were removed entirely in round C (items 5/7/8)
+  // — only data points that predict course interest and openness to studying
+  // abroad stay in scope; see js/steps.js.
   // renderPlaceholder() below is kept only as a fail-safe for an unrecognized
   // stepId (e.g. a future step added to steps.js without a renderer yet), not
   // because any real step still uses it. Every renderer draws its own
@@ -56,10 +57,7 @@
     examPrep: (el, onNext, onBack) => PED.destinations.renderExamPrep(el, draft, datasets, onNext, onBack),
     examList: (el, onNext, onBack) => PED.destinations.renderExamList(el, draft, datasets, onNext, onBack),
     game1: (el, onNext, onBack) => PED.games.renderGame1(el, draft, onNext, onBack),
-    courses: (el, onNext, onBack) => PED.courses.renderCourses(el, draft, datasets, onNext, onBack),
     game2: (el, onNext, onBack) => PED.games.renderGame2(el, draft, onNext, onBack),
-    activities: (el, onNext, onBack) => PED.courses.renderActivities(el, draft, datasets, onNext, onBack),
-    request: (el, onNext, onBack) => PED.request.renderRequest(el, draft, datasets, onNext, onBack),
     q1: (el, onNext, onBack) => PED.quiz.renderQuestion(el, draft, datasets, 'q1', onNext, onBack, onGotoReview),
     q2: (el, onNext, onBack) => PED.quiz.renderQuestion(el, draft, datasets, 'q2', onNext, onBack, onGotoReview),
     q3: (el, onNext, onBack) => PED.quiz.renderQuestion(el, draft, datasets, 'q3', onNext, onBack, onGotoReview),
@@ -208,7 +206,7 @@
       `[pedagogy] datasets loaded: ${datasets.schools.schools.length} schools, ` +
       `${Object.keys(datasets.curriculumSubjects.curricula).length} curricula, ` +
       `${Object.keys(datasets.destinationExams.destinations).length} destination-exam entries, ` +
-      `${questions.length} stub questions (validated)`
+      `${questions.length} questions (validated)`
     );
 
     draft = PED.state.loadDraft() || PED.state.createDraft('full');

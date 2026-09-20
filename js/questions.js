@@ -32,59 +32,6 @@
     return [];
   }
 
-  /** Maps curriculum_subjects.json's fine-grained `typical_course_interest`
-   * strings onto the fixed 8 real chip options js/courses.js shows on the
-   * courses step (Medicine/Engineering/Computing.../Undecided/Other aren't
-   * data-driven, "Undecided"+"Other" have no interest mapping). Any interest
-   * string not covered here is a values that doesn't map cleanly onto a
-   * generic chip (e.g. "Pure Sciences") — dropped rather than force-mapped to
-   * something misleading. */
-  const INTEREST_TO_COURSE_CHIP = {
-    Medicine: 'Medicine',
-    Dentistry: 'Health sciences',
-    Pharmacy: 'Health sciences',
-    'Nursing / Allied Health': 'Health sciences',
-    'Life Sciences': 'Health sciences',
-    'Life Sciences / Biotechnology': 'Health sciences',
-    'Pure Sciences': 'Engineering',
-    Engineering: 'Engineering',
-    Architecture: 'Engineering',
-    'Applied / Vocational / Technical programs': 'Engineering',
-    'Environmental Science': 'Engineering',
-    'Technology / Computer Science': 'Computing / AI',
-    'Data Science / Analytics': 'Computing / AI',
-    'Business / Management': 'Business / Finance',
-    'Finance / Accounting': 'Business / Finance',
-    Economics: 'Business / Finance',
-    'Hospitality / Tourism': 'Business / Finance',
-    'Hospitality / Retail Management': 'Business / Finance',
-    Law: 'Law',
-    'Design / Fine Arts': 'Arts / Design',
-    'Media / Journalism / Communication': 'Arts / Design',
-    'Social Sciences': 'Humanities',
-    Psychology: 'Humanities',
-  };
-
-  /**
-   * Per data/curriculum_subjects.json's own app_integration_notes ("use each
-   * stream/cluster's typical_course_interest array to PRE-SUGGEST, not
-   * force, course-interest options later in the flow"): returns a de-duped
-   * list of js/courses.js chip labels to visually highlight for this visitor's
-   * chosen curriculum+stream. Never used to hide/restrict chips — courses.js
-   * still shows every option, just reorders/marks these first. Empty for "Other"
-   * curricula, an unset stream, or a stream with no typical_course_interest data.
-   */
-  function getSuggestedCourses(curriculumSubjects, curriculumName, streamId) {
-    if (!streamId) return [];
-    const c = (curriculumSubjects.curricula || {})[curriculumName];
-    if (!c) return [];
-    const list = c.streams || c.groups || c.combination_clusters || c.ap_categories || [];
-    const item = list.find(s => s.id === streamId);
-    if (!item || !Array.isArray(item.typical_course_interest)) return [];
-    const mapped = item.typical_course_interest.map(x => INTEREST_TO_COURSE_CHIP[x]).filter(Boolean);
-    return Array.from(new Set(mapped));
-  }
-
   /**
    * Validates a question bank against the schema and against curriculum_subjects.json's
    * real stream/subject-group ids, so a typo'd eligible_stream_ids value fails loudly
@@ -209,5 +156,27 @@
     return shuffle(Array.from(byId.values())).slice(0, count);
   }
 
-  window.PED.questions = { validateQuestionBank, loadQuestionBank, getEligibleQuestions, getStreamOptions, selectQuizQuestions, getSuggestedCourses };
+  /**
+   * Per-visitor coin-flip (not per-slot): with ~1/3 probability, swaps one
+   * random slot in `selected` for a random question from the shared
+   * "Aptitude" pool (question_bank_output/aptitude/, merged in by
+   * scripts/merge-question-bank.js). Fires at most once per quiz regardless
+   * of quiz length (full path 5 slots, express 1 slot), never touches the
+   * question count (timer/review/staff-analytics all key off count), and is
+   * a no-op if the Aptitude pool is empty. `rng` is injectable for tests.
+   */
+  function maybeSubstituteAptitude(selected, allQuestions, rng = Math.random) {
+    if (!selected.length) return selected;
+    if (rng() >= 1 / 3) return selected;
+    const pool = allQuestions.filter(q => q.curriculum === 'Aptitude');
+    if (!pool.length) return selected;
+    const slot = Math.floor(rng() * selected.length);
+    const replacement = pool[Math.floor(rng() * pool.length)];
+    const next = selected.slice();
+    next[slot] = replacement;
+    console.log(`[pedagogy] aptitude substitution fired: slot ${slot} swapped for "${replacement.subject}" (${replacement.difficulty}, ${replacement.id}).`);
+    return next;
+  }
+
+  window.PED.questions = { validateQuestionBank, loadQuestionBank, getEligibleQuestions, getStreamOptions, selectQuizQuestions, maybeSubstituteAptitude };
 })();

@@ -36,14 +36,15 @@
 
   /** One record's full detail card — every field the standing decisions call
    * out as "must not be invisible to staff": DOB, both phone numbers,
-   * T&Cs/consent timestamps, school + curriculum, and follow-up prefs from
-   * the request step, alongside the fields the review screen already showed
-   * the visitor (destinations/courses/activities/quiz completion) so staff
-   * see the same picture without cross-referencing two screens. */
+   * T&Cs/consent/marketing-opt-in timestamps, school + curriculum and
+   * destinations, alongside the fields the review screen already showed the
+   * visitor so staff see the same picture without cross-referencing two
+   * screens. registration.marketingOptIn (round D item 1) replaced the old
+   * orphaned `followUp.marketing` field from round C — it now lives on
+   * Registration like T&Cs/consent, not a separate step. */
   function renderRecordCard(record, datasets, onAction) {
     const r = record.registration;
     const p = record.preferences;
-    const f = record.followUp;
     const m = record.meta;
 
     const destinationList = [...(p.destinations || []).filter(d => d !== 'Other'), ...(p.destinationsOther || [])];
@@ -81,12 +82,8 @@
           <div><dt>Stream</dt><dd>${escapeHtml(streamLabel(datasets, r.curriculum, r.stream))}</dd></div>
           <div><dt>T&amp;Cs accepted</dt><dd>${r.tcsAccepted ? escapeHtml(fmtDate(r.tcsAcceptedAt)) : 'Not accepted'}</dd></div>
           <div><dt>Consent to contact</dt><dd>${r.consentToContact ? escapeHtml(fmtDate(r.consentToContactAt)) : 'Not given'}</dd></div>
+          <div><dt>Marketing opt-in</dt><dd>${r.marketingOptIn ? escapeHtml(fmtDate(r.marketingOptInAt)) : 'No'}</dd></div>
           <div><dt>Destinations</dt><dd>${escapeHtml(destinationList.length ? destinationList.join(', ') : 'None selected')}</dd></div>
-          <div><dt>Courses of interest</dt><dd>${escapeHtml((p.courses || []).length ? p.courses.join(', ') : '—')}</dd></div>
-          <div><dt>Activities</dt><dd>${escapeHtml((p.activities || []).length ? p.activities.join(', ') : '—')}</dd></div>
-          <div><dt>Follow-up channel</dt><dd>${escapeHtml(f.channel || 'Not answered')}</dd></div>
-          <div><dt>Event/offer updates</dt><dd>${f.marketing ? 'Yes' : 'No'}</dd></div>
-          <div><dt>Note for counsellor</dt><dd>${escapeHtml(f.preferredFollowup || '— (none)')}</dd></div>
           <div><dt>Quiz completion</dt><dd>${answeredCount} / ${totalQuestions} answered (${escapeHtml(record.mode)} path)</dd></div>
           <div><dt>Submitted</dt><dd>${escapeHtml(fmtDate(m.createdAt))}</dd></div>
         </dl>
@@ -112,13 +109,25 @@
   function renderStaffDashboard(container, datasets, jumpToQuizForTesting) {
     const records = window.PED.state.loadRecords();
 
+    // Root cause of the refresh bug (round C item 9b): this empty-state
+    // branch never rendered a Refresh control at all. A dashboard opened
+    // before any registrations existed had no way to pick up new
+    // submissions — the populated branch's own Refresh button (below) always
+    // re-reads localStorage correctly, but staff had no way to reach it
+    // without fully closing the dashboard and re-entering the PIN. Every
+    // branch now renders the same Refresh button so it's always reachable
+    // regardless of record count.
     if (!records.length) {
       container.innerHTML = `
         <p class="eyebrow-small">STAFF DASHBOARD</p>
         <h2 class="step-heading">No registrations yet.</h2>
         <p class="field-hint">Finalized entries will appear here as visitors submit the review screen.</p>
+        <div class="step-actions">
+          <button type="button" class="quiet" id="staffRefreshBtn">Refresh</button>
+        </div>
         ${renderJumpToQuizButton(container, jumpToQuizForTesting)}
       `;
+      container.querySelector('#staffRefreshBtn').addEventListener('click', () => renderStaffDashboard(container, datasets, jumpToQuizForTesting));
       // TEST ONLY — REMOVE BEFORE THE REAL EVENT (11-13 Oct 2026), see CLAUDE.md.
       const jumpBtn = container.querySelector('#jumpToQuizTestBtn');
       if (jumpBtn) jumpBtn.addEventListener('click', jumpToQuizForTesting);

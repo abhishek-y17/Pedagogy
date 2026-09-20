@@ -128,6 +128,83 @@
       "core_subjects": ["English", "Mathematics", "World Languages", "Science", "Social Studies", "Computer Science", "Art", "Music", "Health", "Physical Education"],
       "external_exam_tracks": ["British IGCSE / A-Level", "US SAT / AP", "TOEFL / IELTS"]
     },
+    "Philippine": {
+      "label": "Philippine (Senior High School, DepEd)",
+      "structure": "single-stream",
+      "note": "Minor curriculum — real question-bank stream id from question_bank_output/MANIFEST.md's minor-curriculum stream-slug table.",
+      "streams": [{ "id": "shs-stem", "label": "Senior High School, Grades 11-12, academic STEM profile" }]
+    },
+    "Pakistani": {
+      "label": "Pakistani (SSC/Matric then HSSC/FSc)",
+      "structure": "single-stream",
+      "note": "Minor curriculum — real question-bank stream id from question_bank_output/MANIFEST.md's minor-curriculum stream-slug table.",
+      "streams": [{ "id": "hssc-science", "label": "SSC/Matric followed by HSSC/FSc, FBISE science profile" }]
+    },
+    "Iranian": {
+      "label": "Iranian (upper secondary)",
+      "structure": "single-stream",
+      "note": "Minor curriculum — real question-bank stream id from question_bank_output/MANIFEST.md's minor-curriculum stream-slug table.",
+      "streams": [{ "id": "upper-secondary-science", "label": "Upper secondary Grades 10-12, experimental-science and mathematics/physics pathways" }]
+    },
+    "Australian": {
+      "label": "Australian (senior secondary)",
+      "structure": "single-stream",
+      "note": "Minor curriculum — real question-bank stream id from question_bank_output/MANIFEST.md's minor-curriculum stream-slug table.",
+      "streams": [{ "id": "senior-secondary-science", "label": "Years 11-12, generalized ACARA senior-secondary science and Mathematical Methods profile" }]
+    },
+    "French": {
+      "label": "French (Lycée général)",
+      "structure": "single-stream",
+      "note": "Minor curriculum — real question-bank stream id from question_bank_output/MANIFEST.md's minor-curriculum stream-slug table.",
+      "streams": [{ "id": "lycee-science", "label": "Lycée général: seconde, première and terminale, science specialities" }]
+    },
+    "Canadian": {
+      "label": "Canadian (Ontario OSSD)",
+      "structure": "single-stream",
+      "note": "Minor curriculum — real question-bank stream id from question_bank_output/MANIFEST.md's minor-curriculum stream-slug table.",
+      "streams": [{ "id": "ontario-ossd-science", "label": "Ontario OSSD, senior secondary science and mathematics profile" }]
+    },
+    "German": {
+      "label": "German (gymnasiale Oberstufe)",
+      "structure": "single-stream",
+      "note": "Minor curriculum — real question-bank stream id from question_bank_output/MANIFEST.md's minor-curriculum stream-slug table.",
+      "streams": [{ "id": "oberstufe-science", "label": "Gymnasiale Oberstufe leading to Abitur, science-oriented selection" }]
+    },
+    "Japanese": {
+      "label": "Japanese (kōtō gakkō)",
+      "structure": "single-stream",
+      "note": "Minor curriculum — real question-bank stream id from question_bank_output/MANIFEST.md's minor-curriculum stream-slug table.",
+      "streams": [{ "id": "upper-secondary-science", "label": "Kōtō gakkō, three-year upper-secondary science and mathematics selection" }]
+    },
+    "Russian": {
+      "label": "Russian (secondary general education)",
+      "structure": "single-stream",
+      "note": "Minor curriculum — real question-bank stream id from question_bank_output/MANIFEST.md's minor-curriculum stream-slug table.",
+      "streams": [{ "id": "secondary-general-science", "label": "Grades 10-11, secondary general education with science/EGE preparation" }]
+    },
+    "Bangladeshi": {
+      "label": "Bangladeshi (SSC/HSC)",
+      "structure": "single-stream",
+      "note": "Minor curriculum — real question-bank stream id from question_bank_output/MANIFEST.md's minor-curriculum stream-slug table.",
+      "streams": [{ "id": "hsc-science", "label": "SSC Grades IX-X and HSC Grades XI-XII, science group" }]
+    },
+    "Spanish": {
+      "label": "Spanish (Bachillerato)",
+      "structure": "single-stream",
+      "note": "Minor curriculum — real question-bank stream id from question_bank_output/MANIFEST.md's minor-curriculum stream-slug table.",
+      "streams": [{ "id": "bachillerato-science", "label": "Two-year Bachillerato, science and technology pathway" }]
+    },
+    "Italian": {
+      "label": "Italian (liceo scientifico)",
+      "structure": "single-stream",
+      "note": "Minor curriculum — real question-bank stream id from question_bank_output/MANIFEST.md's minor-curriculum stream-slug table.",
+      "streams": [{ "id": "liceo-scientifico", "label": "Final triennio of the five-year liceo scientifico" }]
+    },
+    "Aptitude": {
+      "label": "Aptitude / general reasoning",
+      "structure": "none",
+      "note": "Not a real curriculum — a shared pool occasionally substituted into any visitor's quiz, see js/questions.js maybeSubstituteAptitude(). Never shown as a visitor's own curriculum."
+    },
     "Other": {
       "label": "Other national curricula present in small numbers (French, German, Iranian, Pakistani, Philippine, Canadian, Bangladeshi, Spanish, Italian, Japanese, Russian, Australian)",
       "structure": "not individually researched - low volume in this dataset",

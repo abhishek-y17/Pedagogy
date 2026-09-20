@@ -1,13 +1,21 @@
 # Not part of the app codebase — internal planning/reference material, keep out of git
 reference/
 session_handoff.md
+Claude outputs/
 
-# Ignore all markdown notes except README.md and the two files CLAUDE.md
-# explicitly designates as pushed (CLAUDE.md itself, and PLAN.md).
+# Delivered question-bank source folder (question_bank_output/) — merged into
+# data/question_bank.json by scripts/merge-question-bank.js, not tracked itself.
+data/question_bank_output/
+
+# Ignore all markdown notes except README.md, the two files CLAUDE.md
+# explicitly designates as pushed (CLAUDE.md itself, and PLAN.md), and the
+# question-bank licensing record (data/QUESTION_BANK_SOURCES.md), which is
+# real app-data provenance, not an internal note.
 *.md
 !README.md
 !CLAUDE.md
 !PLAN.md
+!data/QUESTION_BANK_SOURCES.md
 
 # Standard
 node_modules/

@@ -6,10 +6,9 @@
 // step's own Continue button already blocks on the same rules, so this is a
 // belt-and-braces safety net, not the only gate.
 //
-// Courses/activities (Phase 3, js/courses.js) are real tap-chip steps now —
-// this screen still just reflects whatever's actually on the draft, same as
-// every other section, so no change was needed here beyond the "Skipped"
-// wording below once js/quiz.js grew a real skip action.
+// Round C: courses/activities/follow-up sections removed along with their
+// steps (js/steps.js) — this screen only ever reflects whatever's actually
+// still on the draft.
 (function () {
   'use strict';
   window.PED = window.PED || {};
@@ -53,6 +52,7 @@
       ['Stream', streamLabel || 'Not applicable / no stream'],
       ['Terms & Conditions', r.tcsAccepted ? 'Accepted' : 'Not yet accepted'],
       ['Consent to contact', r.consentToContact ? 'Given' : 'Not yet given'],
+      ['Updates about programs & offers', r.marketingOptIn ? 'Yes, please' : 'No thanks'],
     ];
     return section('Registration', 'register', `
       <dl class="review-fields">
@@ -80,19 +80,6 @@
       <dl class="review-fields">
         <div><dt>Destinations</dt><dd>${escapeHtml(destinationsText)}</dd></div>
         <div><dt>Competitive exam prep</dt><dd>${escapeHtml(examText)}</dd></div>
-        <div><dt>Courses of interest</dt><dd>${escapeHtml(p.courses.length ? p.courses.join(', ') : 'None selected yet')}</dd></div>
-        <div><dt>Activities</dt><dd>${escapeHtml(p.activities.length ? p.activities.join(', ') : 'None selected yet')}</dd></div>
-      </dl>
-    `);
-  }
-
-  function renderFollowUpSection(draft) {
-    const f = draft.followUp;
-    return section('Follow-up preferences', 'request', `
-      <dl class="review-fields">
-        <div><dt>Preferred contact method</dt><dd>${escapeHtml(f.channel || 'Not answered yet')}</dd></div>
-        <div><dt>Event/offer updates</dt><dd>${f.marketing ? 'Yes, please' : 'No thanks'}</dd></div>
-        <div><dt>Note for the counsellor</dt><dd>${escapeHtml(f.preferredFollowup || '— (none)')}</dd></div>
       </dl>
     `);
   }
@@ -137,7 +124,6 @@
       <p class="field-hint">Tap "Edit" on any section to jump back and change it. Nothing is saved until you submit.</p>
       ${renderRegistrationSection(draft, datasets)}
       ${renderPreferencesSection(draft, datasets)}
-      ${renderFollowUpSection(draft)}
       ${renderQuizSection(draft, datasets)}
       <div class="step-actions">
         <button type="button" class="quiet" id="reviewBackBtn">&larr; Back</button>
