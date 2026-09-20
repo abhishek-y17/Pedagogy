@@ -21,7 +21,7 @@ async function fillValidRegistration(page, overrides) {
   overrides = overrides || {};
   await page.locator('#regName').fill(overrides.name || 'Aisha Rahman');
   await page.locator('#regDob').fill(overrides.dob || '2009-05-14');
-  await page.locator('#regParentMobile').fill(overrides.parentMobile !== undefined ? overrides.parentMobile : '+971501234567');
+  await page.locator('#regParentMobile').fill(overrides.parentMobile !== undefined ? overrides.parentMobile : '501234567');
   if (overrides.school !== false) {
     await page.locator('#regSchoolInput').fill(overrides.school || 'Delhi Private School');
     const firstSuggestion = page.locator('#schoolSuggestions li').first();
@@ -166,12 +166,12 @@ test('the submit-time NAME_PATTERN check is a real second gate, independent of l
   // own, in case a future change to the input listener ever regresses that.
   await startJourney(page);
   const result = await page.evaluate(() => window.PED.registration.validateRegistrationForSubmit({
-    name: "Mary-Jane O'Brien", dob: '2009-05-14', tcsAccepted: true, consentToContact: true, parentMobile: '+971501234567',
+    name: "Mary-Jane O'Brien", dob: '2009-05-14', tcsAccepted: true, consentToContact: true, parentCountryCode: '+971', parentMobileLocal: '501234567',
   }));
   expect(result.ok).toBe(true); // hyphen/apostrophe names are explicitly allowed
 
   const rejected = await page.evaluate(() => window.PED.registration.validateRegistrationForSubmit({
-    name: 'not@aname', dob: '2009-05-14', tcsAccepted: true, consentToContact: true, parentMobile: '+971501234567',
+    name: 'not@aname', dob: '2009-05-14', tcsAccepted: true, consentToContact: true, parentCountryCode: '+971', parentMobileLocal: '501234567',
   }));
   expect(rejected.ok).toBe(false);
   expect(rejected.message).toContain('numbers or symbols');
@@ -195,8 +195,11 @@ test('a future date of birth is rejected', async ({ page }) => {
 
 test('typing symbols into the phone fields gets them stripped live', async ({ page }) => {
   await startJourney(page);
-  await page.locator('#regParentMobile').fill('+971abc501234567');
-  await expect(page.locator('#regParentMobile')).toHaveValue('+971501234567');
+  await expect(page.locator('#regParentCountryCode')).toHaveValue('+971'); // preset default
+  await page.locator('#regParentCountryCode').fill('+9abc71');
+  await expect(page.locator('#regParentCountryCode')).toHaveValue('+971');
+  await page.locator('#regParentMobile').fill('abc501234567');
+  await expect(page.locator('#regParentMobile')).toHaveValue('501234567');
 });
 
 test('T&Cs opens a real modal, not an inline expandable block', async ({ page }) => {
@@ -456,9 +459,11 @@ test('submit is blocked with the non-alarming popup if the parent number is miss
   // listener (js/app.js, for iPad Safari tab discards) correctly fights that
   // kind of tampering by re-saving its known-good in-memory draft.
   const draft = {
-    schema: 'pedagogy.v9', mode: 'full', currentStepId: 'review',
+    schema: 'pedagogy.v10', mode: 'full', currentStepId: 'review',
     registration: {
-      name: 'Aisha Rahman', dob: '2009-05-14', parentMobile: '', studentMobile: null,
+      name: 'Aisha Rahman', dob: '2009-05-14',
+      parentCountryCode: '+971', parentMobileLocal: '', parentMobile: '',
+      studentCountryCode: '+971', studentMobileLocal: null, studentMobile: null,
       school: 'Delhi Private School Dubai', schoolKey: null, curriculum: 'Indian',
       grade: 'stage10', stream: null, section: null, subjects: [],
       tcsAccepted: true, consentToContact: true, marketingOptIn: false, marketingOptInAt: null,
@@ -503,7 +508,7 @@ test('timer survives free back-navigation instead of resetting', async ({ page }
   await page.waitForTimeout(300);
   await page.locator('#registerNextBtn').click(); // forward again — resumes, doesn't reset
   const remainingText = await page.locator('.quiz-timer').textContent();
-  expect(remainingText).toMatch(/4:5\d|4:4\d/); // still close to the ~5:00 start, not reset to 5:00 flat nor near zero
+  expect(remainingText).toMatch(/2:5\d|2:4\d/); // still close to the ~3:00 start, not reset to 3:00 flat nor near zero
   expect(beforeBack).toBeGreaterThan(1000);
 });
 
@@ -529,43 +534,6 @@ test('quiz filtering: an Indian PCM-stream visitor is served PCM-eligible questi
   expect(commerceOnlyQuestions).not.toContain(questionText);
 });
 
-// ===================== Phase 3: real express entry point =====================
-// js/hero.js's secondary "Just here for the quiz?" link now actually sets
-// draft.mode = 'express' (previously only reachable by seeding a draft
-// directly — see RUN_LOG.md's Phase 2 scope-check finding, now closed). This
-// test goes through the real button rather than seeding state.
-test('express entry point: hero secondary link starts a real 1-question, ~60s express path', async ({ page }) => {
-  await page.goto('/');
-  await page.locator('#heroExpressBtn').click();
-  await expect(page.locator('#appShell')).toBeVisible();
-  const mode = await page.evaluate(() => JSON.parse(localStorage.getItem('pedagogy-expo-draft')).mode);
-  expect(mode).toBe('express');
-  await fillValidRegistration(page);
-  await page.locator('#registerNextBtn').click();
-
-  await expect(page.locator('#stepContent h2')).not.toHaveText(''); // a real question rendered
-  await expect(page.locator('.quiz-timer')).toBeVisible();
-  const timerText = await page.locator('.quiz-timer').textContent();
-  expect(timerText).toMatch(/0:5\d|1:00/); // ~60s budget, not the full path's ~5:00
-  await page.locator('#quizOptions label').first().click();
-  await page.locator('#qNextBtn').click();
-
-  // express path per steps.js: destinations -> examPrep -> (examList) -> review
-  // (no games, no courses/activities/request — round C removed the latter
-  // three entirely, and express never had games to begin with).
-  await expect(page.locator('#stepContent h2')).toHaveText('Where could your next chapter begin?');
-  await page.getByText('India', { exact: true }).click();
-  await page.locator('#destNextBtn').click();
-  await page.locator('input[name=examPrep][value=no]').check();
-  await page.locator('#examPrepNextBtn').click();
-
-  await expect(page.locator('.review-section').first()).toBeVisible();
-  await expect(page.locator('.review-fields--quiz div')).toHaveCount(1); // exactly 1 question on express
-
-  await page.locator('#reviewSubmitBtn').click();
-  await expect(page.locator('.step-heading')).toHaveText("You're entered — thank you!");
-});
-
 test('score/points are never shown to the participant', async ({ page }) => {
   await startJourney(page);
   await fillValidRegistration(page);
@@ -578,7 +546,7 @@ test('score/points are never shown to the participant', async ({ page }) => {
 });
 
 // ===================== Phase 3: hero primary CTA still defaults to full =====================
-test('hero primary CTA still creates a full-mode draft (express link is additive, not a replacement)', async ({ page }) => {
+test('hero primary CTA still creates a full-mode draft', async ({ page }) => {
   await startJourney(page);
   const mode = await page.evaluate(() => JSON.parse(localStorage.getItem('pedagogy-expo-draft')).mode);
   expect(mode).toBe('full');
@@ -789,9 +757,11 @@ async function enterStaffDashboard(page) {
 
 function makeRecord(overrides) {
   return {
-    schema: 'pedagogy.v9', mode: 'full', currentStepId: 'review',
+    schema: 'pedagogy.v10', mode: 'full', currentStepId: 'review',
     registration: {
-      name: 'Aisha Rahman', dob: '2009-05-14', parentMobile: '+971501234567', studentMobile: null,
+      name: 'Aisha Rahman', dob: '2009-05-14',
+      parentCountryCode: '+971', parentMobileLocal: '501234567', parentMobile: '+971501234567',
+      studentCountryCode: '+971', studentMobileLocal: null, studentMobile: null,
       school: 'Delhi Private School Dubai', schoolKey: 'delhi-private-school-dubai', curriculum: 'Indian',
       grade: 'stage10', stream: null, section: null, subjects: [],
       tcsAccepted: true, tcsAcceptedAt: '2026-09-19T10:00:00.000Z',

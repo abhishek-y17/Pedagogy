@@ -12,16 +12,15 @@
   function wireHero(onStart) {
     const heroScreen = document.getElementById('heroScreen');
     const startBtn = document.getElementById('heroStartBtn');
-    const expressBtn = document.getElementById('heroExpressBtn');
     const banner = document.getElementById('prizeBanner');
     const tcsLink = document.getElementById('heroTcsLink');
     const visual = document.getElementById('heroVisual');
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // mode: 'full' | 'express'. Passed through to onStart so app.js can set
-    // draft.mode before the first render — the primary CTA/banner/drag-gesture
-    // all stay the default full-path choice; only the secondary express link
-    // below picks 'express'.
+    // mode is always 'full' now (the express entry link was removed per Abhi's
+    // 2026-09-20 voice note) — still passed through to onStart so app.js can
+    // set draft.mode before the first render, matching js/state.js/steps.js's
+    // existing 'full' | 'express' schema without touching it.
     function start(mode) {
       window.PED.haptics.tap();
       heroScreen.classList.add('hero-screen--exit');
@@ -33,7 +32,6 @@
 
     startBtn.addEventListener('click', () => start('full'));
     banner.addEventListener('click', () => start('full'));
-    if (expressBtn) expressBtn.addEventListener('click', () => start('express'));
     tcsLink.addEventListener('click', () => {
       window.PED.modal.open('Terms & Conditions', window.PED.registration.TCS_TEXT);
     });

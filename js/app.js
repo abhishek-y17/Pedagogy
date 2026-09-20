@@ -180,6 +180,8 @@
     PED.state.mutateDraft(draft, d => {
       d.registration.name = 'Test Visitor';
       d.registration.dob = testDob;
+      d.registration.parentCountryCode = '+971';
+      d.registration.parentMobileLocal = '501234567';
       d.registration.parentMobile = '+971501234567';
       d.registration.school = null;
       d.registration.schoolKey = null;

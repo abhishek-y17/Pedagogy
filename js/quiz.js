@@ -12,6 +12,14 @@
   window.PED = window.PED || {};
   const { escapeHtml } = window.PED.chips;
 
+  // A/B/C/D option labels (Abhi's 2026-09-20 voice note) — a display-only
+  // affordance added here at render time, deliberately NOT written into
+  // data/question_bank.json: the bank's `options` arrays stay plain answer
+  // text, so this never needs to be regenerated/kept in sync as the real
+  // ~50-70-question-per-tier bank arrives later. Questions with more than 4
+  // options (none currently) just render without a letter past D.
+  const OPTION_LETTERS = ['A', 'B', 'C', 'D'];
+
   /** Ensures draft.quiz.selectedQuestionIds is populated (once, at first entry
    * into any question step) using the visitor's derived curriculum/stream. */
   function ensureSelection(draft, datasets) {
@@ -96,7 +104,7 @@
         ${question.options.map((opt, i) => `
           <label for="qopt-${i}">
             <input type="radio" id="qopt-${i}" name="quizOption" value="${escapeHtml(opt)}"${existingAnswer && existingAnswer.selected === opt ? ' checked' : ''}${expired ? ' disabled' : ''}>
-            <span>${escapeHtml(opt)}</span>
+            <span><b class="quiz-option-letter" aria-hidden="true">${OPTION_LETTERS[i] || ''}</b>${escapeHtml(opt)}</span>
           </label>`).join('')}
       </div>
       <div class="step-actions">

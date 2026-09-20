@@ -15,7 +15,12 @@
   // otherwise be empty). Safe to invalidate old in-progress drafts on load
   // (loadDraft() below just treats a schema mismatch as "no draft") — this is
   // pre-launch dev/rehearsal data only, never a real visitor record.
-  const SCHEMA = 'pedagogy.v9';
+  // Bumped v9 -> v10 (2026-09-20): parentMobile/studentMobile split into an
+  // editable country-code field (preset +971) plus a local-number field — see
+  // js/registration.js. The combined, validated value still lands in
+  // parentMobile/studentMobile at Continue/Submit time, so review.js/staff.js/
+  // the duplicate-matching logic in this file are unaffected.
+  const SCHEMA = 'pedagogy.v10';
   const RECORDS_KEY = 'pedagogy-expo-records';
   const DRAFT_KEY = 'pedagogy-expo-draft';
 
@@ -29,8 +34,12 @@
       registration: {
         name: null,
         dob: null,
-        parentMobile: null,   // mandatory
-        studentMobile: null,  // optional
+        parentCountryCode: '+971',  // editable; preset to UAE, mandatory field's number lives in parentMobileLocal
+        parentMobileLocal: null,    // mandatory — raw local number as typed, no country code
+        parentMobile: null,         // final combined +countrycode+number, set only once validated at Continue/Submit
+        studentCountryCode: '+971', // optional field's own country code
+        studentMobileLocal: null,   // optional — raw local number as typed
+        studentMobile: null,        // final combined, set only once validated
         school: null,
         schoolKey: null,
         curriculum: null,     // from schools.json tag, or manual fallback

@@ -1,8 +1,9 @@
 // Classic script. Registration step: date of birth (not an age band), two
-// visually distinct phone fields (parent mandatory, student optional), real
-// T&Cs modal + two separate checkboxes, school autocomplete against the real
-// dataset with curriculum auto-fill/skip, and a non-alarming popup (not a
-// silent block) when the parent number is missing at submit.
+// visually distinct phone fields (parent mandatory, student optional), each
+// split into its own editable country-code box (preset +971) and local-number
+// box, real T&Cs modal + two separate checkboxes, school autocomplete against
+// the real dataset with curriculum auto-fill/skip, and a non-alarming popup
+// (not a silent block) when the parent number is missing at submit.
 (function () {
   'use strict';
   window.PED = window.PED || {};
@@ -33,7 +34,9 @@
   // neutral placeholder. This fallback is ALSO what "Other" and SABIS
   // curricula land on post-selection (see comment above), so it has to stay
   // curriculum-neutral in both positions, not just as a loading-state default.
-  const PLAIN_GRADE_LABELS = ['10th year of school', '11th year of school', '12th year of school'];
+  // Shortened again same day (Abhi, 2026-09-20 voice note): "10th year of
+  // school" read as too wordy live — plain ordinal only.
+  const PLAIN_GRADE_LABELS = ['10th', '11th', '12th'];
   // Internal value is stable across curricula so downstream filtering never has to care
   // which label the visitor actually saw.
   const GRADE_VALUES = ['stage10', 'stage11', 'stage12'];
@@ -59,18 +62,38 @@
     return /^\+[1-9]\d{7,14}$/.test(s) ? s : null;
   }
 
+  // Country code + local number now live in two separate boxes (Abhi's
+  // 2026-09-20 voice note — preset +971, editable for other countries).
+  // Combines them into the same E.164-ish string normalizePhone() already
+  // validates, dropping a leading trunk '0' from the local number (visitors
+  // habitually type "05xxxxxxxx" even once the +971 is already supplied
+  // separately by the country-code box).
+  function combinePhone(countryCode, localNumber) {
+    let num = (localNumber || '').replace(/\D/g, '');
+    if (!num) return null;
+    if (num.startsWith('0')) num = num.slice(1);
+    return normalizePhone((countryCode || '+971') + num);
+  }
+
   // Letters (incl. accented), spaces, hyphens, apostrophes, periods only — covers
   // "Mary-Jane", "O'Brien", "Md. Rahman", rejects digits/symbols like "test@gmail.com".
   const NAME_PATTERN = /^[\p{L}][\p{L}\s'.-]*$/u;
 
   // Live-filtering helpers: strip disallowed characters as the visitor types,
-  // rather than only rejecting at submit. normalizePhone() above stays the
-  // real format check at submit — these just keep junk characters out along the way.
+  // rather than only rejecting at submit. normalizePhone()/combinePhone() above
+  // stay the real format check at submit — these just keep junk characters out
+  // along the way.
   function sanitizeName(v) {
     return (v || '').replace(/[^\p{L}\s'.-]/gu, '');
   }
+  // Local-number box: digits only — the country code lives in its own box now.
   function sanitizePhoneInput(v) {
-    return (v || '').replace(/[^\d+\-\s()]/g, '');
+    return (v || '').replace(/\D/g, '');
+  }
+  // Country-code box: a single leading '+' followed by digits only.
+  function sanitizeCountryCode(v) {
+    const digits = (v || '').replace(/\D/g, '');
+    return digits ? '+' + digits : '';
   }
 
   // Deliberately generous bounds (not a strict 15–18) — this is a fat-finger
@@ -112,11 +135,11 @@
     if (!reg.tcsAccepted) return { ok: false, kind: 'alert', message: 'Please accept the Terms & Conditions to continue.' };
     if (!reg.consentToContact) return { ok: false, kind: 'alert', message: 'Please agree to be contacted (including via WhatsApp) to continue.' };
 
-    const parentPhone = normalizePhone(reg.parentMobile);
+    const parentPhone = combinePhone(reg.parentCountryCode, reg.parentMobileLocal);
     if (!parentPhone) return { ok: false, kind: 'parentMissing' };
 
-    const studentPhone = reg.studentMobile ? normalizePhone(reg.studentMobile) : null;
-    if (reg.studentMobile && !studentPhone) return { ok: false, kind: 'alert', message: 'That student mobile number doesn’t look valid — use an international format or a UAE 05xxxxxxxx number.' };
+    const studentPhone = reg.studentMobileLocal ? combinePhone(reg.studentCountryCode, reg.studentMobileLocal) : null;
+    if (reg.studentMobileLocal && !studentPhone) return { ok: false, kind: 'alert', message: 'That student mobile number doesn’t look valid — check the country code and number.' };
 
     return { ok: true, parentPhone, studentPhone };
   }
@@ -188,14 +211,22 @@
         <div class="contact-card contact-card--required">
           <p class="contact-card-label">Parent / guardian mobile <span class="badge badge--required">Required</span></p>
           <p class="field-hint">Needed so a parent can be reached to arrange prize handover to a minor.</p>
-          <input type="tel" id="regParentMobile" placeholder="+971 5xxxxxxxx" value="${escapeHtml(reg.parentMobile || '')}"
-            autocomplete="off-parent-mobile-x" spellcheck="false" autocorrect="off">
+          <div class="phone-input-row">
+            <input type="tel" id="regParentCountryCode" class="phone-country-code" placeholder="+971"
+              value="${escapeHtml(reg.parentCountryCode || '+971')}" autocomplete="off-parent-cc-x" spellcheck="false" autocorrect="off" aria-label="Parent/guardian country code">
+            <input type="tel" id="regParentMobile" class="phone-number" placeholder="5xxxxxxxx" value="${escapeHtml(reg.parentMobileLocal || '')}"
+              autocomplete="off-parent-mobile-x" spellcheck="false" autocorrect="off" aria-label="Parent/guardian mobile number">
+          </div>
           <p class="field-hint field-hint--soft">We may reach out on WhatsApp &mdash; please make sure this number is active on WhatsApp.</p>
         </div>
         <div class="contact-card contact-card--optional">
           <p class="contact-card-label">Student mobile</p>
-          <input type="tel" id="regStudentMobile" placeholder="+971 5xxxxxxxx" value="${escapeHtml(reg.studentMobile || '')}"
-            autocomplete="off-student-mobile-x" spellcheck="false" autocorrect="off">
+          <div class="phone-input-row">
+            <input type="tel" id="regStudentCountryCode" class="phone-country-code" placeholder="+971"
+              value="${escapeHtml(reg.studentCountryCode || '+971')}" autocomplete="off-student-cc-x" spellcheck="false" autocorrect="off" aria-label="Student country code">
+            <input type="tel" id="regStudentMobile" class="phone-number" placeholder="5xxxxxxxx" value="${escapeHtml(reg.studentMobileLocal || '')}"
+              autocomplete="off-student-mobile-x" spellcheck="false" autocorrect="off" aria-label="Student mobile number">
+          </div>
           <p class="field-hint field-hint--soft">We may reach out on WhatsApp &mdash; please make sure this number is active on WhatsApp.</p>
         </div>
       </div>
@@ -207,7 +238,6 @@
         </label>
         <ul class="school-suggestions" id="schoolSuggestions" hidden></ul>
         <p class="field-hint" id="schoolCurriculumNote" hidden></p>
-        <button type="button" class="link-btn" id="schoolNotListedBtn">My school isn't listed</button>
       </div>
 
       <div class="field-row two-col">
@@ -325,15 +355,25 @@
       window.PED.state.mutateDraft(draft, () => { reg.name = clean; });
     });
     $('#regDob').addEventListener('change', e => window.PED.state.mutateDraft(draft, () => { reg.dob = e.target.value; }));
+    $('#regParentCountryCode').addEventListener('input', e => {
+      const clean = sanitizeCountryCode(e.target.value);
+      if (clean !== e.target.value) e.target.value = clean;
+      window.PED.state.mutateDraft(draft, () => { reg.parentCountryCode = clean; });
+    });
     $('#regParentMobile').addEventListener('input', e => {
       const clean = sanitizePhoneInput(e.target.value);
       if (clean !== e.target.value) e.target.value = clean;
-      window.PED.state.mutateDraft(draft, () => { reg.parentMobile = clean; });
+      window.PED.state.mutateDraft(draft, () => { reg.parentMobileLocal = clean; });
+    });
+    $('#regStudentCountryCode').addEventListener('input', e => {
+      const clean = sanitizeCountryCode(e.target.value);
+      if (clean !== e.target.value) e.target.value = clean;
+      window.PED.state.mutateDraft(draft, () => { reg.studentCountryCode = clean; });
     });
     $('#regStudentMobile').addEventListener('input', e => {
       const clean = sanitizePhoneInput(e.target.value);
       if (clean !== e.target.value) e.target.value = clean;
-      window.PED.state.mutateDraft(draft, () => { reg.studentMobile = clean; });
+      window.PED.state.mutateDraft(draft, () => { reg.studentMobileLocal = clean; });
     });
     $('#regCurriculum').addEventListener('change', e => {
       window.PED.state.mutateDraft(draft, () => { reg.curriculum = e.target.value; reg.stream = null; });
@@ -417,16 +457,6 @@
     });
     schoolInput.addEventListener('blur', () => setTimeout(clearSuggestions, 150));
 
-    $('#schoolNotListedBtn').addEventListener('click', () => {
-      window.PED.state.mutateDraft(draft, () => { reg.school = reg.school || ''; reg.schoolKey = 'unlisted'; });
-      clearSuggestions();
-      curriculumNoteEl.hidden = false;
-      curriculumNoteEl.textContent = "No problem — just fill in your curriculum below.";
-      $('#regCurriculum').innerHTML = '<option value="">Choose</option>' + renderOptions(CURRICULA);
-      setCurriculum(null, null);
-      schoolInput.focus();
-    });
-
     // --- Full-name soft hint (mononyms are common here; never a hard block) ---
     const nameHintEl = $('#nameHint');
     $('#regName').addEventListener('blur', () => {
@@ -456,8 +486,8 @@
   }
 
   window.PED.registration = {
-    renderRegister, gradeOptionsFor, getStreamOptions, normalizePhone, TCS_TEXT,
+    renderRegister, gradeOptionsFor, getStreamOptions, normalizePhone, combinePhone, TCS_TEXT,
     validateRegistrationForSubmit, presentValidationFailure,
-    NAME_PATTERN, sanitizeName, sanitizePhoneInput, MIN_AGE, MAX_AGE, ageFromDob,
+    NAME_PATTERN, sanitizeName, sanitizePhoneInput, sanitizeCountryCode, MIN_AGE, MAX_AGE, ageFromDob,
   };
 })();

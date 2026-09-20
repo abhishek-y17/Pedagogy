@@ -244,11 +244,6 @@ label { display: block; font-size: 13px; font-weight: 650; margin: 0 0 16px; }
 
 .hero-cta { font-size: 16px; padding: 15px 30px; }
 
-/* Secondary, visually lighter entry point into the express path (Phase 3) —
-   the primary CTA above stays the default full-path choice; this is a quieter
-   text link underneath it, not a second button competing for attention. */
-.hero-express-link { display: block; margin: 14px 0 0; font-size: 13px; }
-
 .hero-fineprint {
   font-size: 12px;
   color: var(--muted);
@@ -466,6 +461,9 @@ main {
   background: #fbfcf8;
   border-style: dashed;
 }
+.phone-input-row { display: flex; gap: 8px; }
+.phone-input-row .phone-country-code { width: 84px; flex: 0 0 auto; text-align: center; padding-left: 8px; padding-right: 8px; }
+.phone-input-row .phone-number { flex: 1 1 auto; }
 .badge { font-size: 10px; letter-spacing: .6px; padding: 3px 8px; border-radius: var(--radius-pill); font-weight: 800; }
 .badge--required { background: var(--green); color: white; }
 .badge--optional { background: var(--line); color: var(--muted); }
@@ -638,7 +636,42 @@ main {
   margin: 0 0 16px;
 }
 .quiz-timer--low { color: #8a3b1f; background: #fbe9e2; border-color: #eab99f; }
-.chips--quiz label span { min-width: 64px; text-align: center; }
+/* Quiz options: one full-width row per option (not a wrapping pill row like
+   other chip groups) — answer text length varies too much (a bare "8" next
+   to a full sentence) for a shrink-wrapped centered pill to read well; a
+   left-aligned row with a fixed-size letter badge keeps every option the
+   same shape regardless of its text length. */
+.chips--quiz { flex-direction: column; flex-wrap: nowrap; }
+.chips--quiz label { width: 100%; }
+/* Direct-child combinator: this must only style the option's own outer pill,
+   not also `.quiz-option-letter` nested inside it — `.chips span` (a plain
+   descendant selector) matches both, and its tag-qualified specificity beats
+   a class-only rule, which is exactly what inflated the letter badge into a
+   full-width pill the first time this was tried. The badge is a <b>, not a
+   <span>, precisely so no span-descendant selector can catch it by accident. */
+.chips--quiz label > span {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  text-align: left;
+  padding: 14px 18px;
+}
+.quiz-option-letter {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--line);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 800;
+  font-style: normal;
+}
+.chips--quiz input:checked + span .quiz-option-letter { background: rgba(255, 255, 255, 0.25); color: white; }
 
 /* Review screen (Phase 2, session_handoff.md item D) */
 .review-section {
