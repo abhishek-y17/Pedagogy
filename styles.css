@@ -599,6 +599,7 @@ main {
    reference/pedagogy-expo.html, no score/points anywhere per standing decision. */
 .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 8px 0 18px; max-width: 420px; }
 .tile {
+  position: relative;
   aspect-ratio: 1; min-height: 56px; padding: 0;
   border: 1px solid var(--line); border-radius: var(--radius-sm);
   background: white; font-size: 18px; font-weight: 700; color: var(--ink);
@@ -615,6 +616,20 @@ main {
 .tile--miss { transform: translateX(0); animation: tile-shake .22s ease; border-color: #c0503a; }
 @keyframes tile-shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
 .tile--symbol { font-size: 26px; }
+/* Number Trail (2026-09-21 rework): a tapped-but-not-yet-confirmed tile in the
+   visitor's own build-your-order guess — distinct from .tile--correct, which
+   only applies once the full order is confirmed right. Tapping again removes
+   it (the "unclick" affordance), so this state must look editable/selected,
+   not locked/final. */
+.tile--selected { background: var(--pedagogy-blue); color: white; border-color: var(--pedagogy-blue); }
+.tile-order-badge {
+  position: absolute; top: 4px; left: 6px;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9); color: var(--pedagogy-blue);
+  font-size: 11px; font-weight: 800; font-style: normal;
+}
+.tile-value { pointer-events: none; }
 .pattern {
   font-size: 30px; letter-spacing: 10px; text-align: center;
   padding: 22px 10px; margin: 8px 0 16px;
@@ -686,9 +701,36 @@ main {
 .review-fields > div { display: flex; justify-content: space-between; gap: 16px; align-items: baseline; }
 .review-fields dt { color: var(--muted); font-size: 12px; flex: 0 0 auto; }
 .review-fields dd { margin: 0; font-weight: 600; text-align: right; }
-.review-fields--quiz > div { flex-wrap: wrap; }
-.review-fields--quiz dt { flex-basis: 100%; font-weight: 700; color: var(--ink); }
-.review-fields--quiz dd { text-align: left; }
+/* Each academic question is its own visually separate block (not a run of
+   thin dl-rows) so the question, its options, and the pick read as one
+   grouped unit at a glance — see js/review.js's renderQuizSection(). */
+.review-quiz-item {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin: 0 0 12px;
+  background: var(--bg);
+}
+.review-quiz-item:last-child { margin-bottom: 0; }
+.review-quiz-item-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 0 0 6px; }
+.review-quiz-number { margin: 0; font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.review-quiz-question { margin: 0 0 10px; font-weight: 700; color: var(--ink); }
+.review-quiz-options { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.review-quiz-options li {
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  color: var(--muted);
+  background: white;
+}
+.review-quiz-options li.review-quiz-options--selected {
+  border-color: var(--green);
+  background: #eef6ea;
+  color: var(--ink);
+  font-weight: 700;
+}
+.review-quiz-status { margin: 8px 0 0; font-size: 12px; color: var(--muted); font-style: italic; }
 
 /* ============================= STAFF DASHBOARD ============================= */
 /* Phase 4. Reuses .review-section/.review-fields/.badge from the review
@@ -701,6 +743,10 @@ main {
 .staff-record { margin-bottom: 20px; }
 .staff-record--flagged { border-left: 4px solid #c0503a; }
 .badge--duplicate { background: #c0503a; color: white; }
+/* Destructive action (js/staff.js's "Clear all local data") — same warning
+   tone as the duplicate-flag styling above, not a new hue. */
+.staff-clear-all { border-color: #c0503a; color: #c0503a; }
+.staff-clear-all:hover, .staff-clear-all:active { background: #c0503a; color: white; }
 .staff-duplicate-actions {
   margin-top: 12px;
   padding-top: 12px;
@@ -725,6 +771,52 @@ main {
   gap: 14px;
 }
 .site-footer p { margin: 0; }
+
+/* ============================= SUBMIT CONFIRMATION ============================= */
+/* Reworked 2026-09-21 (live feedback): the plain text-only version didn't
+   read as a real confirmation. Code-drawn checkmark + confetti burst only
+   (no image assets, per CLAUDE.md's visual-design direction), auto-redirect
+   note driven by js/review.js's countdown. */
+.submitted-confirm { text-align: center; padding: 12px 0 4px; animation: submitted-in .4s ease; }
+@keyframes submitted-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+.submitted-badge { position: relative; width: 96px; height: 96px; margin: 0 auto 18px; }
+.submitted-badge-ring {
+  stroke: var(--green);
+  stroke-dasharray: 227;
+  stroke-dashoffset: 227;
+  animation: submitted-ring-draw .6s ease forwards;
+}
+.submitted-badge-check {
+  stroke: var(--green);
+  stroke-dasharray: 50;
+  stroke-dashoffset: 50;
+  animation: submitted-check-draw .35s .55s ease forwards;
+}
+@keyframes submitted-ring-draw { to { stroke-dashoffset: 0; } }
+@keyframes submitted-check-draw { to { stroke-dashoffset: 0; } }
+.submitted-confetti { position: absolute; inset: 0; pointer-events: none; }
+.confetti-dot {
+  position: absolute; top: 50%; left: 50%;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--pedagogy-blue);
+  opacity: 0;
+  animation: confetti-burst .9s ease-out forwards;
+  animation-delay: .55s;
+  transform: rotate(calc(var(--i) * 36deg)) translateY(0) scale(1);
+}
+.confetti-dot:nth-child(odd) { background: var(--green); }
+@keyframes confetti-burst {
+  0% { opacity: 1; transform: rotate(calc(var(--i) * 36deg)) translateY(0) scale(1); }
+  100% { opacity: 0; transform: rotate(calc(var(--i) * 36deg)) translateY(-46px) scale(.4); }
+}
+.submitted-lead { max-width: 42ch; margin: 0 auto 10px; font-size: 16px; }
+.submitted-whatsapp { max-width: 38ch; margin: 0 auto 18px; font-size: 13px; color: var(--muted); }
+.submitted-confirm .step-actions { justify-content: center; }
+.submitted-redirect-note { margin: 14px 0 0; font-size: 12px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) {
+  .submitted-confirm, .submitted-badge-ring, .submitted-badge-check { animation: none; }
+  .submitted-badge-ring, .submitted-badge-check { stroke-dashoffset: 0; }
+}
 
 /* ============================= MODAL ============================= */
 .modal-overlay {

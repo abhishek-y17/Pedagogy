@@ -7,6 +7,29 @@
   window.PED = window.PED || {};
   const { escapeHtml, renderChipGrid } = window.PED.chips;
 
+  /** Keeps preferences.competitiveExams in sync with the current destination
+   * selection. Without this, going back and changing destinations after
+   * already answering the exam-prep step leaves stale entries behind: the
+   * free-text "Other" answer survives after a real country is added (and
+   * review.js's Other-first check then hides the real per-country picks the
+   * visitor made afterwards), and a per-country exam list survives after that
+   * country is deselected (rendering a phantom "Country: " line on review). */
+  function pruneCompetitiveExams(prefs) {
+    const exams = prefs.competitiveExams;
+    if (!exams) return;
+    const namedDestinations = prefs.destinations.filter(d => d !== 'Other');
+    if (namedDestinations.length === 0) {
+      for (const key of Object.keys(exams)) {
+        if (key !== 'Other') delete exams[key];
+      }
+    } else {
+      delete exams.Other;
+      for (const key of Object.keys(exams)) {
+        if (!namedDestinations.includes(key)) delete exams[key];
+      }
+    }
+  }
+
   function renderDestinations(container, draft, datasets, onNext, onBack) {
     const prefs = draft.preferences;
     const destinationKeys = Object.keys(datasets.destinationExams.destinations); // the 9 named + "Other"
@@ -58,7 +81,10 @@
       selected: prefs.destinations,
       exclusiveValues: [],
       onChange: selected => {
-        window.PED.state.mutateDraft(draft, () => { prefs.destinations = selected; });
+        window.PED.state.mutateDraft(draft, () => {
+          prefs.destinations = selected;
+          pruneCompetitiveExams(prefs);
+        });
         const otherIsSelected = selected.includes('Other');
         if (otherIsSelected && !otherWasSelected) openCountrySearch();
         otherWasSelected = otherIsSelected;
@@ -233,5 +259,5 @@
     $('#examListNextBtn').addEventListener('click', onNext);
   }
 
-  window.PED.destinations = { renderDestinations, renderExamPrep, renderExamList, groupExamsByCountry };
+  window.PED.destinations = { renderDestinations, renderExamPrep, renderExamList, groupExamsByCountry, pruneCompetitiveExams };
 })();

@@ -47,7 +47,15 @@
   const onJump = stepId => { PED.state.mutateDraft(draft, d => PED.steps.goToStep(d, stepId)); renderStep(); };
   const onSubmitted = () => {
     draft = PED.state.resetForNewVisitor(draft.mode);
+    PED.games.resetGameState();
     appShell.hidden = true;
+    // hero.js's start() adds 'hero-screen--exit' (opacity:0, pointer-events:none)
+    // when a visitor begins their journey and never removes it — showing the
+    // hero again here without clearing it left it invisible and completely
+    // unclickable for every visitor after the very first submission of the
+    // day (reported live 2026-09-21). Must be cleared every time the hero is
+    // shown again, not just once at boot.
+    heroScreen.classList.remove('hero-screen--exit');
     heroScreen.hidden = false;
   };
 
@@ -121,6 +129,7 @@
   newVisitorBtn.addEventListener('click', () => {
     if (!confirm('Start a new visitor? The current in-progress entry (not yet submitted) will be cleared.')) return;
     draft = PED.state.resetForNewVisitor(draft.mode);
+    PED.games.resetGameState();
     renderStep();
     showView('home');
   });
@@ -174,6 +183,7 @@
   // tested without re-typing a full registration every time.
   function jumpToQuizForTesting() {
     draft = PED.state.resetForNewVisitor('full');
+    PED.games.resetGameState();
     const today = new Date();
     const testDob = new Date(today.getFullYear() - 16, today.getMonth(), today.getDate()).toISOString().slice(0, 10);
     const nowIso = new Date().toISOString();
@@ -211,7 +221,18 @@
       `${questions.length} questions (validated)`
     );
 
-    draft = PED.state.loadDraft() || PED.state.createDraft('full');
+    // Reported live 2026-09-21: a refresh while still on the registration
+    // form kept showing stale values from a previous attempt (old test name/
+    // phone numbers), which read as "this should have reset." A visitor who
+    // hasn't advanced past registration hasn't made any progress worth
+    // protecting, so that specific case now discards the loaded draft and
+    // starts genuinely blank. Once currentStepId has moved past 'register',
+    // the resilience this was built for is unchanged: a real visitor's
+    // quiz/preference progress still survives an iPad Safari background-tab
+    // discard exactly as before — only the pre-registration case changed.
+    let loaded = PED.state.loadDraft();
+    if (loaded && loaded.currentStepId === 'register') loaded = null;
+    draft = loaded || PED.state.createDraft('full');
     PED.state.saveDraft(draft);
     console.log('[pedagogy] draft state ready', draft.schema, draft.mode, draft.currentStepId);
 

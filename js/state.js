@@ -112,6 +112,18 @@
     try { localStorage.removeItem(DRAFT_KEY); } catch (e) { /* ignore */ }
   }
 
+  /** Wipes every finalized record AND the in-progress draft on this device.
+   * A genuinely destructive, staff-only action (js/staff.js gates it behind
+   * a confirm() prompt) — added per PLAN.md Phase 6's "a way to reset
+   * devices between test runs" and a repeated live request to clear
+   * leftover test/demo data. Deliberately not scoped to "test records only":
+   * there is no real/test distinction in this schema, and a partial wipe
+   * would risk leaving stale duplicate-match references behind. */
+  function clearAllData() {
+    try { localStorage.removeItem(RECORDS_KEY); } catch (e) { /* ignore */ }
+    clearDraft();
+  }
+
   /**
    * Mutate the draft and immediately persist it. This is the pattern every
    * form field / step transition uses so a mid-registration background-tab
@@ -168,6 +180,31 @@
     return records.filter(r => isReasonableMatch(candidate, r));
   }
 
+  /** Real bug, reported live 2026-09-21: `crypto.randomUUID()` throws in any
+   * non-secure context (plain http:// over anything other than localhost —
+   * e.g. one stall device serving the app and a second device, like an iPad,
+   * reaching it over the LAN by IP address instead of localhost, which is
+   * exactly how testing across two physical devices tends to happen). Since
+   * this call sat inside finalizeDraft() with nothing catching it, the
+   * uncaught exception silently killed the Submit handler right after
+   * validation passed but before the confirmation screen ever rendered —
+   * the button visually responded (a plain CSS :active state, no JS needed
+   * for that) but the screen never advanced and no popup ever showed, since
+   * the code never reached a point that would show one. This generator
+   * tries the real crypto API first and falls back to a plain
+   * Math.random()-based v4-shaped id otherwise — fine here since this id is
+   * only ever used as a local record key, never anything security-sensitive. */
+  function generateId() {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      try { return crypto.randomUUID(); } catch (e) { /* insecure context or unsupported — fall through */ }
+    }
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = (Math.random() * 16) | 0;
+      const v = c === 'x' ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  }
+
   /**
    * Only point at which a draft becomes a saved, finalized record (Phase 2:
    * wired to the review screen's single Submit action — see js/review.js).
@@ -192,7 +229,7 @@
       });
     }
     const records = loadRecords();
-    draft.meta.id = draft.meta.id || `P-${crypto.randomUUID()}`;
+    draft.meta.id = draft.meta.id || `P-${generateId()}`;
     draft.meta.createdAt = new Date().toISOString();
 
     const matches = findDuplicateMatches(records, draft);
@@ -250,6 +287,7 @@
     loadDraft,
     saveDraft,
     clearDraft,
+    clearAllData,
     mutateDraft,
     resetForNewVisitor,
     finalizeDraft,

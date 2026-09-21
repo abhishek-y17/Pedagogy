@@ -10,9 +10,11 @@ async function completeRegistrationToDestinations(page, overrides) {
   await fillValidRegistration(page, overrides);
   await page.locator('#registerNextBtn').click();
   // 'q1' (the first academic question) sits between register and destinations
-  // in the real step order — free navigation means Next works whether or not
-  // it's answered, same as any other question this round (no skip button yet).
+  // in the real step order. Next is gated on an actual answer (or Skip) being
+  // given — reported live 2026-09-21 that free-advance-with-nothing-picked
+  // was the wrong default for an academic question.
   await expect(page.locator('#quizOptions')).toBeVisible();
+  await page.locator('#quizOptions label').first().click();
   await page.locator('#qNextBtn').click();
   await expect(page.locator('#stepContent h2')).toHaveText('Where could your next chapter begin?');
 }
@@ -221,6 +223,26 @@ test('picking a known school prefills curriculum and skips the manual question',
   expect(curriculumLabelVisible).toBe(false);
 });
 
+// Reported live 2026-09-21: picking a school did nothing on a real iPad.
+// Root cause: tapping a suggestion fires `blur` on the input (Safari's touch
+// focus handling) before a `click` handler on the <li> would run, so the old
+// click-based listener could lose the race and never fire at all. Playwright's
+// default `.click()` doesn't reproduce this (it dispatches a full, correctly-
+// ordered mouse sequence even on the iPad project), so this test deliberately
+// fires the same adversarial ordering by hand: pointerdown, then an immediate
+// blur, with no click event at all — proving the fix (committing on
+// pointerdown + preventDefault, before blur can ever fire) actually holds.
+test('a school suggestion is selected even if the input blurs immediately after (real-device touch race)', async ({ page }) => {
+  await startJourney(page);
+  await page.locator('#regSchoolInput').fill('Delhi Private School');
+  const firstSuggestion = page.locator('#schoolSuggestions li').first();
+  await expect(firstSuggestion).toBeVisible();
+  await firstSuggestion.dispatchEvent('pointerdown');
+  await page.locator('#regSchoolInput').dispatchEvent('blur');
+  await expect(page.locator('#regSchoolInput')).toHaveValue(/Delhi Private School/);
+  await expect(page.locator('#curriculumDerivedLine')).toBeVisible();
+});
+
 test('derived curriculum line has a working "Change it" to reveal the manual select', async ({ page }) => {
   await startJourney(page);
   await page.locator('#regSchoolInput').fill('Delhi Private School');
@@ -292,6 +314,50 @@ test('"Other" as the only destination falls back to free-text exam entry', async
   await expect(page.locator('#examFreeText')).toBeVisible();
 });
 
+test('going back and adding a real destination after an Other-only free-text exam answer clears the stale free text (reported review-screen bug)', async ({ page }) => {
+  await startJourney(page);
+  await completeRegistrationToDestinations(page);
+  await page.getByText('Other', { exact: true }).click();
+  await page.locator('.modal-close').click();
+  await page.locator('#destNextBtn').click();
+  await page.locator('input[name=examPrep][value=yes]').check();
+  await page.locator('#examPrepNextBtn').click();
+  await page.locator('#examFreeText').fill('TestAS for Germany');
+
+  // Back to destinations, add a real country alongside "Other".
+  await page.locator('#examListBackBtn').click();
+  await page.locator('#examPrepBackBtn').click();
+  await page.getByText('India', { exact: true }).click();
+  await page.locator('#destNextBtn').click();
+  await page.locator('#examPrepNextBtn').click(); // Yes already persisted
+
+  // Exam list should now show the real India chip group, not the stale free-text box.
+  await expect(page.locator('#examFreeText')).toHaveCount(0);
+  await expect(page.locator('.exam-group-label')).toHaveText(['India']);
+});
+
+test('deselecting a destination after picking its exams removes that country from the record (reported review-screen bug)', async ({ page }) => {
+  await startJourney(page);
+  await completeRegistrationToDestinations(page);
+  await page.getByText('India', { exact: true }).click();
+  await page.getByText('United Kingdom', { exact: true }).click();
+  await page.locator('#destNextBtn').click();
+  await page.locator('input[name=examPrep][value=yes]').check();
+  await page.locator('#examPrepNextBtn').click();
+  await page.getByText('NEET-UG').click();
+  await page.getByText('UCAT', { exact: true }).click();
+
+  // Back to destinations, deselect United Kingdom.
+  await page.locator('#examListBackBtn').click();
+  await page.locator('#examPrepBackBtn').click();
+  await page.getByText('United Kingdom', { exact: true }).click();
+  await page.locator('#destNextBtn').click();
+  await page.locator('#examPrepNextBtn').click();
+
+  await expect(page.locator('.exam-group-label')).toHaveText(['India']);
+  await expect(page.getByText('UCAT', { exact: true })).toHaveCount(0);
+});
+
 test('destinations "Other" search overlay finds and adds a specific country', async ({ page }) => {
   await startJourney(page);
   await completeRegistrationToDestinations(page);
@@ -340,6 +406,25 @@ test('draft persists across a reload (survives a backgrounded-tab discard)', asy
   await page.reload();
   await expect(page.locator('#appShell')).toBeVisible();
   await expect(page.locator('#stepContent h2')).toHaveText('Where could your next chapter begin?');
+});
+
+// Reported live 2026-09-21: refreshing while still on the registration form
+// kept showing stale values from a previous attempt, which read as a bug —
+// a visitor who hasn't advanced past registration hasn't lost any real
+// progress, so that specific case now starts genuinely blank on reload.
+// Once past registration, the resilience above (survives a reload) is
+// unchanged — only this pre-registration case is different now.
+test('reloading while still on the registration form starts blank, not with stale values from before', async ({ page }) => {
+  await startJourney(page);
+  await fillValidRegistration(page, { name: 'Stale Test Name' });
+  await expect(page.locator('#regName')).toHaveValue('Stale Test Name');
+
+  await page.reload();
+  await page.locator('#heroStartBtn').click();
+  await expect(page.locator('#appShell')).toBeVisible();
+  await expect(page.locator('#stepContent h2')).toHaveText('First, make it yours.');
+  await expect(page.locator('#regName')).toHaveValue('');
+  await expect(page.locator('#regTcs')).not.toBeChecked();
 });
 
 test('staff dashboard has no visible nav entry and requires long-press + PIN', async ({ page }) => {
@@ -392,15 +477,19 @@ async function walkDestinationsToReview(page) {
 
   await playGame1(page);
   await expect(page.locator('#quizOptions')).toBeVisible(); // q2
-  await page.locator('#qNextBtn').click({ force: true });
+  await page.locator('#quizOptions label').first().click();
+  await page.locator('#qNextBtn').click();
   await expect(page.locator('#quizOptions')).toBeVisible(); // q3
-  await page.locator('#qNextBtn').click({ force: true });
+  await page.locator('#quizOptions label').first().click();
+  await page.locator('#qNextBtn').click();
 
   await playGame2(page);
   await expect(page.locator('#quizOptions')).toBeVisible(); // q4
-  await page.locator('#qNextBtn').click({ force: true });
+  await page.locator('#quizOptions label').first().click();
+  await page.locator('#qNextBtn').click();
   await expect(page.locator('#quizOptions')).toBeVisible(); // q5
-  await page.locator('#qNextBtn').click({ force: true });
+  await page.locator('#quizOptions label').first().click();
+  await page.locator('#qNextBtn').click();
 
   await expect(page.locator('.review-section').first()).toBeVisible();
 }
@@ -416,7 +505,12 @@ test('final review screen shows registration, preferences and quiz answers', asy
 
   await expect(page.locator('.review-section').first()).toBeVisible();
   await expect(page.locator('.review-section', { hasText: 'Registration' })).toContainText('Aisha Rahman');
-  await expect(page.locator('.review-fields--quiz')).toContainText('Q1');
+  // Each question is its own block: number, full question text, every option
+  // (not just the pick), and the selected option visually marked.
+  await expect(page.locator('.review-quiz-item').first()).toContainText('Question 1 of 5');
+  await expect(page.locator('.review-quiz-item').first().locator('.review-quiz-question')).not.toBeEmpty();
+  await expect(page.locator('.review-quiz-item').first().locator('.review-quiz-options li')).toHaveCount(4);
+  await expect(page.locator('.review-quiz-item').first().locator('.review-quiz-options--selected')).toHaveCount(1);
 });
 
 test('tapping Edit on a review section jumps back to that exact step', async ({ page }) => {
@@ -435,7 +529,7 @@ test('submitting the review finalizes the record and only then (no earlier point
 
   const recordsBefore = await page.evaluate(() => JSON.parse(localStorage.getItem('pedagogy-expo-records') || '[]').length);
   await page.locator('#reviewSubmitBtn').click();
-  await expect(page.locator('.step-heading')).toHaveText("You're entered — thank you!");
+  await expect(page.locator('.step-heading')).toHaveText("Thank you for participating!");
   const recordsAfter = await page.evaluate(() => JSON.parse(localStorage.getItem('pedagogy-expo-records') || '[]').length);
   expect(recordsAfter).toBe(recordsBefore + 1);
   // the draft slot is cleared by finalizeDraft() the instant Submit is clicked
@@ -444,6 +538,97 @@ test('submitting the review finalizes the record and only then (no earlier point
   expect(draftAfterSubmitScreen).toBeNull();
   await page.locator('#submittedDoneBtn').click();
   await expect(page.locator('#heroScreen')).toBeVisible();
+});
+
+// Reported live 2026-09-21, root-caused via reproduction, not guessing:
+// crypto.randomUUID() throws in any non-secure context (plain http:// over
+// anything other than localhost — e.g. a second device on the stall's LAN
+// reaching the host device by IP address instead of localhost, exactly how
+// testing across two physical devices, like an iPad and a Windows laptop,
+// tends to happen). That call sat inside finalizeDraft() with nothing
+// catching it, so the uncaught exception silently killed the Submit handler
+// right after validation passed but before the confirmation screen ever
+// rendered: the button visually responded (a plain CSS :active state, no JS
+// needed for that) but the screen never advanced and no popup ever showed.
+// This test reproduces that exact insecure-context failure by making
+// crypto.randomUUID throw exactly as it does for real, and confirms Submit
+// still works via the Math.random()-based fallback (state.js's generateId()).
+test('Submit still works even if crypto.randomUUID() is unavailable (reproduces the real insecure-context failure)', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(window.crypto, 'randomUUID', {
+      configurable: true,
+      value: () => { throw new DOMException('The operation is insecure.', 'NotAllowedError'); },
+    });
+  });
+  await startJourney(page);
+  await completeRegistrationToDestinations(page);
+  await walkDestinationsToReview(page);
+
+  const recordsBefore = await page.evaluate(() => JSON.parse(localStorage.getItem('pedagogy-expo-records') || '[]').length);
+  await page.locator('#reviewSubmitBtn').click();
+  await expect(page.locator('.step-heading')).toHaveText('Thank you for participating!');
+  const recordsAfter = await page.evaluate(() => JSON.parse(localStorage.getItem('pedagogy-expo-records') || '[]').length);
+  expect(recordsAfter).toBe(recordsBefore + 1);
+});
+
+// Reported live 2026-09-21: the plain text-only confirmation gave no real
+// sense that anything had happened. Reworked with the requested copy
+// (thank-you + WhatsApp-updates note) and an auto-redirect back to the hero
+// after 5 seconds, with "Continue now" as a manual escape hatch.
+test('the confirmation screen shows the requested copy and auto-redirects to the hero after 5 seconds', async ({ page }) => {
+  test.setTimeout(45000); // real 5s wall-clock wait, needs headroom under a full parallel run
+  await startJourney(page);
+  await completeRegistrationToDestinations(page);
+  await walkDestinationsToReview(page);
+  await page.locator('#reviewSubmitBtn').click();
+
+  await expect(page.locator('.step-heading')).toHaveText('Thank you for participating!');
+  await expect(page.locator('.submitted-lead')).toContainText('win an iPad');
+  await expect(page.locator('.submitted-whatsapp')).toContainText('WhatsApp');
+  await expect(page.locator('#submittedRedirectNote')).toContainText('Returning to the start');
+
+  // Don't click anything — let the 5-second auto-redirect fire on its own.
+  await expect(page.locator('#heroScreen')).toBeVisible({ timeout: 20000 });
+  await expect(page.locator('#heroScreen')).not.toHaveClass(/hero-screen--exit/);
+  await expect(page.locator('#heroStartBtn')).toBeEnabled();
+});
+
+test('"Continue now" on the confirmation screen skips the auto-redirect wait', async ({ page }) => {
+  await startJourney(page);
+  await completeRegistrationToDestinations(page);
+  await walkDestinationsToReview(page);
+  await page.locator('#reviewSubmitBtn').click();
+  await expect(page.locator('.step-heading')).toHaveText('Thank you for participating!');
+
+  const start = Date.now();
+  await page.locator('#submittedDoneBtn').click();
+  await expect(page.locator('#heroScreen')).toBeVisible();
+  expect(Date.now() - start).toBeLessThan(2000); // didn't wait for the 5s timer
+});
+
+// Reported live 2026-09-21: after a submission, the hero shown for the next
+// visitor was invisible AND unclickable all day — hero.js's start() adds
+// 'hero-screen--exit' (opacity:0, pointer-events:none) on the way into the
+// first visitor's journey and nothing ever removed it, so every visitor after
+// the very first submission hit a dead screen. Playwright's toBeVisible()
+// alone doesn't catch this (opacity:0 with a real layout box still counts as
+// "visible"), so this test proves interactivity by actually completing a
+// SECOND full journey after the first one submits.
+test('the hero screen is fully interactive again for the next visitor after a submission (not just present in the DOM)', async ({ page }) => {
+  await startJourney(page);
+  await completeRegistrationToDestinations(page);
+  await walkDestinationsToReview(page);
+  await page.locator('#reviewSubmitBtn').click();
+  await expect(page.locator('.step-heading')).toHaveText("Thank you for participating!");
+  await page.locator('#submittedDoneBtn').click();
+  await expect(page.locator('#heroScreen')).toBeVisible();
+
+  await expect(page.locator('#heroScreen')).not.toHaveClass(/hero-screen--exit/);
+  await expect(page.locator('#heroStartBtn')).toBeEnabled();
+  // The real proof: a second visitor can actually start and reach registration.
+  await page.locator('#heroStartBtn').click();
+  await expect(page.locator('#appShell')).toBeVisible();
+  await expect(page.locator('#stepContent h2')).toHaveText('First, make it yours.');
 });
 
 test('submit is blocked with the non-alarming popup if the parent number is missing (defensive re-check)', async ({ page }) => {
@@ -478,7 +663,14 @@ test('submit is blocked with the non-alarming popup if the parent number is miss
   await expect(page.locator('.review-section').first()).toBeVisible();
   await page.locator('#reviewSubmitBtn').click();
   await expect(page.locator('.modal-title')).toHaveText('A parent/guardian number is needed');
+  // Dismissing via the plain X must NOT silently navigate away underneath the
+  // modal (that was the bug — see registration.js's presentValidationFailure
+  // comment) — only the actual "Go back and add it" action does.
   await page.locator('.modal-close').click();
+  await expect(page.locator('#stepContent h2')).toHaveText('Review everything before you submit.');
+
+  await page.locator('#reviewSubmitBtn').click();
+  await page.locator('.modal-actions button', { hasText: 'Go back and add it' }).click();
   await expect(page.locator('#stepContent h2')).toHaveText('First, make it yours.');
 });
 
@@ -493,6 +685,7 @@ test('quiz timer counts down on a question step and is absent on registration/pr
   const second = await page.locator('.quiz-timer').textContent();
   expect(second).not.toBe(first);
 
+  await page.locator('#quizOptions label').first().click();
   await page.locator('#qNextBtn').click();
   await expect(page.locator('.quiz-timer')).toHaveCount(0); // destinations step: no timer
 });
@@ -578,29 +771,76 @@ test('game 1 (number trail): 5 fresh random 3-digit numbers every round, tapped 
   await expect(page.locator('#quizOptions')).toBeVisible(); // q2, the next real step after game1
 });
 
-test('game 1: numbers are freshly randomized on each fresh entry into the puzzle', async ({ page }) => {
+test('game 1: numbers stay the same across Back/Next re-entry (reported bug: used to re-shuffle and lose progress)', async ({ page }) => {
   await reachGame1(page);
   const first = await page.locator('#trailTiles [data-n]').evaluateAll(els => els.map(e => Number(e.dataset.n)).sort());
   await page.locator('#gameBackBtn').click();
   await page.locator('#examPrepNextBtn').click(); // re-enter game1 (examPrep's answer already persisted)
   await expect(page.locator('#trailTiles')).toBeVisible();
   const second = await page.locator('#trailTiles [data-n]').evaluateAll(els => els.map(e => Number(e.dataset.n)).sort());
+  expect(second).toEqual(first);
+});
+
+test('game 1: tapped-so-far progress survives a Back + re-entry, not just the tile set', async ({ page }) => {
+  await reachGame1(page);
+  const nums = await page.locator('#trailTiles [data-n]').evaluateAll(els => els.map(e => Number(e.dataset.n)));
+  const first = nums[0];
+  await page.locator(`#trailTiles [data-n="${first}"]`).click();
+  await expect(page.locator(`#trailTiles [data-n="${first}"]`)).toHaveClass(/tile--selected/);
+
+  await page.locator('#gameBackBtn').click();
+  await page.locator('#examPrepNextBtn').click(); // re-enter game1
+  await expect(page.locator('#trailTiles')).toBeVisible();
+  await expect(page.locator(`#trailTiles [data-n="${first}"]`)).toHaveClass(/tile--selected/);
+  await expect(page.locator(`#trailTiles [data-n="${first}"]`).locator('.tile-order-badge')).toHaveText('1');
+});
+
+test('game 1: numbers are freshly re-shuffled for a genuinely new visitor', async ({ page }) => {
+  await reachGame1(page);
+  const first = await page.locator('#trailTiles [data-n]').evaluateAll(els => els.map(e => Number(e.dataset.n)).sort());
+  page.once('dialog', dialog => dialog.accept());
+  await page.locator('#newVisitorBtn').click();
+  await expect(page.locator('#stepContent h2')).toHaveText('First, make it yours.');
+  await reachGame1(page);
+  const second = await page.locator('#trailTiles [data-n]').evaluateAll(els => els.map(e => Number(e.dataset.n)).sort());
   // Not a hard guarantee (two random 5-of-800 draws could theoretically
-  // collide), but overwhelmingly likely to differ — confirms this isn't a
-  // fixed/repeating set, per round C item 4.
+  // collide), but overwhelmingly likely to differ — confirms a new visitor
+  // gets a real fresh puzzle, not the previous visitor's leftover state.
   expect(second).not.toEqual(first);
 });
 
-test('game 1: a mis-tap does not complete the puzzle or reveal any error count', async ({ page }) => {
+test('game 1: no answer is given away in the status line, and a wrong final order stays editable instead of auto-resetting', async ({ page }) => {
   await reachGame1(page);
   const nums = await page.locator('#trailTiles [data-n]').evaluateAll(els => els.map(e => Number(e.dataset.n)));
-  const smallest = Math.min(...nums);
-  const wrongTile = page.locator(`#trailTiles [data-n]:not([data-n="${smallest}"])`).first();
-  await wrongTile.click();
-  await expect(page.locator('#gameStatus')).toHaveText(`Try ${smallest} next.`);
+  const ascending = [...nums].sort((a, b) => a - b);
+  const descendingGuess = [...ascending].reverse(); // guaranteed wrong unless already sorted (5 distinct values, never happens)
+
+  // Tap one tile: the status line (the only place a "next answer" hint used
+  // to live — the tiles themselves always show all 5 numbers regardless) must
+  // not reveal which number comes next, just a neutral progress count.
+  await page.locator(`#trailTiles [data-n="${nums[0]}"]`).click();
+  await expect(page.locator('#gameStatus')).toHaveText('1 of 5 placed — tap a number again to remove it.');
+  const statusText = await page.locator('#gameStatus').innerText();
+  expect(statusText).not.toMatch(/next|start with/i);
+  await expect(page.locator('#gameNextBtn')).toBeDisabled();
+
+  // Tap the other 4 in the wrong (descending) order to reach a full, incorrect guess.
+  for (const n of descendingGuess.filter(n => n !== nums[0])) {
+    await page.locator(`#trailTiles [data-n="${n}"]`).click();
+  }
   const bodyText = await page.locator('#appShell').innerText();
   expect(bodyText).not.toMatch(/\berror(s)?\b/i);
+  await expect(page.locator('#gameStatus')).toHaveText('Not quite that order — tap a number to remove it and try again.');
   await expect(page.locator('#gameNextBtn')).toBeDisabled();
+
+  // Fix it by unclicking and re-tapping in the correct order — no page reload/reset needed.
+  for (const n of descendingGuess) {
+    await page.locator(`#trailTiles [data-n="${n}"]`).click(); // unclick everything
+  }
+  for (const n of ascending) {
+    await page.locator(`#trailTiles [data-n="${n}"]`).click();
+  }
+  await expect(page.locator('#gameNextBtn')).toBeEnabled();
 });
 
 // ===================== Round C item 3: mandatory selection (games are no longer skippable) =====================
@@ -610,17 +850,44 @@ test('game 1: Continue stays disabled — no free "Skip puzzle" anymore, even ac
   await page.locator('#gameBackBtn').click();
   await expect(page.locator('#stepContent h2')).toHaveText('Are you preparing for any competitive exam?');
   await page.locator('#examPrepNextBtn').click();
-  await expect(page.locator('#trailTiles')).toBeVisible(); // re-entering re-deals a fresh puzzle, no crash
+  await expect(page.locator('#trailTiles')).toBeVisible(); // re-entering resumes the same puzzle, no crash
   await expect(page.locator('#gameNextBtn')).toBeDisabled(); // still gated, no way around it
+});
+
+// Reported live 2026-09-21: unbounded retries on a wrong order weren't the
+// ask — a capped number of chances, then a real Skip, is.
+test('game 1: after 2 wrong full orders, tiles lock and a Skip button appears', async ({ page }) => {
+  await reachGame1(page);
+  const nums = await page.locator('#trailTiles [data-n]').evaluateAll(els => els.map(e => Number(e.dataset.n)));
+  const ascending = [...nums].sort((a, b) => a - b);
+  const wrongOrder = [...ascending].reverse();
+
+  await expect(page.locator('#gameSkipBtn')).toBeHidden();
+  for (let attempt = 0; attempt < 2; attempt++) {
+    for (const n of wrongOrder) await page.locator(`#trailTiles [data-n="${n}"]`).click();
+    if (attempt === 0) {
+      await expect(page.locator('#gameStatus')).toHaveText('Not quite that order — tap a number to remove it and try again.');
+      await expect(page.locator('#gameSkipBtn')).toBeHidden();
+      for (const n of wrongOrder) await page.locator(`#trailTiles [data-n="${n}"]`).click(); // unclick everything for the 2nd attempt
+    }
+  }
+
+  await expect(page.locator('#gameStatus')).toContainText('No more tries left');
+  await expect(page.locator('#gameSkipBtn')).toBeVisible();
+  await expect(page.locator(`#trailTiles [data-n="${nums[0]}"]`)).toBeDisabled(); // locked, only Skip remains
+  await page.locator('#gameSkipBtn').click();
+  await expect(page.locator('#quizOptions')).toBeVisible(); // advanced to q2 despite not solving it
 });
 
 test('game 2 (pattern recall): geometry shapes (reverted from Greek letters, round D), studying/hiding/tapping the sequence back completes it', async ({ page }) => {
   await reachGame1(page);
   await playGame1(page);
   await expect(page.locator('#quizOptions')).toBeVisible(); // q2
-  await page.locator('#qNextBtn').click({ force: true }); // q2 -> q3
+  await page.locator('#quizOptions label').first().click();
+  await page.locator('#qNextBtn').click(); // q2 -> q3
   await expect(page.locator('#quizOptions')).toBeVisible(); // q3
-  await page.locator('#qNextBtn').click({ force: true }); // q3 -> game2
+  await page.locator('#quizOptions label').first().click();
+  await page.locator('#qNextBtn').click(); // q3 -> game2
 
   await expect(page.locator('#patternDisplay')).toBeVisible();
   const sequenceText = await page.locator('#patternDisplay').textContent();
@@ -638,6 +905,93 @@ test('game 2 (pattern recall): geometry shapes (reverted from Greek letters, rou
   }
   await expect(page.locator('#gameStatus')).toHaveText('Sequence complete — nicely done!');
   await expect(page.locator('#gameNextBtn')).toBeEnabled();
+});
+
+// Reported live 2026-09-21: a wrong tap used to silently wipe all recall
+// progress back to zero and force a full re-study before trying again.
+test('game 2: a wrong tap does not reset progress — the visitor can just tap again', async ({ page }) => {
+  await reachGame1(page);
+  await playGame1(page);
+  await page.locator('#quizOptions label').first().click();
+  await page.locator('#qNextBtn').click(); // q2 -> q3
+  await page.locator('#quizOptions label').first().click();
+  await page.locator('#qNextBtn').click(); // q3 -> game2
+
+  const symbols = (await page.locator('#patternDisplay').textContent()).trim().split(/\s+/);
+  await page.locator('#patternReadyBtn').click();
+
+  // Get the first symbol right, building real progress...
+  await page.locator(`#patternKeys [data-symbol="${symbols[0]}"]`).click();
+  await expect(page.locator('#patternDisplay')).toHaveText(new RegExp('^' + symbols[0]));
+
+  // ...then tap a wrong one.
+  const SHAPES = ['●', '▲', '■', '★'];
+  const wrongSymbol = SHAPES.find(s => s !== symbols[1]);
+  await page.locator(`#patternKeys [data-symbol="${wrongSymbol}"]`).click();
+  await expect(page.locator('#gameStatus')).toContainText('Not quite');
+
+  // Progress from the first correct tap must still be there — not reset to zero.
+  await expect(page.locator('#patternDisplay')).toHaveText(new RegExp('^' + symbols[0]));
+  await expect(page.locator('#patternKeys')).toBeVisible(); // still in recall, no forced re-study
+
+  // Recover by tapping the actually-correct next symbol.
+  await page.locator(`#patternKeys [data-symbol="${symbols[1]}"]`).click();
+  await expect(page.locator('#patternDisplay')).toHaveText(new RegExp('^' + symbols[0] + ' ' + symbols[1]));
+});
+
+test('game 2: "Look again" re-shows the pattern mid-recall without losing progress', async ({ page }) => {
+  await reachGame1(page);
+  await playGame1(page);
+  await page.locator('#quizOptions label').first().click();
+  await page.locator('#qNextBtn').click(); // q2 -> q3
+  await page.locator('#quizOptions label').first().click();
+  await page.locator('#qNextBtn').click(); // q3 -> game2
+
+  const symbols = (await page.locator('#patternDisplay').textContent()).trim().split(/\s+/);
+  await page.locator('#patternReadyBtn').click();
+  await page.locator(`#patternKeys [data-symbol="${symbols[0]}"]`).click();
+
+  await page.locator('#patternLookAgainBtn').click();
+  await expect(page.locator('#patternDisplay')).toHaveText(symbols.join(' '));
+  await expect(page.locator('#patternKeys')).toBeHidden();
+
+  await page.locator('#patternReadyBtn').click(); // "Back to recall"
+  await expect(page.locator('#patternKeys')).toBeVisible();
+  // Progress survived the look-again round trip.
+  await expect(page.locator('#patternDisplay')).toHaveText(new RegExp('^' + symbols[0]));
+});
+
+// Reported live 2026-09-21: "Look again" was an infinitely-repeatable
+// loophole that defeated the memory puzzle entirely. Wrong taps and
+// Look-again uses now draw from the same capped pool of chances.
+test('game 2: after the chance cap is used up (wrong taps + Look-again combined), Look again and the keys lock and Skip appears', async ({ page }) => {
+  await reachGame1(page);
+  await playGame1(page);
+  await page.locator('#quizOptions label').first().click();
+  await page.locator('#qNextBtn').click(); // q2 -> q3
+  await page.locator('#quizOptions label').first().click();
+  await page.locator('#qNextBtn').click(); // q3 -> game2
+
+  const SHAPES = ['●', '▲', '■', '★'];
+  const symbols = (await page.locator('#patternDisplay').textContent()).trim().split(/\s+/);
+  const wrongSymbol = SHAPES.find(s => s !== symbols[0]);
+  await page.locator('#patternReadyBtn').click();
+
+  await expect(page.locator('#gameSkipBtn')).toBeHidden();
+  // Chance 1: a wrong tap.
+  await page.locator(`#patternKeys [data-symbol="${wrongSymbol}"]`).click();
+  await expect(page.locator('#patternLookAgainBtn')).toBeVisible();
+  // Chance 2: a Look-again use — this is the second and last chance.
+  await page.locator('#patternLookAgainBtn').click();
+  await page.locator('#patternReadyBtn').click(); // back to recall
+
+  await expect(page.locator('#gameStatus')).toContainText('No more tries left');
+  await expect(page.locator('#patternLookAgainBtn')).toBeHidden();
+  await expect(page.locator('#gameSkipBtn')).toBeVisible();
+  await expect(page.locator(`#patternKeys [data-symbol="${symbols[0]}"]`)).toBeDisabled();
+
+  await page.locator('#gameSkipBtn').click();
+  await expect(page.locator('#quizOptions')).toBeVisible(); // advanced to q4 despite not solving it
 });
 
 // ===================== Round C item 3: mandatory selection on chip/radio steps =====================
@@ -692,14 +1046,30 @@ test('exam list free-text fallback ("Other" only destination) gates Continue on 
   await expect(page.locator('#examListNextBtn')).toBeDisabled();
 });
 
-test('quiz question steps (q1-q5) keep their skip-allowed behavior — the one deliberate exception to round C item 3', async ({ page }) => {
+test('quiz question steps (q1-q5) gate Next on an actual answer or an explicit Skip — reported live 2026-09-21', async ({ page }) => {
   await startJourney(page);
   await fillValidRegistration(page);
   await page.locator('#registerNextBtn').click();
-  // Next is enabled immediately on a question step, with nothing selected —
-  // unlike every chip/radio step above, this must NOT be gated (equal-odds
-  // draw regardless of quiz completion, a standing decision).
+  // Next used to be enabled immediately with nothing selected. Equal-odds
+  // draw regardless of quiz completion is unaffected either way (Skip is
+  // still one tap away) — but silently letting a visitor click through an
+  // unanswered academic question was the wrong default, so Next is now gated
+  // the same as every chip/radio step, with Skip as the one explicit bypass.
+  await expect(page.locator('#qNextBtn')).toBeDisabled();
+  await expect(page.locator('#qValidationHint')).toBeVisible();
+  await page.locator('#quizOptions label').first().click();
   await expect(page.locator('#qNextBtn')).toBeEnabled();
+  await expect(page.locator('#qValidationHint')).toBeHidden();
+});
+
+test('quiz question steps: Skip is still a full bypass of the answer gate, without requiring a selection', async ({ page }) => {
+  await startJourney(page);
+  await fillValidRegistration(page);
+  await page.locator('#registerNextBtn').click();
+  await expect(page.locator('#qNextBtn')).toBeDisabled();
+  await page.locator('#qSkipBtn').click();
+  await page.locator('.modal-actions button:has-text("Skip anyway")').click();
+  await expect(page.locator('#stepContent h2')).toHaveText('Where could your next chapter begin?');
 });
 
 // ===================== Phase 3: skip only on academic questions =====================
@@ -710,6 +1080,7 @@ test('no skip button anywhere on data-collection/preference steps', async ({ pag
   await fillValidRegistration(page);
   await page.locator('#registerNextBtn').click();
   await expect(page.locator('#qSkipBtn')).toBeVisible(); // academic question: skip IS present
+  await page.locator('#quizOptions label').first().click();
   await page.locator('#qNextBtn').click();
   await expect(page.locator('#stepContent h2')).toHaveText('Where could your next chapter begin?');
   expect(await page.locator('button', { hasText: /^Skip$/ }).count()).toBe(0);
@@ -807,6 +1178,39 @@ test('staff dashboard shows an empty state when there are no registrations yet',
   await expect(page.locator('#staffRefreshBtn')).toBeVisible();
 });
 
+// Added per PLAN.md Phase 6's "a way to reset devices between test runs"
+// plus a repeated live request to clear leftover test/demo data — this used
+// to only be possible via a devtools command handed to the user manually.
+test('"Clear all local data" wipes every record and the in-progress draft after confirming', async ({ page }) => {
+  const record = makeRecord();
+  await page.addInitScript(r => localStorage.setItem('pedagogy-expo-records', JSON.stringify([r])), record);
+  await enterStaffDashboard(page);
+  await expect(page.locator('.staff-record')).toHaveCount(1);
+
+  page.once('dialog', dialog => {
+    expect(dialog.message()).toContain('1 registration record');
+    dialog.accept();
+  });
+  await page.locator('#staffClearAllBtn').click();
+
+  await expect(page.locator('#view-staff')).toContainText('No registrations yet.');
+  const remaining = await page.evaluate(() => localStorage.getItem('pedagogy-expo-records'));
+  expect(remaining).toBeNull();
+});
+
+test('"Clear all local data" does nothing if the confirmation is dismissed', async ({ page }) => {
+  const record = makeRecord();
+  await page.addInitScript(r => localStorage.setItem('pedagogy-expo-records', JSON.stringify([r])), record);
+  await enterStaffDashboard(page);
+
+  page.once('dialog', dialog => dialog.dismiss());
+  await page.locator('#staffClearAllBtn').click();
+
+  await expect(page.locator('.staff-record')).toHaveCount(1);
+  const remaining = await page.evaluate(() => JSON.parse(localStorage.getItem('pedagogy-expo-records') || '[]').length);
+  expect(remaining).toBe(1);
+});
+
 // ===================== Round C item 9b: staff dashboard refresh bug =====================
 test('staff dashboard Refresh re-reads localStorage immediately, including the empty->populated transition', async ({ page }) => {
   await enterStaffDashboard(page);
@@ -889,6 +1293,7 @@ test('a chip tap and a button tap both trigger the feature-detected haptic (stub
   const afterButtonClick = await page.evaluate(() => window.__vibrateCalls.length);
   expect(afterButtonClick).toBeGreaterThan(0); // delegated button-click listener (app.js)
 
+  await page.locator('#quizOptions label').first().click();
   await page.locator('#qNextBtn').click();
   await expect(page.locator('#stepContent h2')).toHaveText('Where could your next chapter begin?');
   await page.getByText('India', { exact: true }).click();

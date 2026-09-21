@@ -106,6 +106,29 @@
     `;
   }
 
+  /** A genuinely destructive, staff-only reset — added per PLAN.md Phase 6's
+   * "a way to reset devices between test runs" plus a repeated live request
+   * to clear leftover test/demo data. Confirms via the same native confirm()
+   * pattern app.js's "New visitor" reset already uses for a comparable
+   * destructive action, then wipes every finalized record and the
+   * in-progress draft on this device (js/state.js's clearAllData()) and
+   * re-renders the (now empty) dashboard in place. */
+  function renderClearAllButton(container, datasets, jumpToQuizForTesting) {
+    return `<button type="button" class="quiet staff-clear-all" id="staffClearAllBtn">Clear all local data</button>`;
+  }
+
+  function wireClearAllButton(container, datasets, jumpToQuizForTesting) {
+    container.querySelector('#staffClearAllBtn').addEventListener('click', () => {
+      const count = window.PED.state.loadRecords().length;
+      const warning = count
+        ? `Permanently delete all ${count} registration record${count === 1 ? '' : 's'} and the in-progress draft on this device? This cannot be undone.`
+        : 'Clear the in-progress draft on this device? This cannot be undone.';
+      if (!confirm(warning)) return;
+      window.PED.state.clearAllData();
+      renderStaffDashboard(container, datasets, jumpToQuizForTesting);
+    });
+  }
+
   function renderStaffDashboard(container, datasets, jumpToQuizForTesting) {
     const records = window.PED.state.loadRecords();
 
@@ -124,10 +147,12 @@
         <p class="field-hint">Finalized entries will appear here as visitors submit the review screen.</p>
         <div class="step-actions">
           <button type="button" class="quiet" id="staffRefreshBtn">Refresh</button>
+          ${renderClearAllButton(container, datasets, jumpToQuizForTesting)}
         </div>
         ${renderJumpToQuizButton(container, jumpToQuizForTesting)}
       `;
       container.querySelector('#staffRefreshBtn').addEventListener('click', () => renderStaffDashboard(container, datasets, jumpToQuizForTesting));
+      wireClearAllButton(container, datasets, jumpToQuizForTesting);
       // TEST ONLY — REMOVE BEFORE THE REAL EVENT (11-13 Oct 2026), see CLAUDE.md.
       const jumpBtn = container.querySelector('#jumpToQuizTestBtn');
       if (jumpBtn) jumpBtn.addEventListener('click', jumpToQuizForTesting);
@@ -152,12 +177,14 @@
       <p class="field-hint">Reads directly from this device's saved records. Refresh after new submissions on this device.</p>
       <div class="step-actions">
         <button type="button" class="quiet" id="staffRefreshBtn">Refresh</button>
+        ${renderClearAllButton(container, datasets, jumpToQuizForTesting)}
       </div>
       ${renderJumpToQuizButton(container, jumpToQuizForTesting)}
       <div id="staffRecordList">${sorted.map(r => renderRecordCard(r, datasets)).join('')}</div>
     `;
 
     container.querySelector('#staffRefreshBtn').addEventListener('click', () => renderStaffDashboard(container, datasets, jumpToQuizForTesting));
+    wireClearAllButton(container, datasets, jumpToQuizForTesting);
 
     // TEST ONLY — REMOVE BEFORE THE REAL EVENT (11-13 Oct 2026), see CLAUDE.md.
     const jumpBtn = container.querySelector('#jumpToQuizTestBtn');

@@ -84,27 +84,45 @@
     `);
   }
 
+  /** Each question renders as its own bordered block (not a run of thin
+   * dl-rows that were hard to tell apart from each other) with the question
+   * text, every answer option (so the visitor/staff can see what they were
+   * choosing between, not just the pick), the selected option visually
+   * marked, and its own Edit link — reported live 2026-09-21 that the old
+   * layout made it unclear which line was the question at all. */
   function renderQuizSection(draft, datasets) {
     const stepIds = window.PED.steps.getQuestionStepIds(draft);
-    const rows = stepIds.map((stepId, i) => {
+    const items = stepIds.map((stepId, i) => {
       const questionId = draft.quiz.selectedQuestionIds[i];
       const question = datasets.questions.find(q => q.id === questionId);
       const answer = draft.quiz.answers.find(a => a.questionId === questionId);
-      let answerText;
+      let statusText = null;
       if (!answer || answer.selected == null) {
-        if (answer && answer.timedOut) answerText = 'Not answered (time ran out)';
-        else if (answer && answer.skipped) answerText = 'Skipped';
-        else answerText = 'Not answered yet';
-      } else {
-        answerText = answer.selected;
+        if (answer && answer.timedOut) statusText = 'Not answered — time ran out';
+        else if (answer && answer.skipped) statusText = 'Skipped';
+        else statusText = 'Not answered yet';
       }
-      return `<div><dt>Q${i + 1}${question ? ': ' + escapeHtml(question.q) : ''}</dt><dd>${escapeHtml(answerText)}</dd>
-        <button type="button" class="link-btn" data-jump="${escapeHtml(stepId)}">Edit</button></div>`;
+      const optionsHtml = question ? `
+        <ul class="review-quiz-options">
+          ${question.options.map(opt => `<li class="${answer && answer.selected === opt ? 'review-quiz-options--selected' : ''}">${escapeHtml(opt)}</li>`).join('')}
+        </ul>
+      ` : '';
+      return `
+        <div class="review-quiz-item">
+          <div class="review-quiz-item-head">
+            <p class="review-quiz-number">Question ${i + 1} of ${stepIds.length}</p>
+            <button type="button" class="link-btn" data-jump="${escapeHtml(stepId)}">Edit</button>
+          </div>
+          <p class="review-quiz-question">${question ? escapeHtml(question.q) : 'This question could not be loaded.'}</p>
+          ${optionsHtml}
+          ${statusText ? `<p class="review-quiz-status">${escapeHtml(statusText)}</p>` : ''}
+        </div>
+      `;
     });
     return `
       <section class="review-section">
         <div class="review-section-head"><h3>Academic questions</h3></div>
-        <dl class="review-fields review-fields--quiz">${rows.join('')}</dl>
+        ${items.join('')}
       </section>
     `;
   }
@@ -141,8 +159,10 @@
       // this should never actually fail in normal use — see file header.
       const result = window.PED.registration.validateRegistrationForSubmit(draft.registration);
       if (!result.ok) {
-        window.PED.registration.presentValidationFailure(result, () => {});
-        onJump('register');
+        // Navigate back to register only once the modal is actually
+        // dismissed, not immediately alongside opening it — see
+        // presentValidationFailure()'s comment in registration.js.
+        window.PED.registration.presentValidationFailure(result, () => onJump('register'));
         return;
       }
       window.PED.state.mutateDraft(draft, () => {
@@ -154,18 +174,52 @@
     });
   }
 
+  /** Confirmation screen after a successful submit. Reworked 2026-09-21 (live
+   * feedback: the plain text-only version didn't feel like a real
+   * confirmation, and the visitor had nowhere to go from there). Adds a
+   * code-drawn animated checkmark + a small confetti burst (no image assets,
+   * per CLAUDE.md's visual-design direction; both skip under
+   * prefers-reduced-motion), the requested copy (thank-you + WhatsApp-updates
+   * note), and an auto-redirect back to the hero ("win an iPad" landing)
+   * after 5 seconds — with a manual "Continue now" escape hatch so nobody is
+   * stuck waiting on the timer. The equal-odds compliance line from the
+   * original copy is kept, just as a secondary line rather than the headline. */
   function renderSubmitted(container, onDone) {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     container.innerHTML = `
-      <p class="eyebrow-small">ALL DONE</p>
-      <h2 class="step-heading">You're entered — thank you!</h2>
-      <p class="field-hint">A counsellor may follow up using the details you gave us. One equal-chance draw
-      entry has been created for this student, independent of quiz score or how much of the experience
-      was completed.</p>
-      <div class="step-actions">
-        <button type="button" class="primary" id="submittedDoneBtn">Done</button>
+      <div class="submitted-confirm">
+        <div class="submitted-badge" aria-hidden="true">
+          <svg viewBox="0 0 80 80" width="88" height="88">
+            <circle class="submitted-badge-ring" cx="40" cy="40" r="36" fill="none" stroke-width="5"/>
+            <path class="submitted-badge-check" d="M24 41 L35 52 L57 28" fill="none" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          ${reduceMotion ? '' : `<div class="submitted-confetti">${Array.from({ length: 10 }).map((_, i) => `<span class="confetti-dot" style="--i:${i}"></span>`).join('')}</div>`}
+        </div>
+        <p class="eyebrow-small">ALL DONE</p>
+        <h2 class="step-heading">Thank you for participating!</h2>
+        <p class="submitted-lead">You're now in the contest to win an iPad. One equal-chance draw entry
+        has been created for you, independent of quiz score or how much of the experience was completed.</p>
+        <p class="submitted-whatsapp">You'll get updates on your registered mobile number via WhatsApp.</p>
+        <div class="step-actions">
+          <button type="button" class="quiet" id="submittedDoneBtn">Continue now</button>
+        </div>
+        <p class="submitted-redirect-note" id="submittedRedirectNote" role="status" aria-live="polite"></p>
       </div>
     `;
-    container.querySelector('#submittedDoneBtn').addEventListener('click', onDone);
+
+    let remaining = 5;
+    const noteEl = container.querySelector('#submittedRedirectNote');
+    noteEl.textContent = `Returning to the start in ${remaining}s...`;
+    const intervalId = setInterval(() => {
+      remaining -= 1;
+      if (remaining <= 0) { clearInterval(intervalId); onDone(); return; }
+      noteEl.textContent = `Returning to the start in ${remaining}s...`;
+    }, 1000);
+
+    container.querySelector('#submittedDoneBtn').addEventListener('click', () => {
+      clearInterval(intervalId);
+      onDone();
+    });
   }
 
   window.PED.review = { renderReview };

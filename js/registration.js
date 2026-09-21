@@ -145,10 +145,18 @@
   }
 
   /** Shared modal presentation for a failed validateRegistrationForSubmit() result.
-   * `onFocusParent` re-focuses the parent-mobile field when it exists on screen
-   * (the register step passes its own field; the review screen passes a no-op
-   * since the field isn't rendered there — see js/review.js). */
-  function presentValidationFailure(result, onFocusParent) {
+   * `onDismiss` fires once the visitor actually closes/acts on the modal — the
+   * register step passes a re-focus of the parent-mobile field; the review
+   * screen passes a jump back to the register step (see js/review.js). Both
+   * failure kinds now route through an explicit action button rather than a
+   * bare `modal.alert()`, specifically so a caller that needs to navigate
+   * afterward (review.js) can do so only once the modal is actually
+   * dismissed — firing that navigation immediately alongside opening the
+   * modal left it floating over a screen that had already moved on
+   * underneath it (reported live 2026-09-21, same bug class as the quiz
+   * timer's stray Skip-confirm modal fixed earlier this round). */
+  function presentValidationFailure(result, onDismiss) {
+    const dismiss = onDismiss || (() => {});
     if (result.kind === 'parentMissing') {
       window.PED.modal.open(
         'A parent/guardian number is needed',
@@ -156,10 +164,10 @@
          reachable parent/guardian mobile number before we can continue &mdash; not to alarm you,
          just so we can arrange collection and any follow-up.</p>
          <p>Please add a number in the format <strong>+971 5xxxxxxxx</strong> (or your country code).</p>`,
-        [{ label: 'Go back and add it', action: onFocusParent || (() => {}) }]
+        [{ label: 'Go back and add it', action: dismiss }]
       );
     } else {
-      window.PED.modal.alert(result.message);
+      window.PED.modal.open('Please check this', `<p>${result.message}</p>`, [{ label: 'OK', action: dismiss }]);
     }
   }
 
@@ -433,7 +441,19 @@
       suggestionsEl.querySelectorAll('li').forEach((li, i) => {
         // Staggered reveal for the dropdown items (motion pass, item 5).
         li.style.setProperty('--stagger-i', i);
-        li.addEventListener('click', () => {
+        // Reported live 2026-09-21: picking a school did nothing on a real
+        // iPad. Root cause — a classic mobile-Safari race, invisible to
+        // Playwright's default `.click()` (which dispatches a mouse click,
+        // not a real touch sequence, even on the iPad test project): tapping
+        // the <li> first fires `blur` on #regSchoolInput, which used to only
+        // be handled by a 150ms-delayed clearSuggestions() — on a real touch
+        // device that blur can remove this <li> from the DOM before its own
+        // `click` handler ever runs, so the tap silently does nothing. Fixed
+        // by committing the selection on `pointerdown` (fires before blur)
+        // and preventing the default there so focus never leaves the input
+        // in the first place.
+        li.addEventListener('pointerdown', e => {
+          e.preventDefault();
           window.PED.haptics.tap();
           const school = matches.find(m => m.id === li.dataset.id);
           window.PED.state.mutateDraft(draft, () => {

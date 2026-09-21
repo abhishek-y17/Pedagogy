@@ -96,6 +96,15 @@
       return;
     }
 
+    // Mandatory selection (reported live 2026-09-21): Next used to always
+    // work regardless of whether an option was picked, letting a visitor
+    // click straight through every academic question unanswered. Now Next
+    // stays disabled until either an answer is selected or the question has
+    // been explicitly skipped (skip is still the one deliberate bypass, per
+    // the standing decision) — expired is its own separate bypass, since the
+    // timer's own handleTimeout() already force-advances regardless.
+    const canAdvance = expired || (existingAnswer && (existingAnswer.selected != null || existingAnswer.skipped));
+
     container.innerHTML = `
       <p class="eyebrow-small">ACADEMIC QUESTION ${index + 1} / ${total}</p>
       <div class="quiz-timer" id="quizTimer" role="timer" aria-live="polite"></div>
@@ -107,10 +116,11 @@
             <span><b class="quiz-option-letter" aria-hidden="true">${OPTION_LETTERS[i] || ''}</b>${escapeHtml(opt)}</span>
           </label>`).join('')}
       </div>
+      <p class="field-hint field-hint--soft" id="qValidationHint"${canAdvance ? ' hidden' : ''}>Choose an answer to continue, or tap Skip.</p>
       <div class="step-actions">
         <button type="button" class="quiet" id="qBackBtn">&larr; Back</button>
         <button type="button" class="quiet" id="qSkipBtn"${expired ? ' disabled' : ''}>Skip</button>
-        <button type="button" class="primary" id="qNextBtn">Next &rarr;</button>
+        <button type="button" class="primary" id="qNextBtn"${canAdvance ? '' : ' disabled'}>Next &rarr;</button>
       </div>
     `;
 
@@ -118,6 +128,8 @@
       input.addEventListener('change', () => {
         window.PED.haptics.tap();
         setAnswer(draft, questionId, input.value);
+        container.querySelector('#qNextBtn').disabled = false;
+        container.querySelector('#qValidationHint').hidden = true;
       });
     });
     container.querySelector('#qBackBtn').addEventListener('click', onBack);
@@ -138,6 +150,10 @@
       if (remaining <= 0) {
         clearInterval(intervalId);
         container.querySelectorAll('#quizOptions input[type=radio]').forEach(i => { i.disabled = true; });
+        // If the visitor is sitting on the "Skip this question?" confirm dialog
+        // when the pooled timer hits zero, close it before navigating away —
+        // otherwise it's left floating over the auto-advanced Review screen.
+        window.PED.modal.close();
         handleTimeout(draft, onGotoReview);
       }
     }
