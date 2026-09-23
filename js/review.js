@@ -161,7 +161,10 @@
       if (!result.ok) {
         // Navigate back to register only once the modal is actually
         // dismissed, not immediately alongside opening it — see
-        // presentValidationFailure()'s comment in registration.js.
+        // presentValidationFailure()'s comment in registration.js. This stays
+        // a modal (rather than an inline error, unlike registration.js's own
+        // fields) because Review has no live editable field to attach the
+        // error to — it's a summary screen, not a form.
         window.PED.registration.presentValidationFailure(result, () => onJump('register'));
         return;
       }
@@ -169,7 +172,22 @@
         draft.registration.parentMobile = result.parentPhone;
         draft.registration.studentMobile = result.studentPhone;
       });
-      window.PED.state.finalizeDraft(draft, datasets.questions);
+      const outcome = window.PED.state.finalizeDraft(draft, datasets.questions);
+      if (!outcome.ok) {
+        // codexreview.md finding, fixed here: finalizeDraft()'s underlying
+        // saveRecords() can fail (storage quota, private-mode restrictions),
+        // and that failure used to be silently discarded — the review screen
+        // always showed the success confirmation regardless, which could
+        // lose a real registration with no visible sign anything went wrong.
+        // The draft is left un-cleared on failure (state.js), so this is a
+        // real, recoverable retry path, not a dead end.
+        window.PED.modal.open(
+          "We couldn't save this",
+          '<p>Something went wrong saving your registration on this device. Nothing has been lost — please try Submit again, and let a staff member know if it keeps happening.</p>',
+          [{ label: 'Try again', action: () => {} }]
+        );
+        return;
+      }
       renderSubmitted(container, onDone);
     });
   }
@@ -222,5 +240,8 @@
     });
   }
 
-  window.PED.review = { renderReview };
+  // renderSubmitted is exported too (Round E item 1): the grade-9/10
+  // direct-submit path in js/registration.js reuses this exact same
+  // confirmation screen after finalizing, rather than duplicating it.
+  window.PED.review = { renderReview, renderSubmitted };
 })();

@@ -3,9 +3,11 @@ reference/
 session_handoff.md
 Claude outputs/
 
-# Delivered question-bank source folder (question_bank_output/) — merged into
-# data/question_bank.json by scripts/merge-question-bank.js, not tracked itself.
+# Delivered question-bank source folders — merged into data/question_bank.json
+# by scripts/merge-question-bank.js, not tracked themselves (same pattern for
+# both the original delivery and the round-E additive delivery).
 data/question_bank_output/
+data/additional_question_bank/
 
 # Ignore all markdown notes except README.md, the two files CLAUDE.md
 # explicitly designates as pushed (CLAUDE.md itself, and PLAN.md), and the
@@ -15,6 +17,7 @@ data/question_bank_output/
 !README.md
 !CLAUDE.md
 !PLAN.md
+!codexreview.md
 !data/QUESTION_BANK_SOURCES.md
 
 # Standard

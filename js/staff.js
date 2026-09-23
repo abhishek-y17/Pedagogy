@@ -112,12 +112,23 @@
    * pattern app.js's "New visitor" reset already uses for a comparable
    * destructive action, then wipes every finalized record and the
    * in-progress draft on this device (js/state.js's clearAllData()) and
-   * re-renders the (now empty) dashboard in place. */
+   * re-renders the (now empty) dashboard in place.
+   *
+   * codexreview.md finding, fixed here: clearAllData() only ever wiped
+   * localStorage — it never touched app.js's own in-memory `draft` variable,
+   * so if a visitor had an in-progress registration open in memory when staff
+   * cleared data, the existing autosave handlers (visibilitychange/pagehide)
+   * would write that stale in-memory draft straight back to localStorage the
+   * next time the tab backgrounded or closed, silently undoing the clear.
+   * `onDataCleared` (passed in from app.js, which is the only closure that
+   * actually holds the `draft` reference) replaces that in-memory draft with
+   * a genuinely fresh one immediately after the storage wipe, so there's
+   * nothing stale left for autosave to resurrect. */
   function renderClearAllButton(container, datasets, jumpToQuizForTesting) {
     return `<button type="button" class="quiet staff-clear-all" id="staffClearAllBtn">Clear all local data</button>`;
   }
 
-  function wireClearAllButton(container, datasets, jumpToQuizForTesting) {
+  function wireClearAllButton(container, datasets, jumpToQuizForTesting, onDataCleared) {
     container.querySelector('#staffClearAllBtn').addEventListener('click', () => {
       const count = window.PED.state.loadRecords().length;
       const warning = count
@@ -125,11 +136,12 @@
         : 'Clear the in-progress draft on this device? This cannot be undone.';
       if (!confirm(warning)) return;
       window.PED.state.clearAllData();
-      renderStaffDashboard(container, datasets, jumpToQuizForTesting);
+      if (onDataCleared) onDataCleared();
+      renderStaffDashboard(container, datasets, jumpToQuizForTesting, onDataCleared);
     });
   }
 
-  function renderStaffDashboard(container, datasets, jumpToQuizForTesting) {
+  function renderStaffDashboard(container, datasets, jumpToQuizForTesting, onDataCleared) {
     const records = window.PED.state.loadRecords();
 
     // Root cause of the refresh bug (round C item 9b): this empty-state
@@ -151,8 +163,8 @@
         </div>
         ${renderJumpToQuizButton(container, jumpToQuizForTesting)}
       `;
-      container.querySelector('#staffRefreshBtn').addEventListener('click', () => renderStaffDashboard(container, datasets, jumpToQuizForTesting));
-      wireClearAllButton(container, datasets, jumpToQuizForTesting);
+      container.querySelector('#staffRefreshBtn').addEventListener('click', () => renderStaffDashboard(container, datasets, jumpToQuizForTesting, onDataCleared));
+      wireClearAllButton(container, datasets, jumpToQuizForTesting, onDataCleared);
       // TEST ONLY — REMOVE BEFORE THE REAL EVENT (11-13 Oct 2026), see CLAUDE.md.
       const jumpBtn = container.querySelector('#jumpToQuizTestBtn');
       if (jumpBtn) jumpBtn.addEventListener('click', jumpToQuizForTesting);
@@ -183,8 +195,8 @@
       <div id="staffRecordList">${sorted.map(r => renderRecordCard(r, datasets)).join('')}</div>
     `;
 
-    container.querySelector('#staffRefreshBtn').addEventListener('click', () => renderStaffDashboard(container, datasets, jumpToQuizForTesting));
-    wireClearAllButton(container, datasets, jumpToQuizForTesting);
+    container.querySelector('#staffRefreshBtn').addEventListener('click', () => renderStaffDashboard(container, datasets, jumpToQuizForTesting, onDataCleared));
+    wireClearAllButton(container, datasets, jumpToQuizForTesting, onDataCleared);
 
     // TEST ONLY — REMOVE BEFORE THE REAL EVENT (11-13 Oct 2026), see CLAUDE.md.
     const jumpBtn = container.querySelector('#jumpToQuizTestBtn');
@@ -192,10 +204,12 @@
 
     container.querySelectorAll('[data-action]').forEach(btn => {
       btn.addEventListener('click', () => {
-        window.PED.state.updateRecord(btn.dataset.id, record => {
-          record.meta.duplicateReviewStatus = btn.dataset.action;
-        });
-        renderStaffDashboard(container, datasets, jumpToQuizForTesting);
+        // codexreview.md finding, fixed here: resolving a duplicate used to
+        // update only the clicked record, leaving its linked match(es) still
+        // pending — resolveDuplicatePair() resolves the whole linked group
+        // together (see js/state.js).
+        window.PED.state.resolveDuplicatePair(btn.dataset.id, btn.dataset.action);
+        renderStaffDashboard(container, datasets, jumpToQuizForTesting, onDataCleared);
       });
     });
   }

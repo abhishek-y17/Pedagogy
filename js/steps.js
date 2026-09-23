@@ -1,7 +1,6 @@
 // Classic script. Step order + navigation, built from reference/pedagogy-expo.html's
 // structure (NOT v2's swipe-deck version) per CLAUDE.md "Structural vs. visual
-// reference": question -> preference-chip step -> game -> question ->
-// preference-chip step -> game -> question -> preference-chip step -> request/finish.
+// reference".
 //
 // The destinations -> "Are you preparing for any competitive exam?" -> country-
 // filtered exam list insertion is per session_handoff.md Section 6: the Yes/No
@@ -9,31 +8,21 @@
 // "yes" answer (or renders as free-text if "Other" was the only destination,
 // which is a content decision inside that step, not a visibility decision here).
 //
-// FIVE academic questions (session_handoff.md Section 3C, locked): q1/q2/q3 keep
-// their original positions opening each Q->P->G triad. q4 and q5 are placed
-// immediately after 'activities' (the last preference step) and before 'request',
-// as a closing pair. That placement: (a) keeps the original Q->P->G rhythm intact
-// for the first two cycles (q1/destinations/game1, q2/courses/game2) rather than
-// interleaving mid-triad, (b) doesn't strand any preference step — 'activities'
-// still has its own question (q3) immediately before it, unchanged from the
-// 3-question version, and (c) doesn't invent a third game or a fourth preference
-// topic that isn't in spec. The pooled ~5-minute timer (Phase 2) runs across all
-// five regardless of where they sit structurally, so this is purely about not
-// breaking the established rhythm to make room for them.
-//
-// This is Phase 0/1 scaffolding: every screen is still built out incrementally
-// (see app.js / registration.js). The order and the forward/back navigation are
-// the real, testable part.
+// Round E, 2026-09-23: both mini-games (game1/game2) are removed from the flow
+// entirely (see js/games.js's deletion and RUN_LOG.md — Abhi's direct
+// instruction), and the academic quiz drops from 5 questions to FOUR. With no
+// game left to interleave around, the four questions are grouped 1/3 instead
+// of the old 1/2/2 game-spaced rhythm: q1 opens the full path (right after
+// registration, before any preference step, unchanged from before), then
+// destinations/examPrep/examList run as one uninterrupted preference block,
+// then q2/q3/q4 close out the academic portion back-to-back immediately
+// before review. This keeps every question and every preference step present
+// exactly once, in a straightforward, easy-to-reason-about order, now that
+// there's no game-pacing constraint to design around.
 (function () {
   'use strict';
   window.PED = window.PED || {};
 
-  // Round C (item 5/7/8): 'courses', 'activities' and 'request' are removed
-  // entirely — only data points that predict course interest and openness to
-  // studying abroad stay in scope. The remaining 5 academic questions are now
-  // grouped 1/2/2 around the two games (q1 alone, then q2+q3, then q4+q5)
-  // instead of trailing off as 3 questions in a row once 'activities' (which
-  // used to sit between q3 and q4) was deleted — see round C item 9a.
   const FULL_PATH_STEPS = [
     { id: 'register' },
     { id: 'q1', kind: 'question' },
@@ -44,12 +33,9 @@
       kind: 'preference',
       isVisible: draft => draft.preferences.competitiveExamPrep === 'yes',
     },
-    { id: 'game1', kind: 'game' },
     { id: 'q2', kind: 'question' },
     { id: 'q3', kind: 'question' },
-    { id: 'game2', kind: 'game' },
     { id: 'q4', kind: 'question' },
-    { id: 'q5', kind: 'question' },
     { id: 'review', kind: 'review' },
   ];
 

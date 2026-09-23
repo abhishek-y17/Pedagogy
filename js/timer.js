@@ -1,18 +1,25 @@
 // Classic script. Pooled academic-quiz timer (Phase 2, PLAN.md / session_handoff.md
-// Section 3C; reduced from 5 to 3 minutes per Abhi's 2026-09-20 voice note) —
-// ~3 minutes shared across the 5 full-path questions, scaled proportionally
-// to the same per-question budget (180000ms / 5 = 36000ms per question) for
-// express (1 question), not an arbitrary separate number. Visible/counting
-// only while a question step is on screen; hidden and paused everywhere else.
-// Survives free back-navigation because the budget consumed lives on the
-// draft (timerElapsedMs), not in page state — see state.js's
-// quiz.timerStartedAt/timerElapsedMs.
+// Section 3C). Round E, 2026-09-23: both mini-games were removed from the flow
+// entirely (they were the main time cost of a full-path visit) and the quiz
+// dropped from 5 to 4 questions, so the old 3-minute budget (already cut down
+// from an original 5 minutes) was re-tuned too. New target: 90 seconds pooled
+// across the 4 full-path questions (~22.5s/question) — comfortably inside the
+// "1-2 minutes" the round asked for, and still generous per question given
+// these are now the ONLY interactive beat on the full path (no game to pace
+// against). Chosen over e.g. 120s because the games' removal makes the whole
+// journey meaningfully faster end-to-end, and the point of the cut is a
+// snappier stall interaction, not just proportional math. Express (1
+// question) keeps the same per-question rate rather than an arbitrary
+// separate number. Visible/counting only while a question step is on screen;
+// hidden and paused everywhere else. Survives free back-navigation because
+// the budget consumed lives on the draft (timerElapsedMs), not in page state
+// — see state.js's quiz.timerStartedAt/timerElapsedMs.
 (function () {
   'use strict';
   window.PED = window.PED || {};
 
-  const FULL_BUDGET_MS = 3 * 60 * 1000;   // 5 questions
-  const EXPRESS_BUDGET_MS = FULL_BUDGET_MS / 5;   // 1 question, same per-question rate
+  const FULL_BUDGET_MS = 90 * 1000;   // 4 questions, ~22.5s/question
+  const EXPRESS_BUDGET_MS = FULL_BUDGET_MS / 4;   // 1 question, same per-question rate
 
   function budgetFor(draft) {
     return draft.mode === 'express' ? EXPRESS_BUDGET_MS : FULL_BUDGET_MS;

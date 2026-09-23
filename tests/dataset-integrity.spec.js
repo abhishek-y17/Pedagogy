@@ -34,26 +34,79 @@ test('an empty dataset throws loudly instead of letting the app silently boot', 
 // Added with the real question-bank merge (scripts/merge-question-bank.js):
 // uae_moe/ and uae_moe_current/ are the same 60 questions per subject, unioned
 // on eligible_stream_ids rather than kept as 1,200 duplicate records — this
-// guards that the union actually happened (600 records, full 4-stream coverage)
-// rather than silently regressing to one export or the other.
-test('UAE MoE question bank is a 600-record union, not 1,200 duplicated records, with full stream coverage', async ({ page }) => {
+// guards that the union actually happened (600 original records, full
+// 4-stream coverage) rather than silently regressing to one export or the
+// other. Round E, 2026-09-23: the additive question-bank delivery (item 7)
+// added its own 720 UAE MoE PCMB-core records (Physics/Chemistry/Maths/
+// Biology, 180 each) on top, also with full 4-stream coverage — so the live
+// total is 600 + 720 = 1,320, not 600.
+test('UAE MoE question bank is the 600-record union plus the round-E additive 720, with full stream coverage throughout', async ({ page }) => {
   await page.goto('/');
   const uae = await page.evaluate(() =>
     window.PED.GENERATED.QUESTION_BANK.questions.filter(q => q.curriculum === 'UAE MoE')
   );
-  expect(uae.length).toBe(600);
+  expect(uae.length).toBe(1320);
 
   const allStreamIds = new Set(['general', 'advanced', 'professional', 'elite']);
   const fullUnionCount = uae.filter(q =>
     q.eligible_stream_ids.length === 4 && q.eligible_stream_ids.every(s => allStreamIds.has(s))
   ).length;
   // Every uae_moe/ record already carried all 4 streams before the union step
-  // (uae_moe_current/'s general+advanced is a subset), so the union should
-  // preserve that for every record.
-  expect(fullUnionCount).toBe(600);
+  // (uae_moe_current/'s general+advanced is a subset), and the additive
+  // delivery's own UAE MoE records do too — so the union/merge should
+  // preserve that for every one of the 1,320.
+  expect(fullUnionCount).toBe(1320);
 
   const ids = new Set(uae.map(q => q.id));
-  expect(ids.size).toBe(600); // no duplicate ids smuggled in from the alternate export
+  expect(ids.size).toBe(1320); // no duplicate ids smuggled in from either export
+});
+
+// Round E item 7: a second, separate delivery (data/additional_question_bank/,
+// merged additively by scripts/merge-question-bank.js) landed on top of the
+// original 4,320-question bank specifically to fix thin 11th-standard PCM/PCB
+// coverage. This guards the merge actually happened as an addition (10,080
+// total = 4,320 original + 5,760 new) rather than silently regressing to one
+// delivery or the other, and that no id collided (the additive bank's IDs
+// start at 201 specifically to avoid the original bank's ranges — verified,
+// not just trusted, during the merge; see RUN_LOG.md).
+test('the round-E additive question-bank merge landed the full 5,760 new records with zero id collisions', async ({ page }) => {
+  await page.goto('/');
+  const questions = await page.evaluate(() => window.PED.GENERATED.QUESTION_BANK.questions);
+  expect(questions.length).toBe(10080);
+  const ids = new Set(questions.map(q => q.id));
+  expect(ids.size).toBe(10080); // no id collided between the two deliveries
+
+  const pcmbCore = questions.filter(q =>
+    ['Indian', 'IB', 'British', 'American', 'UAE MoE', 'SABIS'].includes(q.curriculum) &&
+    /physics|chemistry|biology|math|calculus|precalculus|statistics|analysis|applications/i.test(q.subject)
+  );
+  // Sanity floor, not an exact count (the original bank also has PCMB-core
+  // questions) — just confirms the additive 60/60/60-per-subject core is
+  // really in there, not merely present in the source folder.
+  expect(pcmbCore.length).toBeGreaterThan(4000);
+});
+
+// Round E item 9b (codexreview.md finding, re-checked after the item 7
+// merge): even after that merge, a handful of real streams still have zero
+// eligible questions of their own (IB groups 1/2/6 and American's Capstone/
+// Arts/English/World Languages — none of the delivered banks cover language/
+// literature/arts subjects). Before this fix, those visitors silently got
+// questions from a DIFFERENT, irrelevant subject in the same curriculum
+// (e.g. an IB Arts-group visitor served a Biology question) — this proves
+// the fix instead: an empty stream now gets curriculum-neutral Aptitude
+// questions, never a wrong-subject one.
+test('a stream with zero eligible questions of its own gets Aptitude-pool questions, never a different, irrelevant subject in the same curriculum', async ({ page }) => {
+  await page.goto('/');
+  const result = await page.evaluate(() => {
+    const curriculumSubjects = window.PED.GENERATED.CURRICULUM_SUBJECTS;
+    const questions = window.PED.questions.loadQuestionBank(window.PED.GENERATED.QUESTION_BANK, curriculumSubjects);
+    // IB group6 (The Arts) has no eligible questions in either delivered bank.
+    const eligibleForGroup6 = window.PED.questions.getEligibleQuestions(questions, { curriculum: 'IB', streamId: 'group6' });
+    const selected = window.PED.questions.selectQuizQuestions(questions, 4, { curriculum: 'IB', streamId: 'group6' });
+    return { eligibleForGroup6Count: eligibleForGroup6.length, curricula: selected.map(q => q.curriculum) };
+  });
+  expect(result.eligibleForGroup6Count).toBe(0); // confirms this really is the known-empty case being tested
+  expect(result.curricula.every(c => c === 'Aptitude')).toBe(true);
 });
 
 test('maybeSubstituteAptitude swaps exactly one slot into the Aptitude pool when the roll succeeds, and never changes count', async ({ page }) => {

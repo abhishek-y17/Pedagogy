@@ -126,26 +126,56 @@
 
   /**
    * Picks `count` unique questions for a visitor's quiz, with a fallback chain
-   * so the stub bank (still small — session_handoff.md item K, real bank not
-   * yet delivered) never comes up short or crashes:
+   * that never comes up short or crashes:
    *   1. Eligible for the visitor's exact curriculum + stream.
-   *   2. Topped up from the same curriculum, any stream (still on-curriculum,
+   *   2. If tier 1 found NOTHING at all (a genuinely empty stream — see below),
+   *      top up from the curriculum-neutral Aptitude pool rather than reaching
+   *      into a different, irrelevant subject within the same curriculum.
+   *   3. Topped up from the same curriculum, any stream (still on-curriculum,
    *      just not stream-matched — "the curriculum's generic pool").
-   *   3. Topped up from the whole bank (any curriculum) as a last resort.
-   * Logs via console.warn whenever tier 2 or 3 actually fires, so a thin bank
-   * for some curriculum/stream combo is visible during Phase 2/5 QA rather
-   * than silently under-serving that visitor.
+   *   4. Topped up from the whole bank (any curriculum) as a last resort.
+   * Logs via console.warn whenever tier 2, 3 or 4 actually fires, so a thin
+   * bank for some curriculum/stream combo is visible during QA rather than
+   * silently under-serving that visitor.
+   *
+   * Why tier 2 exists (codexreview.md finding, re-checked after the Round E
+   * question-bank merge): even after that merge, a handful of real streams
+   * still have zero eligible questions of their own — IB groups 1/2/6
+   * (Language A, Language Acquisition, The Arts) and American's Capstone/
+   * Arts/English/World Languages categories, none of which the delivered
+   * banks cover (deliberately — language/literature/arts subjects were
+   * excluded from both deliveries). Before this fix, tier 2 was "same
+   * curriculum, any stream," which for e.g. an IB group-6 (Arts) visitor
+   * meant silently serving Biology/Physics/Economics questions — exactly the
+   * "irrelevant subject content" the standing decision says never to show.
+   * The curriculum-neutral Aptitude pool (already used elsewhere for the
+   * per-visitor ~1-in-3 substitution, see maybeSubstituteAptitude below) is a
+   * defensible stand-in for a genuinely unmodeled stream: it isn't a WRONG
+   * subject, just a subject-neutral one. This tier only fires when tier 1
+   * found literally nothing for that stream — a visitor whose stream DOES
+   * have some content, just not quite enough to fill every slot, still tops
+   * up from tier 3 (same curriculum) first, matching the previous behavior.
    */
   function selectQuizQuestions(questions, count, { curriculum, streamId }) {
     const byId = new Map();
     const add = list => { for (const q of list) if (!byId.has(q.id)) byId.set(q.id, q); };
 
     add(getEligibleQuestions(questions, { curriculum, streamId }));
+    const streamMatchedCount = byId.size;
+
+    if (streamMatchedCount === 0 && streamId) {
+      const before = byId.size;
+      add(questions.filter(q => q.curriculum === 'Aptitude'));
+      if (byId.size > before) {
+        console.warn(`[pedagogy] quiz fallback: 0 eligible question(s) for curriculum "${curriculum}" stream "${streamId}" (a known-unmodeled stream) — filled from the curriculum-neutral Aptitude pool instead of a different, irrelevant subject in the same curriculum.`);
+      }
+    }
+
     if (byId.size < count) {
       const before = byId.size;
       add(getEligibleQuestions(questions, { curriculum }));
       if (byId.size > before) {
-        console.warn(`[pedagogy] quiz fallback: only ${before} stream-matched question(s) for curriculum "${curriculum}" stream "${streamId || '(none)'}" — topped up to ${byId.size} from the same curriculum's other streams.`);
+        console.warn(`[pedagogy] quiz fallback: only ${before} question(s) so far for curriculum "${curriculum}" stream "${streamId || '(none)'}" — topped up to ${byId.size} from the same curriculum's other streams.`);
       }
     }
     if (byId.size < count) {

@@ -20,7 +20,17 @@
   // js/registration.js. The combined, validated value still lands in
   // parentMobile/studentMobile at Continue/Submit time, so review.js/staff.js/
   // the duplicate-matching logic in this file are unaffected.
-  const SCHEMA = 'pedagogy.v10';
+  // Bumped v10 -> v11 (Round E, 2026-09-23): both mini-games removed and the
+  // quiz step order/count changed (5 questions -> 4, no more game1/game2
+  // steps — see js/steps.js), so an in-progress v10 draft's currentStepId
+  // could point at a step id that no longer exists. New top-level
+  // `returnToReview` flag added (item 8's Review-Edit-returns-to-Review fix,
+  // see js/app.js) and `registration.grade` can now be 'stage9'. None of this
+  // is safe to silently resume from an old schema, so — same as every prior
+  // schema bump — loadDraft() below just treats the mismatch as "no draft"
+  // and a visitor picking up a stale in-progress session starts fresh rather
+  // than landing on a step id that no longer resolves to anything.
+  const SCHEMA = 'pedagogy.v11';
   const RECORDS_KEY = 'pedagogy-expo-records';
   const DRAFT_KEY = 'pedagogy-expo-draft';
 
@@ -31,6 +41,11 @@
       schema: SCHEMA,
       mode, // 'full' | 'express'
       currentStepId: 'register',
+      // Round E item 8: set only by app.js's onJump (Review's "Edit" links),
+      // and consumed (read then cleared) by the very next Continue/Back-
+      // equivalent action, which redirects straight back to Review instead of
+      // resuming the normal forward step order — see js/app.js's onNext/onBack.
+      returnToReview: false,
       registration: {
         name: null,
         dob: null,
@@ -219,6 +234,17 @@
    * back to 'pending' too, even one staff had previously reviewed/dismissed,
    * because a *new* incoming duplicate is new information staff haven't seen
    * yet; never silently left unflagged, per the standing decision.
+   *
+   * Return value (codexreview.md finding, fixed here): saveRecords() can fail
+   * (storage quota, private-mode restrictions) and used to be called for its
+   * side effect only, with the boolean it returns silently discarded —
+   * finalizeDraft() would still clear the draft and the caller would still
+   * show the success confirmation even though nothing was actually persisted,
+   * quietly losing a real registration. Callers (js/review.js,
+   * js/registration.js's grade-9/10 direct-submit path) must check `.ok`
+   * before showing success, and must NOT treat the draft as consumed if it's
+   * false — the draft is deliberately left un-cleared on failure so a retry
+   * doesn't lose the visitor's already-entered data.
    */
   function finalizeDraft(draft, questions) {
     if (Array.isArray(questions)) {
@@ -229,36 +255,53 @@
       });
     }
     const records = loadRecords();
-    draft.meta.id = draft.meta.id || `P-${generateId()}`;
-    draft.meta.createdAt = new Date().toISOString();
+    const id = draft.meta.id || `P-${generateId()}`;
+    const createdAt = new Date().toISOString();
 
     const matches = findDuplicateMatches(records, draft);
-    if (matches.length) {
-      draft.meta.duplicateFlag = true;
-      draft.meta.duplicateOfIds = matches.map(m => m.meta.id);
-      draft.meta.duplicateReviewStatus = 'pending';
-      matches.forEach(m => {
-        m.meta.duplicateFlag = true;
-        if (!m.meta.duplicateOfIds.includes(draft.meta.id)) m.meta.duplicateOfIds.push(draft.meta.id);
-        m.meta.duplicateReviewStatus = 'pending';
-      });
-    }
+    const duplicateFlag = matches.length > 0;
+    const duplicateOfIds = matches.map(m => m.meta.id);
+
+    // These in-memory mutations (to `draft` itself and to the matched
+    // existing records) only actually reach localStorage if saveRecords()
+    // below succeeds — on failure they're harmlessly discarded along with
+    // the rest of `records`, and draft.meta.id staying set means a retry
+    // reuses the same id rather than minting a new one each attempt.
+    draft.meta.id = id;
+    draft.meta.createdAt = createdAt;
+    draft.meta.duplicateFlag = duplicateFlag;
+    draft.meta.duplicateOfIds = duplicateOfIds;
+    draft.meta.duplicateReviewStatus = duplicateFlag ? 'pending' : draft.meta.duplicateReviewStatus;
+    matches.forEach(m => {
+      m.meta.duplicateFlag = true;
+      if (!m.meta.duplicateOfIds.includes(id)) m.meta.duplicateOfIds.push(id);
+      m.meta.duplicateReviewStatus = 'pending';
+    });
 
     records.push(draft);
-    saveRecords(records);
-    clearDraft();
-    return draft;
+    const ok = saveRecords(records);
+    if (ok) clearDraft();
+    return { ok, record: draft };
   }
 
-  /** Staff-dashboard mutation (mark reviewed/merged/dismissed) on an already
-   * finalized record — the one place besides finalizeDraft() itself that
-   * touches RECORDS_KEY, so a record can never end up silently untouched
-   * once flagged (js/staff.js is the only caller). */
-  function updateRecord(id, mutator) {
+  /** Staff-dashboard duplicate resolution (Mark reviewed / Merged / Not a
+   * duplicate). codexreview.md finding, fixed here: resolving a duplicate
+   * used to update only the clicked record via the generic updateRecord()
+   * below, leaving its linked match(es) still `duplicateReviewStatus:
+   * 'pending'` — staff would think they'd closed out a duplicate pair when
+   * only half of it moved, and the dashboard would keep counting it as
+   * needing review. This resolves the clicked record AND every record listed
+   * in its own duplicateOfIds together, in one localStorage write, so a
+   * resolved pair (or group) always moves as a unit. */
+  function resolveDuplicatePair(id, status) {
     const records = loadRecords();
     const record = records.find(r => r.meta.id === id);
     if (!record) return null;
-    mutator(record);
+    const linkedIds = new Set(record.meta.duplicateOfIds || []);
+    record.meta.duplicateReviewStatus = status;
+    records.forEach(r => {
+      if (linkedIds.has(r.meta.id)) r.meta.duplicateReviewStatus = status;
+    });
     saveRecords(records);
     return record;
   }
@@ -291,9 +334,9 @@
     mutateDraft,
     resetForNewVisitor,
     finalizeDraft,
+    resolveDuplicatePair,
     loadRecords,
     saveRecords,
-    updateRecord,
     findDuplicateMatches,
   };
 })();
