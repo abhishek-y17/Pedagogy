@@ -370,11 +370,18 @@
     // plain "off" — flagged for a real-device re-check before the live event
     // in case that assumption is wrong.
 
-    // Defense-in-depth on top of the JS age-range check: bound the native
-    // date picker itself so it can't even offer an implausible date.
-    const today = new Date();
-    const dobMax = new Date(today.getFullYear() - MIN_AGE, today.getMonth(), today.getDate()).toISOString().slice(0, 10);
-    const dobMin = new Date(today.getFullYear() - MAX_AGE, today.getMonth(), today.getDate()).toISOString().slice(0, 10);
+    // Client feedback (2026-09-29): bound the native date picker's own
+    // calendar/year-scroll range to a fixed 2000-2020 window — wider and
+    // easier to browse than the previous today-relative MIN_AGE/MAX_AGE
+    // bounds (currently ~2002-2014, which couldn't even reach 2020). Kept as
+    // fixed calendar years rather than relative-to-today on purpose: the
+    // MIN_AGE(12)/MAX_AGE(24) plausibility check below (getFieldErrors) is
+    // what actually decides whether a date "looks right for a Class 9-12
+    // student" and already sits comfortably inside this wider window, so
+    // this is purely a easier-to-browse widening of the picker's own outer
+    // bounds, not a change to what counts as a valid registration.
+    const dobMax = '2020-12-31';
+    const dobMin = '2000-01-01';
 
     container.innerHTML = `
       <p class="eyebrow-small">YOUR JOURNEY STARTS HERE</p>

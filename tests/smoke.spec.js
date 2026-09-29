@@ -227,6 +227,17 @@ test('a mid-typing date of birth (year not yet fully typed) does not show the er
   await expect(page.locator('#dobFieldError')).toContainText("doesn't look right for a Class 9–12 student");
 });
 
+// Client feedback (2026-09-29): widen the native date picker's own
+// calendar/year-scroll bounds to a fixed, easier-to-browse 2000-2020 window
+// (previously ~2002-2014, today-relative, which couldn't even reach 2020).
+// The separate MIN_AGE/MAX_AGE plausibility check (see the test above) is
+// unchanged by this — this only covers what the picker widget itself offers.
+test('the date picker\'s own min/max span a fixed 2000-2020 window', async ({ page }) => {
+  await startJourney(page);
+  await expect(page.locator('#regDob')).toHaveAttribute('min', '2000-01-01');
+  await expect(page.locator('#regDob')).toHaveAttribute('max', '2020-12-31');
+});
+
 test('typing symbols into the phone fields gets them stripped live', async ({ page }) => {
   await startJourney(page);
   await expect(page.locator('#regParentCountryCode')).toHaveValue('+971'); // preset default

@@ -459,26 +459,47 @@ main {
 
 .school-field { position: relative; margin-bottom: 4px; }
 .school-input-wrap { position: relative; }
-.school-input-wrap input { padding-right: 68px; }
+/* The label now lives outside this wrap as its own element (own
+   margin-bottom already spaces it from the input below), so the input's
+   normal margin-top: 7px (meant to separate it from a label wrapping it
+   directly, the pattern every other field in this form still uses) is
+   redundant here and was throwing off the Clear button's vertical centering
+   below — reset to 0 so the wrap's height exactly equals the input's own
+   48px box. */
+.school-input-wrap input { margin-top: 0; padding-right: 70px; }
 /* Client feedback (2026-09-29): a plain × icon read as broken/unclear —
-   changed to a labelled "Clear" pill, fixed to the input's own box (not the
-   label above it) so it stays put regardless of suggestion-list state. */
+   changed to a labelled "Clear" pill. Sized and centered against the
+   input's own known 48px height (see above) with a fixed height + margin-top
+   offset rather than `transform: translateY(-50%)`, deliberately — this
+   button is still a <button>, which inherits this file's global
+   `button:hover`/`button:active` lift/scale transform (below); centering via
+   `transform` here would fight that on every hover/press, which is exactly
+   what "should be fixated not animated" flagged. margin-based centering
+   doesn't touch the transform property at all, so nothing to conflict with. */
 .school-clear-btn {
   position: absolute;
   top: 50%;
-  right: 6px;
-  transform: translateY(calc(-50% + 3.5px)); /* input has margin-top: 7px, so its own box center sits ~3.5px below the wrap's center */
-  padding: 6px 12px;
+  right: 8px;
+  height: 32px;
+  min-height: 0; /* the generic `button` rule above sets min-height: 46px, which was clamping this to 46px regardless of the explicit height:32px here */
+  margin-top: -16px; /* half of the 32px height above */
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: white;
   color: var(--muted);
   font-size: 12px;
   font-weight: 700;
-  line-height: 1.2;
   cursor: pointer;
 }
 .school-clear-btn:hover, .school-clear-btn:focus-visible { background: var(--line); color: var(--ink); }
+/* Belt-and-braces: even though margin-based centering above doesn't use
+   `transform`, explicitly neutralize the global hover-lift/press-scale here
+   too, so this small fixed utility control never visibly shifts. */
+.school-clear-btn:hover:not(:disabled), .school-clear-btn:active:not(:disabled) { transform: none; }
 .school-suggestions {
   list-style: none;
   margin: 4px 0 0;
