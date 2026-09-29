@@ -677,9 +677,18 @@
       window.PED.state.mutateDraft(draft, () => { reg.name = clean; });
       refreshValidity();
     });
+    // Client feedback (2026-09-29): a native date input fires 'change' on
+    // every digit typed into any segment, not just once the whole date is
+    // finished — typing a year one digit at a time genuinely passes through
+    // intermediate valid-but-tiny years (e.g. "0200"), each a real 'change'
+    // event. Marking the field touched here (like every other field's own
+    // 'change'/'input' handler in this file does) revealed the implausible-
+    // age error mid-keystroke. Matches the #regParentCountryCode/
+    // #regStudentCountryCode pattern below: keep validity live on 'change'
+    // (so Continue's disabled state stays accurate), but only reveal this
+    // field's own error text once they actually leave it, via 'blur'.
     $('#regDob').addEventListener('change', e => {
       window.PED.state.mutateDraft(draft, () => { reg.dob = e.target.value; });
-      markTouched('dob');
       refreshValidity();
     });
     // Same "tabbed past without picking a date" gap as Curriculum/Grade/the

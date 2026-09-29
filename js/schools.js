@@ -18,7 +18,13 @@
   function searchSchools(schools, query, limit) {
     limit = limit || 8;
     const q = query.trim().toLowerCase();
-    if (q.length < 2) return [];
+    // Client feedback (2026-09-29): the list was disappearing entirely after
+    // the first typed character (this used to require 2+ characters before
+    // returning anything, which was invisible when there was no browse list
+    // to compare against — now that clicking the field shows a full browse
+    // list at 0 characters, that same gap read as "the dropdown vanishes").
+    // Filters and narrows continuously from the first character instead.
+    if (!q) return [];
     return schools
       .filter(s => s.school_name.toLowerCase().includes(q))
       .map(s => ({ s, rank: rankMatch(s.school_name.toLowerCase(), q) }))

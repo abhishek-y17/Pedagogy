@@ -207,6 +207,26 @@ test('a future date of birth is rejected with a live inline error', async ({ pag
   await expect(page.locator('#registerNextBtn')).toBeDisabled();
 });
 
+// Client feedback (2026-09-29), reported with a screenshot showing the error
+// live while the year segment read "0200" mid-keystroke: a native date
+// input fires a real 'change' event on every digit typed into any segment,
+// so typing a year one digit at a time genuinely passes through small,
+// syntactically-valid-but-still-being-typed years. The error must wait for
+// the visitor to actually leave the field (blur), not fire on every one of
+// those intermediate 'change' events.
+test('a mid-typing date of birth (year not yet fully typed) does not show the error until the field is left', async ({ page }) => {
+  await startJourney(page);
+  await page.evaluate(() => {
+    const el = document.getElementById('regDob');
+    el.value = '0200-05-17'; // mimics the year segment reading "0200" mid-keystroke
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+  await expect(page.locator('#dobFieldError')).toBeHidden();
+
+  await page.locator('#regDob').evaluate(el => el.dispatchEvent(new Event('blur', { bubbles: true })));
+  await expect(page.locator('#dobFieldError')).toContainText("doesn't look right for a Class 9–12 student");
+});
+
 test('typing symbols into the phone fields gets them stripped live', async ({ page }) => {
   await startJourney(page);
   await expect(page.locator('#regParentCountryCode')).toHaveValue('+971'); // preset default
@@ -470,6 +490,24 @@ test('school field: clicking it browses a capped list, and a labelled Clear butt
   await page.locator('#schoolClearBtn').click();
   await expect(page.locator('#regSchoolInput')).toHaveValue('');
   await expect(page.locator('#schoolClearBtn')).toBeHidden();
+});
+
+// Client feedback (2026-09-29, second round): the dropdown was disappearing
+// entirely after the very first typed character (searchSchools used to
+// require 2+ characters before returning anything, invisible before the
+// click-to-browse list existed to compare against). It must narrow
+// continuously from the first character instead of ever going empty
+// mid-word for a query that still has real matches.
+test('school suggestions narrow continuously as you type, never disappearing after the first character', async ({ page }) => {
+  await startJourney(page);
+  await page.locator('#regSchoolInput').click();
+  await expect(page.locator('#schoolSuggestions li').first()).toBeVisible();
+
+  await page.locator('#regSchoolInput').pressSequentially('d', { delay: 30 });
+  await expect(page.locator('#schoolSuggestions li').first()).toBeVisible();
+
+  await page.locator('#regSchoolInput').pressSequentially('u', { delay: 30 });
+  await expect(page.locator('#schoolSuggestions li').first()).toBeVisible();
 });
 
 // Client feedback (2026-09-29): typing "duba" surfaced "American School of
