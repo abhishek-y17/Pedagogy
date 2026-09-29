@@ -26,11 +26,21 @@
    *   suggestion (a ✦ mark, per curriculum_subjects.json's "pre-suggest, not
    *   force" note — see js/questions.js's getSuggestedCourses). Purely visual;
    *   never affects selection/exclusivity behavior.
+   * max: optional number — once `countSelected()` (selected.length by default,
+   *   or the result of counting a caller-supplied combined total via
+   *   `countFor`) reaches this, unchecked boxes disable until one is unchecked
+   *   again. Only the destinations step passes this (client feedback,
+   *   2026-09-29: cap destination countries at 3) — every other call site
+   *   leaves it unset, so unlimited selection stays the default everywhere else.
+   * countFor: optional () => number, used instead of selected.length to decide
+   *   whether `max` has been hit — lets destinations.js count grid picks
+   *   combined with its separate "Other" search-overlay picks as one total.
    * onChange(selectedArray): called after every toggle.
    */
-  function renderChipGrid(container, { name, options, selected, exclusiveValues, suggested, onChange }) {
+  function renderChipGrid(container, { name, options, selected, exclusiveValues, suggested, max, countFor, onChange }) {
     exclusiveValues = exclusiveValues || [];
     suggested = suggested || [];
+    const countSelected = countFor || (() => selected.length);
     container.innerHTML =
       '<div class="chips" role="group">' +
       options.map((opt, i) => {
@@ -40,6 +50,14 @@
         return `<label for="${id}"><input type="checkbox" id="${id}" name="${name}" value="${escapeHtml(opt)}"${checked}><span${spanClass}>${escapeHtml(opt)}</span></label>`;
       }).join('') +
       '</div>';
+
+    function refreshMaxState() {
+      if (!max) return;
+      const atCap = countSelected() >= max;
+      container.querySelectorAll('input[type=checkbox]').forEach(cb => {
+        cb.disabled = atCap && !cb.checked;
+      });
+    }
 
     container.querySelectorAll('input[type=checkbox]').forEach(input => {
       input.addEventListener('change', () => {
@@ -66,9 +84,11 @@
         container.querySelectorAll('input[type=checkbox]').forEach(cb => {
           cb.checked = selected.includes(cb.value);
         });
+        refreshMaxState();
         if (onChange) onChange(selected);
       });
     });
+    refreshMaxState();
   }
 
   window.PED.chips = { renderChipGrid, escapeHtml };

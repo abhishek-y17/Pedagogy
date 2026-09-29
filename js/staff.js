@@ -92,20 +92,6 @@
     `;
   }
 
-  // TEST ONLY — REMOVE BEFORE THE REAL EVENT (11-13 Oct 2026), see CLAUDE.md.
-  // Renders the dev-only "jump to quiz" test button. `jumpToQuizForTesting` is
-  // defined in js/app.js (near boot()) since only that file's closure has
-  // access to draft/appShell/heroScreen/renderStep.
-  function renderJumpToQuizButton(container, jumpToQuizForTesting) {
-    if (!jumpToQuizForTesting) return '';
-    return `
-      <div class="dev-only">
-        <p class="field-hint">TEST ONLY — remove before the real event (11–13 Oct 2026).</p>
-        <button type="button" class="quiet" id="jumpToQuizTestBtn">Jump to quiz (test)</button>
-      </div>
-    `;
-  }
-
   /** A genuinely destructive, staff-only reset — added per PLAN.md Phase 6's
    * "a way to reset devices between test runs" plus a repeated live request
    * to clear leftover test/demo data. Confirms via the same native confirm()
@@ -124,11 +110,11 @@
    * actually holds the `draft` reference) replaces that in-memory draft with
    * a genuinely fresh one immediately after the storage wipe, so there's
    * nothing stale left for autosave to resurrect. */
-  function renderClearAllButton(container, datasets, jumpToQuizForTesting) {
+  function renderClearAllButton() {
     return `<button type="button" class="quiet staff-clear-all" id="staffClearAllBtn">Clear all local data</button>`;
   }
 
-  function wireClearAllButton(container, datasets, jumpToQuizForTesting, onDataCleared) {
+  function wireClearAllButton(container, datasets, onDataCleared) {
     container.querySelector('#staffClearAllBtn').addEventListener('click', () => {
       const count = window.PED.state.loadRecords().length;
       const warning = count
@@ -137,11 +123,33 @@
       if (!confirm(warning)) return;
       window.PED.state.clearAllData();
       if (onDataCleared) onDataCleared();
-      renderStaffDashboard(container, datasets, jumpToQuizForTesting, onDataCleared);
+      renderStaffDashboard(container, datasets, onDataCleared);
     });
   }
 
-  function renderStaffDashboard(container, datasets, jumpToQuizForTesting, onDataCleared) {
+  /** Client feedback (2026-09-29): "an actual dashboard" — a visible stats
+   * bar (total registered, submitted today, pending duplicate reviews) above
+   * the per-record card list, instead of the count only ever showing up
+   * buried inside the step heading. "Today" compares each record's
+   * meta.createdAt against the device's local calendar day, same basis staff
+   * are already reading fmtDate() timestamps in. */
+  function renderStatsBar(records) {
+    const todayKey = new Date().toDateString();
+    const todayCount = records.filter(r => {
+      const d = r.meta && r.meta.createdAt ? new Date(r.meta.createdAt) : null;
+      return d && d.toDateString() === todayKey;
+    }).length;
+    const pendingCount = records.filter(r => r.meta.duplicateFlag && r.meta.duplicateReviewStatus === 'pending').length;
+    return `
+      <div class="staff-stats">
+        <div class="staff-stat"><strong>${records.length}</strong><span>Total registered</span></div>
+        <div class="staff-stat"><strong>${todayCount}</strong><span>Registered today</span></div>
+        <div class="staff-stat${pendingCount ? ' staff-stat--attention' : ''}"><strong>${pendingCount}</strong><span>Need duplicate review</span></div>
+      </div>
+    `;
+  }
+
+  function renderStaffDashboard(container, datasets, onDataCleared) {
     const records = window.PED.state.loadRecords();
 
     // Root cause of the refresh bug (round C item 9b): this empty-state
@@ -155,19 +163,16 @@
     if (!records.length) {
       container.innerHTML = `
         <p class="eyebrow-small">STAFF DASHBOARD</p>
+        ${renderStatsBar(records)}
         <h2 class="step-heading">No registrations yet.</h2>
         <p class="field-hint">Finalized entries will appear here as visitors submit the review screen.</p>
         <div class="step-actions">
           <button type="button" class="quiet" id="staffRefreshBtn">Refresh</button>
-          ${renderClearAllButton(container, datasets, jumpToQuizForTesting)}
+          ${renderClearAllButton()}
         </div>
-        ${renderJumpToQuizButton(container, jumpToQuizForTesting)}
       `;
-      container.querySelector('#staffRefreshBtn').addEventListener('click', () => renderStaffDashboard(container, datasets, jumpToQuizForTesting, onDataCleared));
-      wireClearAllButton(container, datasets, jumpToQuizForTesting, onDataCleared);
-      // TEST ONLY — REMOVE BEFORE THE REAL EVENT (11-13 Oct 2026), see CLAUDE.md.
-      const jumpBtn = container.querySelector('#jumpToQuizTestBtn');
-      if (jumpBtn) jumpBtn.addEventListener('click', jumpToQuizForTesting);
+      container.querySelector('#staffRefreshBtn').addEventListener('click', () => renderStaffDashboard(container, datasets, onDataCleared));
+      wireClearAllButton(container, datasets, onDataCleared);
       return;
     }
 
@@ -181,26 +186,19 @@
       return (b.meta.createdAt || '').localeCompare(a.meta.createdAt || '');
     });
 
-    const pendingCount = records.filter(r => r.meta.duplicateFlag && r.meta.duplicateReviewStatus === 'pending').length;
-
     container.innerHTML = `
       <p class="eyebrow-small">STAFF DASHBOARD</p>
-      <h2 class="step-heading">${records.length} registration${records.length === 1 ? '' : 's'}${pendingCount ? ` &middot; ${pendingCount} need${pendingCount === 1 ? 's' : ''} a duplicate review` : ''}</h2>
+      ${renderStatsBar(records)}
       <p class="field-hint">Reads directly from this device's saved records. Refresh after new submissions on this device.</p>
       <div class="step-actions">
         <button type="button" class="quiet" id="staffRefreshBtn">Refresh</button>
-        ${renderClearAllButton(container, datasets, jumpToQuizForTesting)}
+        ${renderClearAllButton()}
       </div>
-      ${renderJumpToQuizButton(container, jumpToQuizForTesting)}
       <div id="staffRecordList">${sorted.map(r => renderRecordCard(r, datasets)).join('')}</div>
     `;
 
-    container.querySelector('#staffRefreshBtn').addEventListener('click', () => renderStaffDashboard(container, datasets, jumpToQuizForTesting, onDataCleared));
-    wireClearAllButton(container, datasets, jumpToQuizForTesting, onDataCleared);
-
-    // TEST ONLY — REMOVE BEFORE THE REAL EVENT (11-13 Oct 2026), see CLAUDE.md.
-    const jumpBtn = container.querySelector('#jumpToQuizTestBtn');
-    if (jumpBtn) jumpBtn.addEventListener('click', jumpToQuizForTesting);
+    container.querySelector('#staffRefreshBtn').addEventListener('click', () => renderStaffDashboard(container, datasets, onDataCleared));
+    wireClearAllButton(container, datasets, onDataCleared);
 
     container.querySelectorAll('[data-action]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -209,7 +207,7 @@
         // pending — resolveDuplicatePair() resolves the whole linked group
         // together (see js/state.js).
         window.PED.state.resolveDuplicatePair(btn.dataset.id, btn.dataset.action);
-        renderStaffDashboard(container, datasets, jumpToQuizForTesting, onDataCleared);
+        renderStaffDashboard(container, datasets, onDataCleared);
       });
     });
   }

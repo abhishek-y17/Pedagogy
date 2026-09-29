@@ -70,4 +70,4 @@ npm run build:data
 
 ## Status
 
-This is a pre-launch build. The question bank is real and delivered (10,080 questions across two merged deliveries — see `data/QUESTION_BANK_SOURCES.md`), though no subject-teacher has independently reviewed it for factual accuracy yet (`reviewed_by: null` on every record). A few files in this repo (`js/staff.js`, `js/app.js`, `styles.css`) currently contain a clearly-marked, staff-gated test-only shortcut for exercising the quiz flow during development — search for `TEST ONLY` to find it. It's flagged for removal before the live event and is not reachable by a real visitor.
+This is a pre-launch build. The question bank is real and delivered (10,080 questions across two merged deliveries — see `data/QUESTION_BANK_SOURCES.md`), though no subject-teacher has independently reviewed it for factual accuracy yet (`reviewed_by: null` on every record). The dev-only "jump to quiz" staff-dashboard test shortcut that used to live in `js/staff.js`/`js/app.js`/`styles.css` has been removed (2026-09-29) now that this is the final build for the live event, not a demo build.

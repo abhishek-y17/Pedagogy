@@ -59,6 +59,21 @@ test('hero loads with no console errors and datasets/question bank validate', as
   expect(errors, `console/page errors: ${errors.join('\n')}`).toEqual([]);
 });
 
+// Client feedback (2026-09-29): the hero's "how it works" strip and time
+// note were left over from before Round E cut the quiz to 4 questions and
+// removed both mini-games (used to read "5-question challenge"). The time
+// estimate itself is "about 3 minutes" for the *whole* flow (registration +
+// destinations/exam-prep/exam-list + the 90s pooled quiz timer + review) —
+// that figure didn't actually change in Round E (only the quiz-only portion
+// did), so this asserts the honest total stays, not a since-corrected
+// "about a minute" guess that only counted the quiz timer.
+test('hero copy reflects the current 4-question quiz and the real full-flow time estimate', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('.hiw-strip')).toContainText('4-question challenge');
+  await expect(page.locator('.hiw-strip')).not.toContainText('5-question');
+  await expect(page.locator('.hero-time-note')).toContainText('3 minutes');
+});
+
 test('hero start button opens the app shell on the register step', async ({ page }) => {
   await startJourney(page);
   await expect(page.locator('#stepContent h2')).toHaveText('First, make it yours.');
@@ -260,6 +275,25 @@ test('grade options follow the chosen curriculum\'s real naming', async ({ page 
   await expect(page.locator('#regGrade')).toContainText('MYP Year 5');
 });
 
+// Client feedback (2026-09-29): the stream/course picker shouldn't show just
+// because the curriculum has streams — it should stay hidden until grade
+// resolves to 11th/12th (9th/10th never reach the quiz, so a stream pick is
+// meaningless for them).
+test('stream/course field stays hidden until grade resolves to 11th/12th', async ({ page }) => {
+  await startJourney(page);
+  await page.locator('#regCurriculum').selectOption('Indian'); // has real stream options
+  await expect(page.locator('#streamFieldWrap')).toBeHidden();
+  await page.locator('#regGrade').selectOption('stage9');
+  await expect(page.locator('#streamFieldWrap')).toBeHidden();
+  await page.locator('#regGrade').selectOption('stage10');
+  await expect(page.locator('#streamFieldWrap')).toBeHidden();
+  await page.locator('#regGrade').selectOption('stage11');
+  await expect(page.locator('#streamFieldWrap')).toBeVisible();
+  // Switching back down hides it again, rather than leaving it stuck visible.
+  await page.locator('#regGrade').selectOption('stage10');
+  await expect(page.locator('#streamFieldWrap')).toBeHidden();
+});
+
 // ===================== Round E item 9a: curriculum is now required =====================
 // codexreview.md finding: curriculum was never actually required, so a
 // visitor could reach the quiz with curriculum still at "Choose" and get
@@ -412,6 +446,48 @@ test('a parent number with the wrong digit count for its country code shows a li
   await expect(page.locator('#registerNextBtn')).toBeDisabled();
 });
 
+// Client feedback (2026-09-29): tapping the (empty) school field should
+// immediately browse a list, not require two typed characters first, and a
+// picked/typed school should be clearable via a visible × button.
+test('school field: clicking it browses a capped list, and a labelled Clear button resets the field', async ({ page }) => {
+  await startJourney(page);
+  await expect(page.locator('#regSchoolInput')).toHaveAttribute('placeholder', 'Start typing to enter your school');
+  await expect(page.locator('#schoolClearBtn')).toBeHidden();
+
+  await page.locator('#regSchoolInput').click();
+  const suggestionCount = await page.locator('#schoolSuggestions li').count();
+  expect(suggestionCount).toBeGreaterThan(0);
+  expect(suggestionCount).toBeLessThanOrEqual(20); // capped browse list, not all 518
+
+  await page.locator('#schoolSuggestions li').first().click();
+  const pickedValue = await page.locator('#regSchoolInput').inputValue();
+  expect(pickedValue).not.toBe('');
+  // Client feedback (2026-09-29): a plain × icon read as unclear/broken —
+  // now a labelled "Clear" button instead.
+  await expect(page.locator('#schoolClearBtn')).toBeVisible();
+  await expect(page.locator('#schoolClearBtn')).toHaveText('Clear');
+
+  await page.locator('#schoolClearBtn').click();
+  await expect(page.locator('#regSchoolInput')).toHaveValue('');
+  await expect(page.locator('#schoolClearBtn')).toBeHidden();
+});
+
+// Client feedback (2026-09-29): typing "duba" surfaced "American School of
+// Dubai" (query buried mid-name) ahead of schools actually named "Dubai
+// ...something" — js/schools.js's searchSchools now ranks a name-start match
+// above a mid-name match.
+test('school search ranks a name-start match above a mid-name match (e.g. "duba" surfaces Dubai-prefixed schools before "...of Dubai")', async ({ page }) => {
+  await page.goto('/');
+  const names = await page.evaluate(() => {
+    const schools = window.PED.GENERATED.SCHOOLS.schools;
+    return window.PED.schools.searchSchools(schools, 'duba', 30).map(s => s.school_name);
+  });
+  const dubaiPrefixIndex = names.findIndex(n => n.toLowerCase().startsWith('dubai'));
+  const americanSchoolIndex = names.indexOf('American School of Dubai');
+  expect(dubaiPrefixIndex).toBeGreaterThanOrEqual(0);
+  expect(americanSchoolIndex).toBeGreaterThan(dubaiPrefixIndex);
+});
+
 test('an unrecognized school falls back to manual name + curriculum picker', async ({ page }) => {
   await startJourney(page);
   await page.locator('#regSchoolInput').fill('Some School Not In The Dataset Whatsoever');
@@ -514,6 +590,41 @@ test('destinations "Other" search overlay finds and adds a specific country', as
   await page.locator('#countrySearchInput').fill('Japan');
   await page.locator('#countrySearchResults li', { hasText: 'Japan' }).click();
   await expect(page.locator('#otherPicksWrap')).toContainText('Japan');
+});
+
+// Client feedback (2026-09-29): cap destination selection at 3 countries
+// total, combining the top-10 grid picks with any custom "Other" picks.
+test('destinations cap at 3 countries combined across the grid and "Other" search', async ({ page }) => {
+  await startJourney(page);
+  await completeRegistrationToDestinations(page);
+  await page.getByText('India', { exact: true }).click();
+  await page.getByText('United Kingdom', { exact: true }).click();
+  await page.getByText('Germany', { exact: true }).click();
+  await expect(page.locator('#destCapHint')).toBeVisible();
+  await expect(page.locator('.chips input[value="Singapore"]')).toBeDisabled();
+
+  // Deselecting one lifts the cap again.
+  await page.getByText('Germany', { exact: true }).click();
+  await expect(page.locator('#destCapHint')).toBeHidden();
+  await expect(page.locator('.chips input[value="Singapore"]')).toBeEnabled();
+});
+
+test('a country picked via the "Other" search overlay counts toward the 3-country cap and can be removed via its pill', async ({ page }) => {
+  await startJourney(page);
+  await completeRegistrationToDestinations(page);
+  await page.getByText('India', { exact: true }).click();
+  await page.getByText('United Kingdom', { exact: true }).click();
+  await page.getByText('Other', { exact: true }).click();
+  await page.locator('#countrySearchInput').fill('Japan');
+  await page.locator('#countrySearchResults li', { hasText: 'Japan' }).click();
+  await expect(page.locator('#otherPicksWrap')).toContainText('Japan');
+
+  // India + UK + Japan = 3, the cap.
+  await expect(page.locator('#destCapHint')).toBeVisible();
+
+  await page.locator('.removable-pill', { hasText: 'Japan' }).locator('.removable-pill-x').click();
+  await expect(page.locator('#otherPicksWrap')).not.toContainText('Japan');
+  await expect(page.locator('#destCapHint')).toBeHidden();
 });
 
 // ===================== Round C item 1: destinations "Other" dialog bug =====================
@@ -1278,16 +1389,33 @@ test('staff dashboard Refresh re-reads localStorage immediately, including the e
   const record = makeRecord();
   await page.evaluate(r => localStorage.setItem('pedagogy-expo-records', JSON.stringify([r])), record);
   await page.locator('#staffRefreshBtn').click();
-  await expect(page.locator('#view-staff')).toContainText('1 registration');
+  // Client feedback (2026-09-29): the count now lives in the stats bar's
+  // first tile (js/staff.js's renderStatsBar), not buried in a step heading.
+  await expect(page.locator('.staff-stats .staff-stat').first().locator('strong')).toHaveText('1');
   await expect(page.locator('.staff-record')).toContainText('Aisha Rahman');
 
   // A second change + a second click must also work (not a one-shot fix).
   const second = makeRecord({ meta: { ...makeRecord().meta, id: 'P-test-2' }, registration: { ...makeRecord().registration, name: 'Second Visitor' } });
   await page.evaluate(([r1, r2]) => localStorage.setItem('pedagogy-expo-records', JSON.stringify([r1, r2])), [record, second]);
   await page.locator('#staffRefreshBtn').click();
-  await expect(page.locator('#view-staff')).toContainText('2 registrations');
+  await expect(page.locator('.staff-stats .staff-stat').first().locator('strong')).toHaveText('2');
   await expect(page.locator('.staff-record')).toHaveCount(2);
   await expect(page.locator('#view-staff')).toContainText('Second Visitor');
+});
+
+// Client feedback (2026-09-29): "an actual dashboard" — a visible stats bar
+// (total/today/pending) rather than the count only ever showing up buried in
+// a step heading, and the dev-only "jump to quiz" test shortcut (flagged in
+// session_handoff.md for removal before the real event) is now gone.
+test('staff dashboard shows a stats bar with total/today/pending tiles, and no dev-only test shortcut', async ({ page }) => {
+  const record = makeRecord();
+  await page.addInitScript(r => localStorage.setItem('pedagogy-expo-records', JSON.stringify([r])), record);
+  await enterStaffDashboard(page);
+
+  await expect(page.locator('.staff-stats .staff-stat')).toHaveCount(3);
+  await expect(page.locator('.staff-stats .staff-stat').first().locator('strong')).toHaveText('1');
+  await expect(page.locator('#jumpToQuizTestBtn')).toHaveCount(0);
+  await expect(page.locator('.dev-only')).toHaveCount(0);
 });
 
 test('finalizing a second registration that reasonably matches an existing one flags both as duplicates, bidirectionally', async ({ page }) => {

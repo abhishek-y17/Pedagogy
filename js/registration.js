@@ -60,6 +60,16 @@
     return grade === 'stage9' || grade === 'stage10';
   }
 
+  // Client feedback (2026-09-29): the stream/course picker shouldn't just be
+  // hidden for the 9th/10th direct-submit group — it should stay hidden by
+  // default for everyone and only appear once grade resolves to 11th/12th
+  // (the only grades that reach the quiz, where stream actually drives
+  // question filtering). Grade 9/10 never qualifies here since
+  // isDirectSubmitGrade() already covers that group.
+  function isStreamEligibleGrade(grade) {
+    return grade === 'stage11' || grade === 'stage12';
+  }
+
   function gradeOptionsFor(curriculum) {
     const labels = GRADE_LABELS[curriculum] || PLAIN_GRADE_LABELS;
     return GRADE_VALUES.map((value, i) => ({ value, label: labels[i] }));
@@ -346,6 +356,20 @@
     const { schools, curriculumSubjects } = datasets;
     const reg = draft.registration;
 
+    // #regSchoolInput below uses autocomplete="off" (a literal, exact match),
+    // unlike the "off-x"-suffixed tokens on every other field in this form:
+    // those defeat Chrome's own remembered-value dropdown (which Chrome
+    // ignores a bare "off" for — see RUN_LOG.md 2026-09-21), but this field's
+    // reported bug (client feedback, 2026-09-29: a dark suggestion strip
+    // reading "dub"/"dubs"/"Dubai" floating above the label, needing a
+    // double-tap to dismiss) is Windows/Edge's hardware-keyboard "text
+    // prediction" feature instead — a different OS-level mechanism that only
+    // respects the literal "off" keyword, not a non-standard token. This
+    // field has no name attribute (the original anti-Chrome-dropdown
+    // measure), which should keep Chrome's own dropdown suppressed even with
+    // plain "off" — flagged for a real-device re-check before the live event
+    // in case that assumption is wrong.
+
     // Defense-in-depth on top of the JS age-range check: bound the native
     // date picker itself so it can't even offer an implausible date.
     const today = new Date();
@@ -400,10 +424,12 @@
       </div>
 
       <div class="school-field">
-        <label>School name
-          <input type="text" id="regSchoolInput" placeholder="Start typing your school's name" value="${escapeHtml(reg.school || '')}"
-            maxlength="120" autocomplete="off-school-x" spellcheck="false" autocorrect="off" autocapitalize="words">
-        </label>
+        <label for="regSchoolInput">School name</label>
+        <div class="school-input-wrap">
+          <input type="text" id="regSchoolInput" placeholder="Start typing to enter your school" value="${escapeHtml(reg.school || '')}"
+            maxlength="120" autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="words">
+          <button type="button" class="school-clear-btn" id="schoolClearBtn" aria-label="Clear school name"${reg.school ? '' : ' hidden'}>Clear</button>
+        </div>
         <ul class="school-suggestions" id="schoolSuggestions" hidden></ul>
         <p class="field-hint" id="schoolCurriculumNote" hidden></p>
       </div>
@@ -584,8 +610,17 @@
     }
 
     function refreshStreamOptions() {
-      const options = getStreamOptions(curriculumSubjects, reg.curriculum);
       const wrap = $('#streamFieldWrap');
+      // Client feedback (2026-09-29): stay hidden until grade resolves to
+      // 11th/12th — a stream pick means nothing before then (9th/10th never
+      // reach the quiz at all, and a not-yet-chosen grade shouldn't show a
+      // stream question that might immediately need hiding again).
+      if (!isStreamEligibleGrade(reg.grade)) {
+        wrap.hidden = true;
+        if (reg.stream) window.PED.state.mutateDraft(draft, () => { reg.stream = null; });
+        return;
+      }
+      const options = getStreamOptions(curriculumSubjects, reg.curriculum);
       if (!options.length) {
         wrap.hidden = true;
         return;
@@ -720,6 +755,7 @@
     $('#regCurriculum').addEventListener('blur', () => { markTouched('curriculum'); setTimeout(refreshValidity, 150); });
     $('#regGrade').addEventListener('change', e => {
       window.PED.state.mutateDraft(draft, () => { reg.grade = e.target.value; });
+      refreshStreamOptions();
       markTouched('grade');
       refreshValidity();
     });
@@ -760,21 +796,21 @@
     const schoolInput = $('#regSchoolInput');
     const suggestionsEl = $('#schoolSuggestions');
     const curriculumNoteEl = $('#schoolCurriculumNote');
+    const schoolClearBtn = $('#schoolClearBtn');
 
     function clearSuggestions() {
       suggestionsEl.hidden = true;
       suggestionsEl.innerHTML = '';
     }
 
-    schoolInput.addEventListener('input', () => {
-      const value = schoolInput.value;
-      window.PED.state.mutateDraft(draft, () => { reg.school = value; reg.schoolKey = null; });
-      curriculumNoteEl.hidden = true;
-      // Typing invalidates any previously-derived curriculum (the school it came from is
-      // no longer confirmed) — fall back to the real, required manual question.
-      $('#regCurriculum').innerHTML = '<option value="">Choose</option>' + renderOptions(CURRICULA);
-      setCurriculum(null, null);
-      const matches = window.PED.schools.searchSchools(schools.schools, value);
+    function refreshSchoolClearBtn() {
+      schoolClearBtn.hidden = !schoolInput.value;
+    }
+
+    // Shared render+wire for the suggestion <ul>, used both by the typed
+    // search (input handler below) and by the click-to-browse list (focus/
+    // pointerdown handler below) — selection behavior is identical either way.
+    function renderSuggestions(matches) {
       if (!matches.length) { clearSuggestions(); return; }
       suggestionsEl.hidden = false;
       suggestionsEl.innerHTML = matches.map(m =>
@@ -804,6 +840,7 @@
           });
           schoolInput.value = school.school_name;
           clearSuggestions();
+          refreshSchoolClearBtn();
           const tags = school.curriculum_tags;
           if (tags.length === 1) {
             curriculumNoteEl.hidden = true;
@@ -816,8 +853,45 @@
           }
         });
       });
+    }
+
+    schoolInput.addEventListener('input', () => {
+      const value = schoolInput.value;
+      window.PED.state.mutateDraft(draft, () => { reg.school = value; reg.schoolKey = null; });
+      refreshSchoolClearBtn();
+      curriculumNoteEl.hidden = true;
+      // Typing invalidates any previously-derived curriculum (the school it came from is
+      // no longer confirmed) — fall back to the real, required manual question.
+      $('#regCurriculum').innerHTML = '<option value="">Choose</option>' + renderOptions(CURRICULA);
+      setCurriculum(null, null);
+      const matches = value.trim()
+        ? window.PED.schools.searchSchools(schools.schools, value)
+        : window.PED.schools.browseSchools(schools.schools);
+      renderSuggestions(matches);
     });
     schoolInput.addEventListener('blur', () => setTimeout(clearSuggestions, 150));
+    // Client feedback (2026-09-29): clicking/tapping the field (while still
+    // empty) should immediately show a browsable list instead of requiring
+    // two typed characters first, per js/schools.js's browseSchools().
+    schoolInput.addEventListener('focus', () => {
+      if (!schoolInput.value.trim()) renderSuggestions(window.PED.schools.browseSchools(schools.schools));
+    });
+    // pointerdown + preventDefault, not click: same WebKit blur race as the
+    // suggestion <li>s above — a plain click lets #regSchoolInput blur first,
+    // which schedules the 150ms-delayed clearSuggestions() that would wipe
+    // the fresh browse list this handler renders a moment later.
+    schoolClearBtn.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      window.PED.haptics.tap();
+      schoolInput.value = '';
+      window.PED.state.mutateDraft(draft, () => { reg.school = null; reg.schoolKey = null; });
+      refreshSchoolClearBtn();
+      curriculumNoteEl.hidden = true;
+      $('#regCurriculum').innerHTML = '<option value="">Choose</option>' + renderOptions(CURRICULA);
+      setCurriculum(null, null);
+      schoolInput.focus();
+      renderSuggestions(window.PED.schools.browseSchools(schools.schools));
+    });
 
     // --- Full-name soft hint (mononyms are common here; never a hard block) ---
     const nameHintEl = $('#nameHint');

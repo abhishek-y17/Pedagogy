@@ -46,10 +46,18 @@
 
       <ol class="hiw-strip hero-reveal" style="--d:3">
         <li><span class="hiw-icon" aria-hidden="true">1</span>Register</li>
-        <li><span class="hiw-icon" aria-hidden="true">2</span>Take a 5-question challenge</li>
+        <li><span class="hiw-icon" aria-hidden="true">2</span>Take a 4-question challenge</li>
         <li><span class="hiw-icon" aria-hidden="true">3</span>Enter the draw</li>
       </ol>
 
+      <!-- "About a minute" (set 2026-09-29) only accounted for the 90-second
+           pooled QUIZ timer, ignoring that registration (~60s), destinations/
+           exam-prep/exam-list (~25s combined) and the review screen (~20s)
+           are untimed but still real time on the full path. 60 + 90 + 25 + 20
+           ≈ 3 minutes is the honest total — Round E's cuts (games removed,
+           quiz timer 5min->90s) never touched those other steps, so the
+           original "3 minutes" estimate was still roughly right; the
+           "1 minute" replacement was the actual regression, not this. -->
       <p class="hero-time-note hero-reveal" style="--d:4">Takes about 3 minutes</p>
 
       <button type="button" class="primary hero-cta hero-reveal" style="--d:5" id="heroStartBtn">Start my journey &rarr;</button>

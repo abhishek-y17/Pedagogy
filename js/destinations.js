@@ -30,6 +30,12 @@
     }
   }
 
+  // Client feedback (2026-09-29): max 3 countries total, counting the top-10
+  // grid picks (excluding the literal "Other" placeholder itself, which just
+  // opens the search overlay rather than naming a country) combined with any
+  // countries picked via that search overlay.
+  const MAX_DESTINATIONS = 3;
+
   function renderDestinations(container, draft, datasets, onNext, onBack) {
     const prefs = draft.preferences;
     const destinationKeys = Object.keys(datasets.destinationExams.destinations); // the 9 named + "Other"
@@ -37,9 +43,10 @@
     container.innerHTML = `
       <p class="eyebrow-small">YOUR STUDY PLANS</p>
       <h2 class="step-heading">Where could your next chapter begin?</h2>
-      <p class="field-hint">Tap any that apply. Choose "Other" to search the full country list.</p>
+      <p class="field-hint">Tap up to ${MAX_DESTINATIONS} that apply. Choose "Other" to search the full country list.</p>
       <div id="destChipGrid"></div>
       <div id="otherPicksWrap"></div>
+      <p class="field-hint field-hint--soft" id="destCapHint" hidden>You can select up to ${MAX_DESTINATIONS} countries &mdash; remove one to pick a different one.</p>
       <p class="field-hint field-hint--soft" id="destValidationHint" hidden>Select at least one destination to continue.</p>
       <div class="step-actions">
         <button type="button" class="quiet" id="destBackBtn">&larr; Back</button>
@@ -50,6 +57,11 @@
     const $ = sel => container.querySelector(sel);
     const otherPicks = prefs.destinationsOther || (prefs.destinationsOther = []);
 
+    function namedCount() {
+      return prefs.destinations.filter(d => d !== 'Other').length + otherPicks.length;
+    }
+    function atCap() { return namedCount() >= MAX_DESTINATIONS; }
+
     // Round C item 3: at least one destination must be picked before Continue
     // is usable — this step previously let a visitor click straight through
     // with nothing selected.
@@ -57,13 +69,26 @@
       const valid = prefs.destinations.length > 0;
       $('#destNextBtn').disabled = !valid;
       $('#destValidationHint').hidden = valid;
+      $('#destCapHint').hidden = !atCap();
     }
 
     function renderOtherPicks() {
       const wrap = $('#otherPicksWrap');
       if (!otherPicks.length) { wrap.innerHTML = ''; return; }
       wrap.innerHTML = '<p class="field-hint">Also considering: ' +
-        otherPicks.map(c => escapeHtml(c)).join(', ') + '</p>';
+        otherPicks.map((c, i) =>
+          `<span class="removable-pill">${escapeHtml(c)}<button type="button" class="removable-pill-x" data-i="${i}" aria-label="Remove ${escapeHtml(c)}">&times;</button></span>`
+        ).join('') + '</p>';
+      wrap.querySelectorAll('.removable-pill-x').forEach(btn => {
+        btn.addEventListener('click', () => {
+          window.PED.haptics.tap();
+          otherPicks.splice(Number(btn.dataset.i), 1);
+          window.PED.state.mutateDraft(draft, () => {});
+          renderOtherPicks();
+          renderGrid();
+          refreshNextState();
+        });
+      });
     }
 
     // Tracks whether "Other" was selected BEFORE this change, so the search
@@ -75,22 +100,32 @@
     // selected re-ran openCountrySearch() and reset the dialog out from under
     // whatever the visitor was doing.
     let otherWasSelected = prefs.destinations.includes('Other');
-    renderChipGrid($('#destChipGrid'), {
-      name: 'destinations',
-      options: destinationKeys,
-      selected: prefs.destinations,
-      exclusiveValues: [],
-      onChange: selected => {
-        window.PED.state.mutateDraft(draft, () => {
-          prefs.destinations = selected;
-          pruneCompetitiveExams(prefs);
-        });
-        const otherIsSelected = selected.includes('Other');
-        if (otherIsSelected && !otherWasSelected) openCountrySearch();
-        otherWasSelected = otherIsSelected;
-        refreshNextState();
-      },
-    });
+    function renderGrid() {
+      renderChipGrid($('#destChipGrid'), {
+        name: 'destinations',
+        options: destinationKeys,
+        selected: prefs.destinations,
+        exclusiveValues: [],
+        max: MAX_DESTINATIONS,
+        // "Other" itself isn't counted as a named country (namedCount()
+        // excludes it), but once the cap is reached it still disables like
+        // any other unchecked chip — there's nothing useful to search for at
+        // that point, and openCountrySearch()'s own cap check backs this up
+        // in case it's ever reached some other way.
+        countFor: namedCount,
+        onChange: selected => {
+          window.PED.state.mutateDraft(draft, () => {
+            prefs.destinations = selected;
+            pruneCompetitiveExams(prefs);
+          });
+          const otherIsSelected = selected.includes('Other');
+          if (otherIsSelected && !otherWasSelected) openCountrySearch();
+          otherWasSelected = otherIsSelected;
+          refreshNextState();
+        },
+      });
+    }
+    renderGrid();
     renderOtherPicks();
     refreshNextState();
 
@@ -98,21 +133,27 @@
       const all = window.PED.COUNTRIES;
       const bodyHtml = `
         <input type="text" id="countrySearchInput" placeholder="Search countries" autocomplete="off">
+        <p class="field-hint field-hint--soft" id="countrySearchCapHint" hidden>You've already picked ${MAX_DESTINATIONS} countries &mdash; remove one first to add another.</p>
         <ul id="countrySearchResults" class="school-suggestions"></ul>
       `;
       window.PED.modal.open('Choose a country', bodyHtml, []);
       const input = document.getElementById('countrySearchInput');
       const results = document.getElementById('countrySearchResults');
+      const capHint = document.getElementById('countrySearchCapHint');
       function renderResults(query) {
+        capHint.hidden = !atCap();
         const q = query.trim().toLowerCase();
         const matches = (q ? all.filter(c => c.toLowerCase().includes(q)) : all).slice(0, 20);
         results.innerHTML = matches.map(c => `<li data-country="${escapeHtml(c)}">${escapeHtml(c)}</li>`).join('');
         results.querySelectorAll('li').forEach(li => {
           li.addEventListener('click', () => {
+            if (atCap()) return;
             const country = li.dataset.country;
             if (!otherPicks.includes(country)) otherPicks.push(country);
             window.PED.state.mutateDraft(draft, () => {});
             renderOtherPicks();
+            renderGrid();
+            refreshNextState();
             window.PED.modal.close();
           });
         });
