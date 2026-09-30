@@ -49,7 +49,10 @@
     const p = record.preferences;
     const m = record.meta;
 
-    const destinationList = [...(p.destinations || []).filter(d => d !== 'Other'), ...(p.destinationsOther || [])];
+    // Pick order (1st choice first) when recorded; older records fall back to grid-then-overlay order.
+    const destinationList = (p.destinationOrder && p.destinationOrder.length)
+      ? p.destinationOrder.map((d, i) => `${i + 1}. ${d}`)
+      : [...(p.destinations || []).filter(d => d !== 'Other'), ...(p.destinationsOther || [])];
     const answeredCount = (record.quiz.answers || []).filter(a => a.selected != null).length;
     const totalQuestions = (record.quiz.selectedQuestionIds || []).length;
 
@@ -234,28 +237,58 @@
   function renderLogin(container, datasets, onDataCleared, onExit, message) {
     stopPolling();
     container.innerHTML = `
-      <p class="eyebrow-small">STAFF DASHBOARD</p>
-      <h2 class="step-heading">Staff sign-in</h2>
-      <form id="staffLoginForm" class="staff-login" autocomplete="off">
-        <div class="field-row two-col">
-          <label>Email <input type="email" id="staffEmail" required autocomplete="username" autocapitalize="off" spellcheck="false"></label>
-          <label>Password <input type="password" id="staffPassword" required autocomplete="current-password"></label>
-        </div>
-        <p class="field-error" id="staffLoginError" ${message ? '' : 'hidden'}>${escapeHtml(message || '')}</p>
-        <div class="step-actions">
-          <button type="button" class="quiet" id="staffExitBtn">Back</button>
-          <button type="submit" class="primary" id="staffLoginBtn">Sign in</button>
-        </div>
-      </form>
+      <div class="staff-login-wrap">
+        <form id="staffLoginForm" class="staff-login-card" autocomplete="off" novalidate>
+          <p class="eyebrow-small">STAFF DASHBOARD</p>
+          <h2 class="step-heading">Staff sign-in</h2>
+          <p class="field-hint">Sign in with your Pedagogy staff account to see registrations from every device.</p>
+
+          <div class="staff-field">
+            <label for="staffEmail">Email</label>
+            <input type="email" id="staffEmail" required autocomplete="username" autocapitalize="off" spellcheck="false" inputmode="email" placeholder="name@example.com">
+          </div>
+          <div class="staff-field">
+            <label for="staffPassword">Password</label>
+            <div class="password-field">
+              <input type="password" id="staffPassword" required autocomplete="current-password" placeholder="Your password">
+              <button type="button" class="password-toggle" id="staffPwToggle" aria-pressed="false" aria-controls="staffPassword">Show</button>
+            </div>
+          </div>
+
+          <p class="field-error" id="staffLoginError" role="alert" ${message ? '' : 'hidden'}>${escapeHtml(message || '')}</p>
+          <button type="submit" class="primary staff-login-submit" id="staffLoginBtn">Sign in</button>
+          <button type="button" class="quiet staff-login-back" id="staffExitBtn">Back to visitor screen</button>
+        </form>
+      </div>
     `;
     const errEl = container.querySelector('#staffLoginError');
+    const pwInput = container.querySelector('#staffPassword');
+    const pwToggle = container.querySelector('#staffPwToggle');
+    pwToggle.addEventListener('click', () => {
+      const show = pwInput.type === 'password';
+      pwInput.type = show ? 'text' : 'password';
+      pwToggle.textContent = show ? 'Hide' : 'Show';
+      pwToggle.setAttribute('aria-pressed', String(show));
+      pwInput.focus();
+    });
     container.querySelector('#staffExitBtn').addEventListener('click', () => { if (onExit) onExit(); });
+    const emailInput = container.querySelector('#staffEmail');
+    // A stale error (e.g. "Enter your email and password.") disappears as soon as they type.
+    [emailInput, pwInput].forEach(el => el.addEventListener('input', () => { errEl.hidden = true; }));
+    emailInput.focus();
     container.querySelector('#staffLoginForm').addEventListener('submit', async e => {
       e.preventDefault();
       const btn = container.querySelector('#staffLoginBtn');
+      const email = emailInput.value.trim();
+      if (!email || !pwInput.value) {
+        errEl.textContent = 'Enter your email and password.';
+        errEl.hidden = false;
+        (email ? pwInput : emailInput).focus();
+        return;
+      }
       btn.disabled = true; btn.textContent = 'Signing in…'; errEl.hidden = true;
       try {
-        await window.PED.sync.staffSignIn(container.querySelector('#staffEmail').value.trim(), container.querySelector('#staffPassword').value);
+        await window.PED.sync.staffSignIn(email, pwInput.value);
         showAll = false; lastRecords = null; lastSignature = '';
         renderStaffDashboard(container, datasets, onDataCleared, onExit);
       } catch (err) {

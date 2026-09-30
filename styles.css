@@ -79,7 +79,7 @@ button.quiet { background: transparent; border: 1px solid var(--line); color: va
 
 a { color: var(--green); }
 
-textarea, input[type="text"], input[type="tel"], input[type="date"], select {
+textarea, input[type="text"], input[type="tel"], input[type="date"], input[type="email"], input[type="password"], select {
   font: inherit;
   display: block;
   width: 100%;
@@ -796,6 +796,50 @@ input.field-invalid:focus-visible, select.field-invalid:focus-visible,
    reddish tone already established elsewhere in the app for "pay attention"
    states (.quiz-timer--low, .tile--miss) rather than introducing a new hue. */
 #view-staff { max-width: 1100px; }
+
+/* Staff sign-in card (Supabase Auth login). Same tokens as the step panel
+   (white surface, --line border, --radius-md) so it reads as part of the app;
+   fields stack in one column with the label above the input, and the primary
+   action is full width. Entrance is a short fade-up, skipped under
+   prefers-reduced-motion. */
+.staff-login-wrap { display: grid; justify-items: center; padding: 28px 0 12px; }
+.staff-login-card {
+  width: 100%;
+  max-width: 420px;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 32px;
+  box-shadow: 0 14px 40px rgba(25, 45, 36, .08);
+}
+.staff-login-card .field-hint { margin-bottom: 22px; }
+.staff-field { margin: 0 0 18px; }
+.staff-field label { margin: 0; }
+.staff-field input { margin-top: 7px; }
+.password-field { position: relative; }
+.password-field input { padding-right: 76px; }
+.password-toggle {
+  position: absolute;
+  top: 7px;
+  right: 6px;
+  min-height: 34px;
+  padding: 4px 12px;
+  background: transparent;
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+}
+.staff-login-card .field-error { margin: 0 0 14px; }
+.staff-login-submit { width: 100%; }
+.staff-login-back { width: 100%; margin-top: 10px; }
+@media (prefers-reduced-motion: no-preference) {
+  .staff-login-card { animation: staff-login-in .35s cubic-bezier(.16, 1, .3, 1) both; }
+}
+@keyframes staff-login-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 480px) {
+  .staff-login-card { padding: 24px 20px; }
+}
 /* Client feedback (2026-09-29): "an actual dashboard" — a visible stats bar
    (js/staff.js's renderStatsBar) above the record list, instead of the
    registration count only ever appearing buried inside a step heading. */
