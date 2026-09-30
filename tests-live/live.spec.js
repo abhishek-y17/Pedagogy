@@ -147,7 +147,7 @@ test('full 11th/12th path in a real browser lands in Supabase with every field a
 
 test('grade 9 direct-submit path syncs too', async ({ page }) => {
   const token = await staffToken();
-  const name = `ZZ TEST Grade9 ${RUN}`;
+  const name = `ZZ TEST GradeNine ${RUN}`;
   await register(page, { name, grade: 'stage9', parentLocal: uniquePhone() });
   await page.locator('#registerNextBtn').click();
   await expect(page.locator('.submitted-confirm')).toBeVisible();

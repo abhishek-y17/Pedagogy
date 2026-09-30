@@ -13,6 +13,8 @@
 5. **Question-bank factual review.** Every one of the 4,320 merged questions still has `reviewed_by: null` — no subject-teacher has verified factual accuracy yet. Matters more now than during the demo phase, since this is the content the live event actually runs on.
 6. **Custom domain connection** (the client's UAE + .in domains) — deliberately sequenced *after* the database migration above, not blocking it. Tracked in the Cowork project's "Deployment & Data Reliability Plan" doc, not duplicated here.
 
+**Status update 2026-09-30 (evening, round L):** database migration item 1 is now done and verified live (schema 0001-0003 run by Abhi; `verify:live` 77/77, `test:live` 5/5, production smoke synced). Also shipped: Auth staff dashboard polish (sign-in card, sand buttons, header Sign out), information-only duplicates, destination pick order, NEET/JEE question guarantee. Still open on this list: items 2-6 above, plus deleting `ZZ TEST%` rehearsal rows before 11 Oct and strong staff passwords. `DEPLOYMENT_KICKOFF.md` / `KICKOFF_PROMPT.md` were completed and deleted.
+
 ---
 
 ## Historical: Sat-to-Tue demo-sprint plan (complete, kept for history)

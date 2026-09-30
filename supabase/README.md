@@ -53,7 +53,7 @@ in the device's outbox and syncs automatically when it's back.
 
 ## Verifying the live project
 
-`STAFF_EMAIL=... STAFF_PASSWORD=... npm run verify:live` runs ~70 checks against the real database (anon lockdown,
+`STAFF_EMAIL=... STAFF_PASSWORD=... npm run verify:live` runs ~77 checks against the real database (anon lockdown,
 input validation, idempotent resend, cross-device duplicates, every column read back, quiz answers table,
 duplicate resolution). `npm run test:live` drives the real app in a browser against it (full path, grade 9,
 offline->online, staff dashboard). Both create rows named `ZZ TEST ...` — delete them afterwards (query above).
@@ -67,3 +67,8 @@ select device_id, count(*) from public.registrations group by 1;   -- per-device
 select subject, difficulty, count(*) as asked, round(100.0 * avg((is_correct)::int), 1) as pct_correct
   from public.registration_answers where status = 'answered' group by 1, 2 order by 1, 2;   -- quiz performance
 ```
+
+## Notes (2026-09-30)
+
+- The staff dashboard no longer offers duplicate review actions (information only). `resolve_duplicate()` still exists in the database and is staff-only, but nothing in the app calls it.
+- `registration_answers` also snapshots the NEET/JEE guarantee's effect: a NEET-style question shows `topic` beginning `NEET-style:`; `registrations.quiz->>'examFocus'` is `NEET`, `JEE` or `either` when the guarantee applied.
