@@ -29,13 +29,6 @@
     return match ? match.label : (value || '—');
   }
 
-  const REVIEW_STATUS_LABEL = {
-    pending: 'Pending review',
-    reviewed: 'Reviewed — kept both',
-    merged: 'Reviewed — merged',
-    dismissed: 'Reviewed — not a duplicate',
-  };
-
   /** One record's full detail card — every field the standing decisions call
    * out as "must not be invisible to staff": DOB, both phone numbers,
    * T&Cs/consent/marketing-opt-in timestamps, school + curriculum and
@@ -56,20 +49,12 @@
     const answeredCount = (record.quiz.answers || []).filter(a => a.selected != null).length;
     const totalQuestions = (record.quiz.selectedQuestionIds || []).length;
 
-    const duplicateBadge = m.duplicateFlag
-      ? `<span class="badge badge--duplicate">${escapeHtml(REVIEW_STATUS_LABEL[m.duplicateReviewStatus] || 'Pending review')}</span>`
+    // Information only: staff see that a record is a possible duplicate and of which
+    // ids, but the dashboard offers no review/merge actions (client decision).
+    const duplicateBadge = m.duplicateFlag ? '<span class="badge badge--duplicate">Possible duplicate</span>' : '';
+    const duplicateActions = m.duplicateFlag
+      ? `<p class="field-hint">Possible duplicate of: ${(m.duplicateOfIds || []).map(escapeHtml).join(', ')}</p>`
       : '';
-
-    const duplicateActions = m.duplicateFlag && m.duplicateReviewStatus === 'pending'
-      ? `
-        <div class="staff-duplicate-actions">
-          <p class="field-hint">Possible duplicate of: ${m.duplicateOfIds.map(escapeHtml).join(', ')}</p>
-          <button type="button" class="quiet" data-action="dismissed" data-id="${escapeHtml(m.id)}">Not a duplicate</button>
-          <button type="button" class="quiet" data-action="merged" data-id="${escapeHtml(m.id)}">Mark merged</button>
-          <button type="button" class="primary" data-action="reviewed" data-id="${escapeHtml(m.id)}">Mark reviewed</button>
-        </div>
-      `
-      : (m.duplicateFlag ? `<p class="field-hint">Possible duplicate of: ${m.duplicateOfIds.map(escapeHtml).join(', ')}</p>` : '');
 
     return `
       <section class="review-section staff-record${m.duplicateFlag ? ' staff-record--flagged' : ''}">
@@ -149,12 +134,12 @@
       const d = r.meta && r.meta.createdAt ? new Date(r.meta.createdAt) : null;
       return d && d.toDateString() === todayKey;
     }).length;
-    const pendingCount = records.filter(r => r.meta.duplicateFlag && r.meta.duplicateReviewStatus === 'pending').length;
+    const pendingCount = records.filter(r => r.meta.duplicateFlag).length;
     return `
       <div class="staff-stats">
         <div class="staff-stat"><strong>${records.length}</strong><span>Total registered</span></div>
         <div class="staff-stat"><strong>${todayCount}</strong><span>Registered today</span></div>
-        <div class="staff-stat${pendingCount ? ' staff-stat--attention' : ''}"><strong>${pendingCount}</strong><span>Need duplicate review</span></div>
+        <div class="staff-stat${pendingCount ? ' staff-stat--attention' : ''}"><strong>${pendingCount}</strong><span>Possible duplicates</span></div>
       </div>
     `;
   }
@@ -209,17 +194,6 @@
 
     container.querySelector('#staffRefreshBtn').addEventListener('click', () => renderStaffDashboard(container, datasets, onDataCleared, onExit));
     wireClearAllButton(container, datasets, onDataCleared, onExit);
-
-    container.querySelectorAll('[data-action]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        // codexreview.md finding, fixed here: resolving a duplicate used to
-        // update only the clicked record, leaving its linked match(es) still
-        // pending — resolveDuplicatePair() resolves the whole linked group
-        // together (see js/state.js).
-        window.PED.state.resolveDuplicatePair(btn.dataset.id, btn.dataset.action);
-        renderStaffDashboard(container, datasets, onDataCleared, onExit);
-      });
-    });
   }
 
   // ------------------------------------------------------------- remote mode ---
@@ -351,20 +325,6 @@
     const more = container.querySelector('#staffShowAllBtn');
     if (more) more.addEventListener('click', () => { showAll = true; renderRemoteBody(container, datasets, onDataCleared, onExit, records, banner); });
     wireClearAllButton(container, datasets, onDataCleared, onExit);
-
-    container.querySelectorAll('[data-action]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        btn.disabled = true;
-        try {
-          await window.PED.sync.resolveDuplicate(btn.dataset.id, btn.dataset.action);
-        } catch (err) {
-          btn.disabled = false;
-          window.PED.modal.open("Couldn't update", `<p>${escapeHtml(err.message)}</p>`, []);
-          return;
-        }
-        reload();
-      });
-    });
   }
 
   async function renderRemoteDashboard(container, datasets, onDataCleared, onExit, opts) {

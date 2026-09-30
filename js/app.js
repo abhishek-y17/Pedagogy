@@ -183,6 +183,20 @@
     draft = PED.state.resetForNewVisitor(draft.mode);
   }
 
+  // Header "Sign out": visible only while a staff member is signed in, so a staff
+  // session left open on a stall device can always be ended from any screen.
+  const signOutHeaderBtn = document.getElementById('staffSignOutHeaderBtn');
+  function refreshSignOutButton() {
+    signOutHeaderBtn.hidden = !(PED.sync && PED.sync.isEnabled() && PED.sync.staffSession());
+  }
+  window.addEventListener('ped:staff-session', refreshSignOutButton);
+  signOutHeaderBtn.addEventListener('click', async () => {
+    await PED.sync.staffSignOut();
+    document.getElementById('view-staff').innerHTML = '';   // no stale registrations left in the DOM
+    showView('home');
+  });
+  refreshSignOutButton();
+
   // --- Staff-view gate: long-press the logo. With Supabase configured this opens
   // the staff sign-in (real auth, see js/staff.js); without it, the casual local
   // PIN prompt below (a visitor must not casually tap into a stall device's data).

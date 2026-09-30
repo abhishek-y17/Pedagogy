@@ -1499,22 +1499,21 @@ test('finalizing a second registration that reasonably matches an existing one f
 // staff would think they'd closed out a pair when only half of it moved.
 // Written to fail against the pre-fix code (which would leave P-b pending)
 // and pass now that resolveDuplicatePair() resolves the whole linked group.
-test('staff dashboard surfaces a pending duplicate with review actions, and "Mark reviewed" resolves BOTH linked records', async ({ page }) => {
+test('staff dashboard shows a possible duplicate as information only: no review/merge actions', async ({ page }) => {
   const a = makeRecord({ meta: { id: 'P-a', createdAt: '2026-09-19T09:00:00.000Z', deviceId: null, recordStatus: null, duplicateFlag: true, duplicateOfIds: ['P-b'], duplicateReviewStatus: 'pending' } });
   const b = makeRecord({ meta: { id: 'P-b', createdAt: '2026-09-19T09:05:00.000Z', deviceId: null, recordStatus: null, duplicateFlag: true, duplicateOfIds: ['P-a'], duplicateReviewStatus: 'pending' } });
   await page.addInitScript(records => localStorage.setItem('pedagogy-expo-records', JSON.stringify(records)), [a, b]);
   await enterStaffDashboard(page);
 
   await expect(page.locator('.staff-record--flagged')).toHaveCount(2);
-  await expect(page.locator('.badge--duplicate').first()).toHaveText('Pending review');
-
-  await page.locator('[data-action="reviewed"][data-id="P-a"]').click();
-  await expect(page.locator('[data-id="P-a"]')).toHaveCount(0); // action buttons gone once resolved
-  const records = await page.evaluate(() => window.PED.state.loadRecords());
-  const storedA = records.find(r => r.meta.id === 'P-a');
-  const storedB = records.find(r => r.meta.id === 'P-b');
-  expect(storedA.meta.duplicateReviewStatus).toBe('reviewed');
-  expect(storedB.meta.duplicateReviewStatus).toBe('reviewed'); // the linked pair, not just the clicked record
+  await expect(page.locator('.badge--duplicate').first()).toHaveText('Possible duplicate');
+  await expect(page.locator('#view-staff')).toContainText('Possible duplicate of: P-b');
+  await expect(page.locator('.staff-stat--attention strong')).toHaveText('2');
+  // Client decision: staff only view details. No Not-a-duplicate / Mark merged / Mark reviewed anywhere.
+  await expect(page.locator('[data-action]')).toHaveCount(0);
+  await expect(page.locator('#view-staff')).not.toContainText('Mark reviewed');
+  await expect(page.locator('#view-staff')).not.toContainText('Mark merged');
+  await expect(page.locator('#view-staff')).not.toContainText('Not a duplicate');
 });
 
 // ===================== Phase 4: haptics =====================

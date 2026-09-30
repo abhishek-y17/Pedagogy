@@ -831,6 +831,47 @@ input.field-invalid:focus-visible, select.field-invalid:focus-visible,
   border-radius: var(--radius-sm);
 }
 .staff-login-card .field-error { margin: 0 0 14px; }
+/* Filled cream-brown "sand" buttons for the header's New visitor button and every
+   secondary button on the staff views (Refresh, Back, Sign out, Sync now, the
+   duplicate actions...). Client feedback: the plain outlined buttons read as bland.
+   Ink #4b3a24 on #e4d3b4 is ~8:1 contrast. Scoped to the header + staff views so
+   the visitor flow's own Back/Continue buttons are unchanged. */
+:root {
+  --sand: #e4d3b4;
+  --sand-deep: #d6c197;
+  --sand-line: #c4aa7e;
+  --sand-ink: #4b3a24;
+  --sand-danger-ink: #8f3522;
+}
+.site-nav button.quiet,
+#view-staff button.quiet {
+  background: var(--sand);
+  color: var(--sand-ink);
+  border: 1px solid var(--sand-line);
+  font-weight: 650;
+  box-shadow: 0 1px 0 rgba(75, 58, 36, .14), inset 0 1px 0 rgba(255, 255, 255, .35);
+}
+.site-nav button.quiet:hover:not(:disabled),
+#view-staff button.quiet:hover:not(:disabled) {
+  background: var(--sand-deep);
+  box-shadow: 0 6px 14px rgba(75, 58, 36, .18), inset 0 1px 0 rgba(255, 255, 255, .35);
+}
+/* Header Sign out: solid red (white on #b8432e is ~5.5:1), shown only while staff are signed in. */
+.site-nav button.signout {
+  background: #b8432e;
+  color: #fff;
+  border: 1px solid #9c3623;
+  font-weight: 700;
+  box-shadow: 0 1px 0 rgba(90, 30, 20, .25), inset 0 1px 0 rgba(255, 255, 255, .18);
+}
+.site-nav button.signout:hover:not(:disabled) { background: #a13826; box-shadow: 0 6px 14px rgba(140, 45, 30, .28); }
+/* Destructive action keeps a red cue on the same sand fill; turns solid red on hover. */
+#view-staff button.staff-clear-all { color: var(--sand-danger-ink); border-color: #b9835f; }
+#view-staff button.staff-clear-all:hover:not(:disabled),
+#view-staff button.staff-clear-all:active:not(:disabled) { background: #c0503a; border-color: #c0503a; color: #fff; }
+#view-staff .step-actions + .step-heading { margin-top: 28px; }
+#view-staff .step-actions { margin-bottom: 18px; }
+
 .staff-login-submit { width: 100%; }
 .staff-login-back { width: 100%; margin-top: 10px; }
 @media (prefers-reduced-motion: no-preference) {

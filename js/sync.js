@@ -145,6 +145,8 @@
     try {
       if (s) sessionStorage.setItem(SESSION_KEY, JSON.stringify(s)); else sessionStorage.removeItem(SESSION_KEY);
     } catch (e) { /* ignore */ }
+    // Lets js/app.js show/hide the header Sign out button on any sign-in, sign-out or expiry.
+    try { window.dispatchEvent(new Event('ped:staff-session')); } catch (e) { /* ignore */ }
   }
   function toSession(json, fallbackEmail) {
     return {

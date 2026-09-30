@@ -240,12 +240,12 @@ test('staff sign-in uses Supabase Auth (no PIN), rejects bad/non-staff accounts,
   await expect(page.locator('#staffLoginForm')).toBeVisible();
 });
 
-test('staff can resolve a flagged duplicate through the server RPC', async ({ page }) => {
+test('staff see flagged duplicates as information only, with no resolve actions', async ({ page }) => {
   await withBackend(page);
   const state = {
     rows: [serverRow('P-1', 'Dup Person', { duplicate_flag: true, duplicate_of_ids: ['P-2'], duplicate_review_status: 'pending' })],
   };
-  await mockSupabase(page, state);
+  const calls = await mockSupabase(page, state);
   await page.goto('/');
   await page.locator('#heroStartBtn').click();
   await longPressLogo(page);
@@ -253,7 +253,30 @@ test('staff can resolve a flagged duplicate through the server RPC', async ({ pa
   await page.locator('#staffPassword').fill('right-password');
   await page.locator('#staffLoginBtn').click();
   await expect(page.locator('.staff-stat--attention')).toBeVisible();
+  await expect(page.locator('.badge--duplicate')).toHaveText('Possible duplicate');
+  await expect(page.locator('#view-staff')).toContainText('Possible duplicate of: P-2');
+  await expect(page.locator('[data-action]')).toHaveCount(0);
+  expect(calls.some(c => c.path === '/rest/v1/rpc/resolve_duplicate')).toBe(false);
+});
 
-  await page.locator('[data-action="reviewed"]').click();
-  await expect.poll(() => state.resolved).toEqual({ p_id: 'P-1', p_status: 'reviewed' });
+test('header Sign out appears only while staff are signed in, and ends the session', async ({ page }) => {
+  await withBackend(page);
+  await mockSupabase(page, { rows: [serverRow('P-1', 'Remote Visitor One')] });
+  await page.goto('/');
+  await page.locator('#heroStartBtn').click();
+  await expect(page.locator('#appShell')).toBeVisible();
+  await expect(page.locator('#staffSignOutHeaderBtn')).toBeHidden();       // visitors never see it
+
+  await longPressLogo(page);
+  await page.locator('#staffEmail').fill('staff@example.com');
+  await page.locator('#staffPassword').fill('right-password');
+  await page.locator('#staffLoginBtn').click();
+  await expect(page.locator('.staff-record')).toHaveCount(1);
+  await expect(page.locator('#staffSignOutHeaderBtn')).toBeVisible();
+
+  await page.locator('#staffSignOutHeaderBtn').click();
+  await expect(page.locator('#staffSignOutHeaderBtn')).toBeHidden();
+  await expect(page.locator('#view-staff')).toBeHidden();                  // back on the visitor screen
+  await expect(page.locator('#view-staff .staff-record')).toHaveCount(0);  // no stale data left behind
+  expect(await page.evaluate(() => sessionStorage.getItem('pedagogy-staff-session'))).toBeNull();
 });
