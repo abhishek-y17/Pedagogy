@@ -19,6 +19,7 @@ data/additional_question_bank/
 !PLAN.md
 !codexreview.md
 !data/QUESTION_BANK_SOURCES.md
+!supabase/README.md
 
 # Standard
 node_modules/
@@ -27,6 +28,8 @@ dist/
 build/
 .env
 .env.local
+.env.*
+!.env.example
 .DS_Store
 *.log
 
@@ -35,3 +38,18 @@ test-results/
 playwright-report/
 blob-report/
 playwright/.cache/
+
+# Vercel / Supabase tooling
+.vercel/
+supabase/.temp/
+supabase/.branches/
+
+# Build-time config written by scripts/build-config.js from SUPABASE_URL /
+# SUPABASE_ANON_KEY (Vercel env vars, or .env.local locally). Never committed.
+js/generated/config.js
+
+# Archives / editor + OS junk / local Claude Code state
+*.zip
+.claude/
+.vscode/
+Thumbs.db
