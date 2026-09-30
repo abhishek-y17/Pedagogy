@@ -33,6 +33,30 @@
     window.PED.state.mutateDraft(draft, () => {
       draft.quiz.selectedQuestionIds = picked.map(q => q.id);
     });
+    applyExamGuarantee(draft, datasets, -1);
+  }
+
+  /** NEET/JEE guarantee (see js/questions.js): an Indian PCMB visitor, or anyone who
+   * picked NEET and/or JEE, always gets at least one NEET/JEE-style question. Runs
+   * once when the quiz is first built (stream is known then) and again before each
+   * question is shown (exam picks are only made AFTER question 1). Swaps only
+   * questions the visitor has not answered yet. Idempotent. */
+  function applyExamGuarantee(draft, datasets, lockedThrough) {
+    const need = window.PED.questions.examNeed(draft);
+    if (!need) return;
+    const current = draft.quiz.selectedQuestionIds;
+    const next = window.PED.questions.enforceExamQuestion(current, datasets.questions, need, {
+      curriculum: draft.registration.curriculum,
+      streamId: draft.registration.stream || null,
+      lockedThrough,
+      answeredIds: draft.quiz.answers.map(a => a.questionId),
+    });
+    if (next !== current || draft.quiz.examFocus !== need) {
+      window.PED.state.mutateDraft(draft, () => {
+        draft.quiz.selectedQuestionIds = next;
+        draft.quiz.examFocus = need;      // 'NEET' | 'JEE' | 'either': why this visitor got an exam-style question
+      });
+    }
   }
 
   function getAnswer(draft, questionId) {
@@ -78,6 +102,7 @@
   function renderQuestion(container, draft, datasets, stepId, onNext, onBack, onGotoReview) {
     ensureSelection(draft, datasets);
     const index = window.PED.steps.getQuestionIndex(draft, stepId);
+    applyExamGuarantee(draft, datasets, index - 1);
     const total = window.PED.steps.getQuestionCount(draft);
     const questionId = draft.quiz.selectedQuestionIds[index];
     const question = datasets.questions.find(q => q.id === questionId);

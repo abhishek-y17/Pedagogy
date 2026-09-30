@@ -107,6 +107,7 @@
                             // field here; that's computed only at finalizeDraft() below,
                             // for staff-side analytics, never surfaced to the participant
                             // (standing decision: no score/points shown in the UI).
+        examFocus: null,        // 'NEET' | 'JEE' | 'either' when the NEET/JEE question guarantee applied (js/quiz.js)
         timerStartedAt: null,   // epoch ms; null while paused (not on a question step)
         timerElapsedMs: 0,      // pooled budget consumed so far, counts only while a
                                  // question is on screen (js/timer.js owns start/pause)

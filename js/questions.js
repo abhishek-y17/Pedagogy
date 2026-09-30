@@ -208,5 +208,74 @@
     return next;
   }
 
-  window.PED.questions = { validateQuestionBank, loadQuestionBank, getEligibleQuestions, getStreamOptions, selectQuizQuestions, maybeSubstituteAptitude };
+  // ---------------------------------------------------------------------------
+  // NEET / JEE guarantee. An Indian-curriculum visitor who is on the PCMB stream,
+  // or who picked NEET and/or JEE in the competitive-exam step, always gets at
+  // least one NEET- or JEE-style question in their quiz.
+  //  * NEET questions are identified by the bank's own topic prefix "NEET-style:"
+  //    (24 delivered: Physics/Chemistry/Biology, hard tier).
+  //  * The bank has NO JEE-tagged questions yet. Until some exist (topic prefix
+  //    "JEE-style:", picked up automatically), "JEE-level" is approximated by the
+  //    hard tier of Indian Physics/Chemistry/Mathematics. See JEE_FALLBACK below.
+  // ---------------------------------------------------------------------------
+  const JEE_FALLBACK_SUBJECTS = ['Physics', 'Chemistry', 'Mathematics'];
+  const isNeetStyle = q => /^NEET-style/i.test(q.topic || '');
+  const isJeeStyle = q => /^JEE-style/i.test(q.topic || '');
+  const isJeeFallback = q => q.curriculum === 'Indian' && q.difficulty === 'hard' && JEE_FALLBACK_SUBJECTS.includes(q.subject);
+
+  /** Which exam flavour this visitor must be served, or null. 'either' = PCMB with
+   * no explicit exam pick, or both NEET and JEE picked (one of them is enough). */
+  function examNeed(draft) {
+    const reg = draft.registration || {};
+    if (reg.curriculum !== 'Indian') return null;
+    const exams = ((draft.preferences || {}).competitiveExams || {}).India;
+    const list = Array.isArray(exams) ? exams : [];
+    const neet = list.some(e => /NEET/i.test(e));
+    const jee = list.some(e => /JEE/i.test(e));
+    if (neet && jee) return 'either';
+    if (neet) return 'NEET';
+    if (jee) return 'JEE';
+    return reg.stream === 'science-pcmb' ? 'either' : null;
+  }
+
+  function matchesExam(q, need, jeeTaggedExists) {
+    const jee = jeeTaggedExists ? isJeeStyle(q) : isJeeFallback(q);
+    if (need === 'NEET') return isNeetStyle(q);
+    if (need === 'JEE') return jee;
+    return isNeetStyle(q) || jee;
+  }
+
+  /**
+   * Returns a copy of `selectedIds` guaranteed to contain a question matching `need`.
+   * Only slots after `lockedThrough` that have no recorded answer may be swapped
+   * (a question already shown/answered is never changed under the visitor). The
+   * replacement respects the visitor's stream where possible. Never changes the
+   * quiz length. If nothing can be swapped (all slots locked) it returns the input.
+   */
+  function enforceExamQuestion(selectedIds, allQuestions, need, { curriculum, streamId, lockedThrough = -1, answeredIds = [] }) {
+    if (!need) return selectedIds;
+    const byId = new Map(allQuestions.map(q => [q.id, q]));
+    const jeeTaggedExists = allQuestions.some(isJeeStyle);
+    const current = selectedIds.map(id => byId.get(id));
+    if (current.some(q => q && matchesExam(q, need, jeeTaggedExists))) return selectedIds;
+
+    const swappable = selectedIds.map((id, i) => i).filter(i => i > lockedThrough && !answeredIds.includes(selectedIds[i]));
+    if (!swappable.length) return selectedIds;
+
+    const chosen = new Set(selectedIds);
+    const indian = allQuestions.filter(q => q.curriculum === (curriculum || 'Indian') && !chosen.has(q.id) && matchesExam(q, need, jeeTaggedExists));
+    const streamOk = q => !streamId || !q.eligible_stream_ids.length || q.eligible_stream_ids.includes(streamId);
+    let candidates = indian.filter(streamOk);
+    if (!candidates.length) candidates = indian;        // e.g. a PCM visitor who picked NEET: still serve a NEET-style item
+    if (!candidates.length) return selectedIds;
+
+    const replacement = candidates[Math.floor(Math.random() * candidates.length)];
+    const slot = swappable[Math.floor(Math.random() * swappable.length)];
+    const next = selectedIds.slice();
+    next[slot] = replacement.id;
+    console.log(`[pedagogy] exam guarantee (${need}): slot ${slot} set to ${replacement.id} (${replacement.subject}, ${replacement.difficulty}, "${replacement.topic}").`);
+    return next;
+  }
+
+  window.PED.questions = { validateQuestionBank, loadQuestionBank, getEligibleQuestions, getStreamOptions, selectQuizQuestions, maybeSubstituteAptitude, examNeed, enforceExamQuestion, isNeetStyle, isJeeStyle, isJeeFallback };
 })();
