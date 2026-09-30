@@ -984,6 +984,9 @@
           );
           return;
         }
+        // Background push to Supabase (js/sync.js) — fire-and-forget, the visitor
+        // never waits on the network; the record is already safe in localStorage.
+        if (window.PED.sync) window.PED.sync.flushOutbox();
         window.PED.review.renderSubmitted(container, onDone);
         return;
       }

@@ -1,9 +1,11 @@
-// Classic script. Staff dashboard (Phase 4) — reads directly from
-// PED.state.loadRecords() (localStorage's RECORDS_KEY, the system of record
-// per CLAUDE.md's standing local-first decision through this build phase; no
-// backend wiring here). Gated behind app.js's long-press-logo + PIN prompt,
-// same casual-deterrent standing decision as everywhere else in this app —
-// this file doesn't add or change that gate, it only renders once it fires.
+// Classic script. Staff dashboard. Two modes, chosen by whether Supabase is
+// configured on this deployment (js/sync.js):
+//  * Remote (production): Supabase Auth email+password login -> reads EVERY
+//    device's registrations from Supabase (polled every ~10s while visible),
+//    duplicate resolution via the resolve_duplicate() RPC. The PIN is gone.
+//  * Local (no config: file://, tests, missing env): the original behaviour —
+//    reads this device's localStorage records; app.js keeps the casual PIN gate.
+// Reached only through app.js's long-press-the-logo gate.
 (function () {
   'use strict';
   window.PED = window.PED || {};
@@ -86,6 +88,7 @@
           <div><dt>Destinations</dt><dd>${escapeHtml(destinationList.length ? destinationList.join(', ') : 'None selected')}</dd></div>
           <div><dt>Quiz completion</dt><dd>${answeredCount} / ${totalQuestions} answered (${escapeHtml(record.mode)} path)</dd></div>
           <div><dt>Submitted</dt><dd>${escapeHtml(fmtDate(m.createdAt))}</dd></div>
+          <div><dt>Device</dt><dd>${escapeHtml(m.deviceId || '—')}</dd></div>
         </dl>
         ${duplicateActions}
       </section>
@@ -114,16 +117,20 @@
     return `<button type="button" class="quiet staff-clear-all" id="staffClearAllBtn">Clear all local data</button>`;
   }
 
-  function wireClearAllButton(container, datasets, onDataCleared) {
+  function wireClearAllButton(container, datasets, onDataCleared, onExit) {
     container.querySelector('#staffClearAllBtn').addEventListener('click', () => {
       const count = window.PED.state.loadRecords().length;
-      const warning = count
+      // Only ever wipes THIS device's copy — never anything already on the server.
+      // Records still waiting to sync would be lost for good, so say so loudly.
+      const unsynced = window.PED.state.loadRecords().filter(r => r.meta && r.meta.synced === false).length;
+      const warning = (count
         ? `Permanently delete all ${count} registration record${count === 1 ? '' : 's'} and the in-progress draft on this device? This cannot be undone.`
-        : 'Clear the in-progress draft on this device? This cannot be undone.';
+        : 'Clear the in-progress draft on this device? This cannot be undone.')
+        + (unsynced ? `\n\nWARNING: ${unsynced} of these have NOT been synced to the server yet and will be lost.` : '');
       if (!confirm(warning)) return;
       window.PED.state.clearAllData();
       if (onDataCleared) onDataCleared();
-      renderStaffDashboard(container, datasets, onDataCleared);
+      renderStaffDashboard(container, datasets, onDataCleared, onExit);
     });
   }
 
@@ -149,7 +156,7 @@
     `;
   }
 
-  function renderStaffDashboard(container, datasets, onDataCleared) {
+  function renderLocalDashboard(container, datasets, onDataCleared, onExit) {
     const records = window.PED.state.loadRecords();
 
     // Root cause of the refresh bug (round C item 9b): this empty-state
@@ -171,8 +178,8 @@
           ${renderClearAllButton()}
         </div>
       `;
-      container.querySelector('#staffRefreshBtn').addEventListener('click', () => renderStaffDashboard(container, datasets, onDataCleared));
-      wireClearAllButton(container, datasets, onDataCleared);
+      container.querySelector('#staffRefreshBtn').addEventListener('click', () => renderStaffDashboard(container, datasets, onDataCleared, onExit));
+      wireClearAllButton(container, datasets, onDataCleared, onExit);
       return;
     }
 
@@ -197,8 +204,8 @@
       <div id="staffRecordList">${sorted.map(r => renderRecordCard(r, datasets)).join('')}</div>
     `;
 
-    container.querySelector('#staffRefreshBtn').addEventListener('click', () => renderStaffDashboard(container, datasets, onDataCleared));
-    wireClearAllButton(container, datasets, onDataCleared);
+    container.querySelector('#staffRefreshBtn').addEventListener('click', () => renderStaffDashboard(container, datasets, onDataCleared, onExit));
+    wireClearAllButton(container, datasets, onDataCleared, onExit);
 
     container.querySelectorAll('[data-action]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -207,9 +214,184 @@
         // pending — resolveDuplicatePair() resolves the whole linked group
         // together (see js/state.js).
         window.PED.state.resolveDuplicatePair(btn.dataset.id, btn.dataset.action);
-        renderStaffDashboard(container, datasets, onDataCleared);
+        renderStaffDashboard(container, datasets, onDataCleared, onExit);
       });
     });
+  }
+
+  // ------------------------------------------------------------- remote mode ---
+
+  const POLL_MS = 10000;
+  const RENDER_LIMIT = 150;
+  let pollTimer = null;
+  let lastRecords = null;      // last successful fetch, kept for "server unreachable" banners
+  let lastSignature = '';
+  let lastFetchedAt = null;
+  let showAll = false;
+
+  function stopPolling() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
+
+  function renderLogin(container, datasets, onDataCleared, onExit, message) {
+    stopPolling();
+    container.innerHTML = `
+      <p class="eyebrow-small">STAFF DASHBOARD</p>
+      <h2 class="step-heading">Staff sign-in</h2>
+      <form id="staffLoginForm" class="staff-login" autocomplete="off">
+        <div class="field-row two-col">
+          <label>Email <input type="email" id="staffEmail" required autocomplete="username" autocapitalize="off" spellcheck="false"></label>
+          <label>Password <input type="password" id="staffPassword" required autocomplete="current-password"></label>
+        </div>
+        <p class="field-error" id="staffLoginError" ${message ? '' : 'hidden'}>${escapeHtml(message || '')}</p>
+        <div class="step-actions">
+          <button type="button" class="quiet" id="staffExitBtn">Back</button>
+          <button type="submit" class="primary" id="staffLoginBtn">Sign in</button>
+        </div>
+      </form>
+    `;
+    const errEl = container.querySelector('#staffLoginError');
+    container.querySelector('#staffExitBtn').addEventListener('click', () => { if (onExit) onExit(); });
+    container.querySelector('#staffLoginForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const btn = container.querySelector('#staffLoginBtn');
+      btn.disabled = true; btn.textContent = 'Signing in…'; errEl.hidden = true;
+      try {
+        await window.PED.sync.staffSignIn(container.querySelector('#staffEmail').value.trim(), container.querySelector('#staffPassword').value);
+        showAll = false; lastRecords = null; lastSignature = '';
+        renderStaffDashboard(container, datasets, onDataCleared, onExit);
+      } catch (err) {
+        errEl.textContent = err.message; errEl.hidden = false;
+        btn.disabled = false; btn.textContent = 'Sign in';
+      }
+    });
+  }
+
+  function recordsSignature(records) {
+    return records.map(r => `${r.meta.id}:${r.meta.duplicateFlag ? 1 : 0}:${r.meta.duplicateReviewStatus || ''}`).join('|');
+  }
+
+  function renderRemoteBody(container, datasets, onDataCleared, onExit, records, banner) {
+    const status = window.PED.sync.getStatus();
+    const sorted = records.slice().sort((a, b) => {
+      const aPending = a.meta.duplicateFlag && a.meta.duplicateReviewStatus === 'pending';
+      const bPending = b.meta.duplicateFlag && b.meta.duplicateReviewStatus === 'pending';
+      if (aPending !== bPending) return aPending ? -1 : 1;
+      return (b.meta.createdAt || '').localeCompare(a.meta.createdAt || '');
+    });
+    const shown = showAll ? sorted : sorted.slice(0, RENDER_LIMIT);
+    const session = window.PED.sync.staffSession();
+    const localLine = status.unsynced || status.rejected
+      ? `This device: <strong>${status.unsynced}</strong> waiting to sync${status.rejected ? `, <strong>${status.rejected}</strong> rejected by the server` : ''}.
+         <button type="button" class="quiet" id="staffSyncNowBtn">Sync now</button>
+         ${status.rejected ? '<button type="button" class="quiet" id="staffRetryRejectedBtn">Retry rejected</button>' : ''}`
+      : 'This device: everything is synced.';
+
+    container.innerHTML = `
+      <p class="eyebrow-small">STAFF DASHBOARD</p>
+      ${banner ? `<p class="field-error" id="staffBanner">${escapeHtml(banner)}</p>` : ''}
+      ${renderStatsBar(records)}
+      <p class="field-hint" id="staffStatusLine">Live from Supabase (all devices) &middot; updated <span id="staffUpdatedAt">${escapeHtml(lastFetchedAt ? lastFetchedAt.toLocaleTimeString() : '—')}</span> &middot; signed in as ${escapeHtml(session ? session.email : '')}</p>
+      <p class="field-hint" id="staffLocalLine">${localLine}</p>
+      <div class="step-actions">
+        <button type="button" class="quiet" id="staffRefreshBtn">Refresh</button>
+        <button type="button" class="quiet" id="staffExitBtn">Back to visitor screen</button>
+        <button type="button" class="quiet" id="staffSignOutBtn">Sign out</button>
+        <button type="button" class="quiet staff-clear-all" id="staffClearAllBtn">Clear this device's local copy</button>
+      </div>
+      ${records.length ? '' : `<h2 class="step-heading">No registrations yet.</h2><p class="field-hint">Submitted entries from every device will appear here.</p>`}
+      <div id="staffRecordList">${shown.map(r => renderRecordCard(r, datasets)).join('')}</div>
+      ${sorted.length > shown.length ? `<div class="step-actions"><button type="button" class="quiet" id="staffShowAllBtn">Show all ${sorted.length} records</button></div>` : ''}
+    `;
+
+    const reload = () => renderStaffDashboard(container, datasets, onDataCleared, onExit);
+    container.querySelector('#staffRefreshBtn').addEventListener('click', reload);
+    container.querySelector('#staffExitBtn').addEventListener('click', () => { stopPolling(); if (onExit) onExit(); });
+    container.querySelector('#staffSignOutBtn').addEventListener('click', async () => {
+      stopPolling();
+      await window.PED.sync.staffSignOut();
+      lastRecords = null; lastSignature = '';
+      renderStaffDashboard(container, datasets, onDataCleared, onExit);
+    });
+    const syncNow = container.querySelector('#staffSyncNowBtn');
+    if (syncNow) syncNow.addEventListener('click', async () => { syncNow.disabled = true; await window.PED.sync.flushOutbox(); reload(); });
+    const retry = container.querySelector('#staffRetryRejectedBtn');
+    if (retry) retry.addEventListener('click', async () => { window.PED.state.clearSyncErrors(); await window.PED.sync.flushOutbox(); reload(); });
+    const more = container.querySelector('#staffShowAllBtn');
+    if (more) more.addEventListener('click', () => { showAll = true; renderRemoteBody(container, datasets, onDataCleared, onExit, records, banner); });
+    wireClearAllButton(container, datasets, onDataCleared, onExit);
+
+    container.querySelectorAll('[data-action]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        try {
+          await window.PED.sync.resolveDuplicate(btn.dataset.id, btn.dataset.action);
+        } catch (err) {
+          btn.disabled = false;
+          window.PED.modal.open("Couldn't update", `<p>${escapeHtml(err.message)}</p>`, []);
+          return;
+        }
+        reload();
+      });
+    });
+  }
+
+  async function renderRemoteDashboard(container, datasets, onDataCleared, onExit, opts) {
+    const silent = !!(opts && opts.silent);
+    if (!silent) container.innerHTML = '<p class="eyebrow-small">STAFF DASHBOARD</p><p class="field-hint">Loading registrations…</p>';
+    let records = null, banner = null;
+    try {
+      records = await window.PED.sync.fetchRegistrations();
+      lastRecords = records;
+      lastFetchedAt = new Date();
+    } catch (err) {
+      if (err.status === 401) {
+        renderLogin(container, datasets, onDataCleared, onExit, err.message === 'Not signed in' ? '' : 'Session expired — please sign in again.');
+        return;
+      }
+      if (!lastRecords) {
+        stopPolling();
+        container.innerHTML = `
+          <p class="eyebrow-small">STAFF DASHBOARD</p>
+          <h2 class="step-heading">Can't load registrations.</h2>
+          <p class="field-error">${escapeHtml(err.message)}</p>
+          <div class="step-actions">
+            <button type="button" class="quiet" id="staffExitBtn">Back</button>
+            <button type="button" class="primary" id="staffRetryBtn">Try again</button>
+          </div>`;
+        container.querySelector('#staffExitBtn').addEventListener('click', () => { if (onExit) onExit(); });
+        container.querySelector('#staffRetryBtn').addEventListener('click', () => renderStaffDashboard(container, datasets, onDataCleared, onExit));
+        return;
+      }
+      records = lastRecords;
+      banner = `Can't reach the server (${err.message}) — showing the last data loaded${lastFetchedAt ? ' at ' + lastFetchedAt.toLocaleTimeString() : ''}.`;
+    }
+
+    // Polling: re-render only when something actually changed, so staff aren't
+    // bounced back to the top of the list (or out of a half-read card) every 10s.
+    const sig = recordsSignature(records);
+    if (silent && !banner && sig === lastSignature) {
+      const at = container.querySelector('#staffUpdatedAt');
+      if (at) at.textContent = lastFetchedAt.toLocaleTimeString();
+    } else {
+      lastSignature = sig;
+      renderRemoteBody(container, datasets, onDataCleared, onExit, records, banner);
+    }
+
+    stopPolling();
+    pollTimer = setInterval(() => {
+      if (container.hidden || !container.isConnected || !container.querySelector('#staffRecordList')) { stopPolling(); return; }
+      if (document.visibilityState !== 'visible') return;
+      renderRemoteDashboard(container, datasets, onDataCleared, onExit, { silent: true });
+    }, POLL_MS);
+  }
+
+  /** Entry point (app.js). Remote mode when Supabase is configured, else local. */
+  function renderStaffDashboard(container, datasets, onDataCleared, onExit) {
+    if (!window.PED.sync || !window.PED.sync.isEnabled()) {
+      stopPolling();
+      return renderLocalDashboard(container, datasets, onDataCleared, onExit);
+    }
+    if (!window.PED.sync.staffSession()) return renderLogin(container, datasets, onDataCleared, onExit);
+    return renderRemoteDashboard(container, datasets, onDataCleared, onExit);
   }
 
   window.PED.staff = { renderStaffDashboard };

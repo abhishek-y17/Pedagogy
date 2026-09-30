@@ -6,9 +6,10 @@
   'use strict';
   const PED = window.PED;
 
-  // Casual deterrent only — matches CLAUDE.md's standing decision that this build
-  // has no real authentication anywhere (staff controls are "illustrative", same
-  // as both reference prototypes). Long-press the logo to be prompted for this.
+  // Local-only fallback gate. When Supabase is configured (js/sync.js) staff
+  // sign in with real Supabase Auth email+password instead and this PIN is never
+  // used; it only guards the unconfigured/offline-file build (file://, tests),
+  // where the dashboard shows only that one device's own localStorage records.
   const STAFF_PIN = '2026';
 
   const heroScreen = document.getElementById('heroScreen');
@@ -182,17 +183,21 @@
     draft = PED.state.resetForNewVisitor(draft.mode);
   }
 
-  // --- Staff-view gate: long-press the logo, then a PIN prompt. Not real
-  // security — it only needs to stop a visitor from casually tapping their way
-  // into the staff dashboard on a shared stall device.
+  // --- Staff-view gate: long-press the logo. With Supabase configured this opens
+  // the staff sign-in (real auth, see js/staff.js); without it, the casual local
+  // PIN prompt below (a visitor must not casually tap into a stall device's data).
+  function openStaffDashboard() {
+    PED.staff.renderStaffDashboard(document.getElementById('view-staff'), datasets, resetInMemoryDraftAfterClear, () => showView('home'));
+    showView('staff');
+  }
   let pressTimer = null;
   function armLongPress() {
     pressTimer = setTimeout(() => {
+      if (PED.sync && PED.sync.isEnabled()) { openStaffDashboard(); return; }
       const entered = window.prompt('Staff PIN');
       if (entered === null) return;
       if (entered === STAFF_PIN) {
-        PED.staff.renderStaffDashboard(document.getElementById('view-staff'), datasets, resetInMemoryDraftAfterClear);
-        showView('staff');
+        openStaffDashboard();
       } else {
         window.alert('Incorrect PIN.');
       }
@@ -248,6 +253,9 @@
     if (loaded && loaded.currentStepId === 'register') loaded = null;
     draft = loaded || PED.state.createDraft('full');
     PED.state.saveDraft(draft);
+    // Start the Supabase outbox (no-op when unconfigured): flushes anything a
+    // previous session couldn't push, then retries on a timer / `online` event.
+    if (PED.sync) PED.sync.start();
     console.log('[pedagogy] draft state ready', draft.schema, draft.mode, draft.currentStepId);
 
     // mode comes from which hero entry point the visitor tapped (primary CTA/

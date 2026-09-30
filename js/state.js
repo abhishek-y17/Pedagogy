@@ -33,6 +33,7 @@
   const SCHEMA = 'pedagogy.v11';
   const RECORDS_KEY = 'pedagogy-expo-records';
   const DRAFT_KEY = 'pedagogy-expo-draft';
+  const DEVICE_ID_KEY = 'pedagogy-expo-device-id';
 
   /** A fresh in-memory draft. Nothing here is a saved record until finalizeDraft(). */
   function createDraft(mode) {
@@ -251,7 +252,22 @@
       const byId = new Map(questions.map(q => [q.id, q]));
       draft.quiz.answers = draft.quiz.answers.map(a => {
         const q = byId.get(a.questionId);
-        return { ...a, correct: q && a.selected != null ? q.answer === a.selected : null };
+        // Snapshot what was actually asked alongside the answer, so a later edit or
+        // re-issue of the question bank can never change what a stored record
+        // means (also what lands in Supabase's registration_answers table).
+        return {
+          ...a,
+          correct: q && a.selected != null ? q.answer === a.selected : null,
+          ...(q ? {
+            curriculum: q.curriculum || null,
+            subject: q.subject || null,
+            difficulty: q.difficulty || null,
+            topic: q.topic || null,
+            question: q.q,
+            options: q.options,
+            correctAnswer: q.answer,
+          } : {}),
+        };
       });
     }
     const records = loadRecords();
@@ -269,6 +285,13 @@
     // reuses the same id rather than minting a new one each attempt.
     draft.meta.id = id;
     draft.meta.createdAt = createdAt;
+    // Supabase outbox (js/sync.js): only records with synced === false are
+    // pushed. Records saved before the backend existed carry no `synced` key at
+    // all and are deliberately never auto-pushed (rehearsal/demo data).
+    draft.meta.deviceId = getDeviceId();
+    draft.meta.synced = false;
+    draft.meta.syncedAt = null;
+    draft.meta.syncError = null;
     draft.meta.duplicateFlag = duplicateFlag;
     draft.meta.duplicateOfIds = duplicateOfIds;
     draft.meta.duplicateReviewStatus = duplicateFlag ? 'pending' : draft.meta.duplicateReviewStatus;
@@ -306,6 +329,69 @@
     return record;
   }
 
+  /** Stable per-device id (2-3 stall devices) so staff can see which device a
+   * registration came from. Falls back to an ephemeral id if storage is blocked. */
+  let ephemeralDeviceId = null;
+  function getDeviceId() {
+    try {
+      let id = localStorage.getItem(DEVICE_ID_KEY);
+      if (!id) {
+        id = `D-${generateId().slice(0, 8)}`;
+        localStorage.setItem(DEVICE_ID_KEY, id);
+      }
+      return id;
+    } catch (e) {
+      return ephemeralDeviceId || (ephemeralDeviceId = `D-${generateId().slice(0, 8)}`);
+    }
+  }
+
+  /** Records waiting to be pushed to Supabase (the outbox) — synced === false
+   * and not permanently rejected by the server. */
+  function loadUnsynced() {
+    return loadRecords().filter(r => r.meta && r.meta.synced === false && !r.meta.syncError);
+  }
+
+  /** Read-modify-write of a single stored record; a no-op if it no longer exists
+   * (e.g. staff cleared local data while a sync request was in flight). */
+  function updateStoredRecord(id, mutator) {
+    const records = loadRecords();
+    const rec = records.find(r => r.meta && r.meta.id === id);
+    if (!rec) return false;
+    mutator(rec);
+    return saveRecords(records);
+  }
+
+  /** Server accepted the record. `result` = submit_registration()'s reply; its
+   * duplicate verdict covers every device, so it's merged into the local copy. */
+  function markSynced(id, result) {
+    return updateStoredRecord(id, rec => {
+      rec.meta.synced = true;
+      rec.meta.syncedAt = new Date().toISOString();
+      rec.meta.syncError = null;
+      if (result && result.duplicate_flag) {
+        rec.meta.duplicateFlag = true;
+        const ids = new Set([...(rec.meta.duplicateOfIds || []), ...(result.duplicate_of_ids || [])]);
+        rec.meta.duplicateOfIds = [...ids];
+        if (!rec.meta.duplicateReviewStatus) rec.meta.duplicateReviewStatus = 'pending';
+      }
+    });
+  }
+
+  /** Server permanently rejected the record (4xx validation): stop retrying it,
+   * keep it locally, surface it on the staff dashboard. */
+  function markSyncError(id, message) {
+    return updateStoredRecord(id, rec => { rec.meta.syncError = String(message || 'rejected').slice(0, 300); });
+  }
+
+  /** Staff "retry rejected" — puts permanently-failed records back in the outbox. */
+  function clearSyncErrors() {
+    const records = loadRecords();
+    let n = 0;
+    records.forEach(r => { if (r.meta && r.meta.synced === false && r.meta.syncError) { r.meta.syncError = null; n++; } });
+    if (n) saveRecords(records);
+    return n;
+  }
+
   function loadRecords() {
     try {
       const raw = localStorage.getItem(RECORDS_KEY);
@@ -338,5 +424,10 @@
     loadRecords,
     saveRecords,
     findDuplicateMatches,
+    getDeviceId,
+    loadUnsynced,
+    markSynced,
+    markSyncError,
+    clearSyncErrors,
   };
 })();

@@ -1,0 +1,11 @@
+{
+  "buildCommand": "node scripts/build-config.js",
+  "outputDirectory": ".",
+  "installCommand": "echo skip",
+  "headers": [
+    {
+      "source": "/js/generated/config.js",
+      "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+    }
+  ]
+}

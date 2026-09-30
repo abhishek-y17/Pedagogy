@@ -2,11 +2,14 @@
   "name": "pedagogy-sharjah-expo",
   "version": "1.0.0",
   "private": true,
-  "description": "Interactive registration + games + lead-capture stall app for Pedagogy Educational Services at the Sharjah International Education Show. Dev-only tooling (this package.json, Playwright) — the shipped app is plain HTML/CSS/JS with no build step.",
+  "description": "Interactive registration + games + lead-capture stall app for Pedagogy Educational Services at the Sharjah International Education Show. Dev-only tooling (this package.json, Playwright) \u00e2\u20ac\u201d the shipped app is plain HTML/CSS/JS with no build step.",
   "scripts": {
-    "dev": "npx serve . -l 5500",
+    "build:config": "node scripts/build-config.js",
+    "dev": "node scripts/build-config.js && npx serve . -l 5500",
     "build:data": "node scripts/build-data.js",
-    "test": "node tests/data-freshness.test.js && playwright test"
+    "test": "node tests/data-freshness.test.js && node tests/build-config.test.js && playwright test",
+    "test:live": "playwright test -c playwright.live.config.js",
+    "verify:live": "node scripts/live-verify.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0"
