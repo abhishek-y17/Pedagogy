@@ -1,4 +1,23 @@
-# Build plan — Sat morning to Tue morning demo
+# Pedagogy Sharjah Expo — Build Plan
+
+## Final Build Plan — target: complete before 5-6 Oct 2026
+
+**Status as of 2026-09-30:** the original Sat-to-Tue demo plan (below, kept for history) is fully complete — the Tuesday demo happened and succeeded on 2026-09-29. This app is now in its final hardening push for the real 11-13 Oct event, with an internal target of everything below being done by **5-6 October**, leaving a few days of buffer before the event itself.
+
+**What's actually left** (see `session_handoff.md` Section 9 for full detail on each item):
+
+1. **Database migration (code done 2026-09-30, round K; awaiting live DB setup + verification).** Supabase is wired in as the system of record: local-first write + retry outbox (`js/sync.js`), server-side duplicate detection via `submit_registration()`, Supabase Auth staff login, staff dashboard reading all devices live. Remaining manual steps for Abhi are in `supabase/README.md` (run `supabase/migrations/0001_init.sql`, create + allowlist staff users, disable public signups, confirm Vercel env vars on Production + Preview), then a live end-to-end check and truncating rehearsal rows before 11 Oct. Vercel deployment is live at `https://pedagogy-sharjah-expo.vercel.app/`.
+2. **Phase 5 — structured hardware QA (not yet formally done).** A real iPad + Windows laptop pass, both full and express paths, plus the staff dashboard, at least twice each — per the original Phase 5 below. Live client-feedback rounds (G/H/I) and one informal iPad spot-check have happened since the demo, but a proper structured pass against this checklist hasn't.
+3. **Phase 6 — rehearsal + fallback plan (not yet done).** One full dry run as if it were the actual stall (registration through takeaway, on the real devices), plus a confirmed fallback plan for a device/connection failure and a way to reset devices between test runs.
+4. **Real, permit-reviewed T&Cs legal text.** Still pending from Pedagogy/legal — the current copy in `js/registration.js`'s `TCS_TEXT` is real and substantive (data use + the equal-odds draw are accurately described) but not the final legally-reviewed eligibility/prize-detail/entry-deadline language.
+5. **Question-bank factual review.** Every one of the 4,320 merged questions still has `reviewed_by: null` — no subject-teacher has verified factual accuracy yet. Matters more now than during the demo phase, since this is the content the live event actually runs on.
+6. **Custom domain connection** (the client's UAE + .in domains) — deliberately sequenced *after* the database migration above, not blocking it. Tracked in the Cowork project's "Deployment & Data Reliability Plan" doc, not duplicated here.
+
+---
+
+## Historical: Sat-to-Tue demo-sprint plan (complete, kept for history)
+
+**Superseded 2026-09-30 — every phase below is done; the Tuesday demo happened and succeeded on 2026-09-29.** Kept verbatim for the build history and reasoning behind decisions made along the way — not an active plan. See the "Final Build Plan" section above for what's current.
 
 Today: Saturday. Demo: Tuesday morning, complete end-to-end interaction. That's roughly three working days. This plan is deliberately front-loaded — the riskiest, most-visible pieces (registration, landing page, the new selection interaction, the review-before-submit flow) come first, polish comes last, and anything that slips gets cut rather than left half-working.
 

@@ -10,18 +10,18 @@ Visitors register with real details; 9th/10th graders submit directly from there
 - **Destinations & exam prep** — a tap-to-select chip grid of the top study destinations with an "Other" search overlay for the full country list, followed by a country-filtered, grouped list of relevant competitive/entrance exams (e.g. JEE/NEET/CLAT for India, UCAT/LNAT for the UK).
 - **Academic quiz** — 4 questions on the full path (1 on the fast "express" path), filtered by the visitor's curriculum and stream so a Science-PCM student is never shown Commerce-only content, against one pooled 90-second timer that only counts down while a question is on screen. No per-question right/wrong reveal and no score/points are ever shown to the visitor.
 - **Review & submit** — a single screen showing every registration, preference and quiz answer with per-section "Edit" links that jump back to that exact step (and back to Review again once you're done editing), and one Submit action that's the only point a record is actually finalized.
-- **Staff dashboard** — gated behind a long-press-the-logo + PIN prompt (a casual deterrent, not real authentication). Shows every submitted record's full detail, flags likely-duplicate registrations for manual review (never silently blocked or silently left unflagged), and lets staff mark a flagged pair as reviewed/merged/not-a-duplicate (both linked records move together).
+- **Staff dashboard** — reached by long-pressing the logo, then signing in with a Supabase Auth email + password (only allowlisted staff emails can read data). Shows every device's submitted records live (refreshes every ~10 s), each record's full detail, flags likely-duplicate registrations across all devices for manual review (never silently blocked or silently left unflagged), and lets staff mark a flagged pair as reviewed/merged/not-a-duplicate (both linked records move together). A build with no Supabase config (e.g. opened from `file://`) falls back to a local-only dashboard behind a casual PIN.
 
 ## Standing product decisions
 
 - Grade 9 and up (9th/10th get a direct-submit shortcut, 11th/12th get the full flow — see "What it does" above); English only; 2–3 stall-owned iPads/laptops, no personal devices.
 - No OTP/phone verification — numbers are format-checked only; verification happens naturally when a counsellor follows up.
 - Every registered, non-duplicate student has **equal draw odds**, regardless of quiz score or how much of the experience they completed.
-- **Fully local-first for this build phase.** `localStorage` is the system of record — there is no backend, no hosting, and no live deployment yet. That migration is an explicit, separate later step once the local build has been fully tested end-to-end.
+- **Local-first write, Supabase as the system of record.** A submit is saved to the device's `localStorage` instantly (visitors never wait on the network), then pushed to Supabase in the background from a retry outbox (on a timer, on the browser `online` event, and when the tab regains focus). Wifi dropping mid-event loses nothing.
 
 ## Tech stack
 
-Plain HTML/CSS/JS — no framework, no bundler, no build step for the shipped app. Classic `<script>` tags on a shared `window.PED` namespace (not ES modules — those are blocked by CORS when the page is opened directly via `file://`, which this app needs to support). [Playwright](https://playwright.dev/) is the only dev dependency, used purely for the automated test suite.
+Plain HTML/CSS/JS — no framework, no bundler, no client build step. Hosted as static files on Vercel; data lives in Supabase (Postgres) reached with plain `fetch` (no SDK). Classic `<script>` tags on a shared `window.PED` namespace (not ES modules — those are blocked by CORS when the page is opened directly via `file://`, which this app needs to support). [Playwright](https://playwright.dev/) is the only dev dependency, used purely for the automated test suite.
 
 ## Project structure
 
@@ -35,7 +35,10 @@ js/generated/data.js          data/*.json inlined into a committed classic scrip
                                (regenerate with `npm run build:data` after editing data/)
 scripts/                      one-off dev tooling (data build step, empirical
                                file:// and font-self-hosting checks)
-tests/                        Playwright end-to-end test suite
+js/sync.js                    Supabase outbox sync + staff auth (plain fetch)
+supabase/                     database schema (migrations/0001_init.sql) + setup guide
+scripts/build-config.js       writes js/generated/config.js from SUPABASE_URL / SUPABASE_ANON_KEY
+tests/                        Playwright end-to-end test suite (Supabase mocked)
 assets/logo/                  the real Pedagogy logo — the only image asset in the app
 ```
 
@@ -45,12 +48,21 @@ Requires [Node.js](https://nodejs.org/) (for the dev server and test tooling onl
 
 ```bash
 npm install
-npm run dev
+npm run dev      # regenerates js/generated/config.js from .env.local, then serves on :5500
 ```
 
 This starts a static file server for the project root. Open the address it prints in your browser (iPad/tablet-width or a laptop window is the intended layout; phone support is secondary).
 
-You can also skip the dev server entirely and just double-click `index.html` to open it directly via `file://` — this is verified to work in real Chrome and Edge (see `scripts/check-file-protocol.js`).
+You can also skip the dev server entirely and just double-click `index.html` to open it directly via `file://` — this is verified to work in real Chrome and Edge (see `scripts/check-file-protocol.js`). Run `npm run build:config` once first if you want it to talk to Supabase; without that it runs local-only.
+
+## Backend (Supabase) and deployment
+
+See [`supabase/README.md`](supabase/README.md) for the one-time setup (run the SQL, create staff users, allowlist them, disable public signups).
+
+- **Config:** `SUPABASE_URL` and `SUPABASE_ANON_KEY` come from Vercel environment variables (production) or `.env.local` (local; copy `.env.example`). `vercel.json` runs `node scripts/build-config.js` at deploy time, which writes the gitignored `js/generated/config.js`. With no valid values the app simply runs local-only.
+- **Security model:** the public anon key can only call one function (`submit_registration`); it has no table access. Staff read data with their own Supabase Auth session, gated by an email allowlist and row-level security. The `service_role` key and DB password never go in client code or `.env.local`.
+- **Deploys:** every push to `main` redeploys on Vercel.
+- The test suite always serves an empty config and mocks every Supabase call, so it can never write to the real database.
 
 ## Running the tests
 
