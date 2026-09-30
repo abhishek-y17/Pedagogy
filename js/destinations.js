@@ -83,7 +83,7 @@
         btn.addEventListener('click', () => {
           window.PED.haptics.tap();
           otherPicks.splice(Number(btn.dataset.i), 1);
-          window.PED.state.mutateDraft(draft, () => {});
+          window.PED.state.mutateDraft(draft, () => { window.PED.state.reconcileDestinationOrder(prefs); });
           renderOtherPicks();
           renderGrid();
           refreshNextState();
@@ -116,6 +116,7 @@
         onChange: selected => {
           window.PED.state.mutateDraft(draft, () => {
             prefs.destinations = selected;
+            window.PED.state.reconcileDestinationOrder(prefs);
             pruneCompetitiveExams(prefs);
           });
           const otherIsSelected = selected.includes('Other');
@@ -150,7 +151,7 @@
             if (atCap()) return;
             const country = li.dataset.country;
             if (!otherPicks.includes(country)) otherPicks.push(country);
-            window.PED.state.mutateDraft(draft, () => {});
+            window.PED.state.mutateDraft(draft, () => { window.PED.state.reconcileDestinationOrder(prefs); });
             renderOtherPicks();
             renderGrid();
             refreshNextState();

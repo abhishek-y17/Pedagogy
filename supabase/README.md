@@ -9,7 +9,8 @@ in the device's outbox and syncs automatically when it's back.
 1. **Create the schema.** Supabase Dashboard -> *SQL Editor* -> *New query* -> paste
    all of [`migrations/0001_init.sql`](migrations/0001_init.sql) -> *Run*, then the same for
    [`migrations/0002_quiz_answers.sql`](migrations/0002_quiz_answers.sql) (one row per quiz question, filled
-   automatically). Both are safe to re-run.
+   automatically), then [`migrations/0003_destination_order.sql`](migrations/0003_destination_order.sql)
+   (`destination_1/2/3` = the visitor's first, second and third country pick). All are safe to re-run.
 2. **Create staff logins.** *Authentication* -> *Users* -> *Add user* -> *Create new user*
    (email + password, tick *Auto Confirm User*). One per staff member / stall device.
 3. **Allowlist them.** Easiest and typo-proof: allowlist every user that exists in Authentication

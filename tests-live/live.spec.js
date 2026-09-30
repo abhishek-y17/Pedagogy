@@ -64,6 +64,11 @@ test('full 11th/12th path in a real browser lands in Supabase with every field a
   await page.locator('#quizOptions label').first().click();
   await page.locator('#qNextBtn').click();
   await expect(page.locator('#stepContent h2')).toHaveText('Where could your next chapter begin?');
+  // pick order: UK first, then Japan via the Other search overlay, then India
+  await page.getByText('United Kingdom', { exact: true }).click();
+  await page.getByText('Other', { exact: true }).click();
+  await page.locator('#countrySearchInput').fill('Japan');
+  await page.locator('#countrySearchResults li', { hasText: 'Japan' }).first().click();
   await page.getByText('India', { exact: true }).click();
   await page.locator('#destNextBtn').click();
   await page.locator('input[name=examPrep][value=yes]').check();
@@ -110,7 +115,9 @@ test('full 11th/12th path in a real browser lands in Supabase with every field a
   expect(row.destinations).toEqual(p.destinations);
   expect(row.competitive_exam_prep).toBe('yes');
   expect(row.competitive_exams).toEqual(p.competitiveExams);
-  expect(Object.keys(row.competitive_exams)).toContain('India');
+  expect(Object.keys(row.competitive_exams).length).toBeGreaterThan(0);
+  expect([row.destination_1, row.destination_2, row.destination_3]).toEqual(['United Kingdom', 'Japan', 'India']);
+  expect(row.destination_order).toEqual(['United Kingdom', 'Japan', 'India']);
   expect(row.quiz.selectedQuestionIds).toEqual(local.quiz.selectedQuestionIds);
   expect(row.quiz.selectedQuestionIds).toHaveLength(4);
   expect(row.quiz.answers).toEqual(local.quiz.answers);

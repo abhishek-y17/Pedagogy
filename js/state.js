@@ -35,6 +35,20 @@
   const DRAFT_KEY = 'pedagogy-expo-draft';
   const DEVICE_ID_KEY = 'pedagogy-expo-device-id';
 
+  /** Brings preferences.destinationOrder in line with what is currently selected:
+   * drops countries that were deselected, keeps the survivors in their original
+   * pick order, and appends any newly-selected country at the end. Called after
+   * every change, so the array always reflects true pick order (a chip tapped
+   * before an overlay search stays ahead of it). For a draft that predates this
+   * field it falls back to grid picks first, then overlay picks. */
+  function reconcileDestinationOrder(prefs) {
+    const named = [...(prefs.destinations || []).filter(d => d !== 'Other'), ...(prefs.destinationsOther || [])];
+    const order = (prefs.destinationOrder || []).filter(c => named.includes(c));
+    named.forEach(c => { if (!order.includes(c)) order.push(c); });
+    prefs.destinationOrder = order;
+    return order;
+  }
+
   /** A fresh in-memory draft. Nothing here is a saved record until finalizeDraft(). */
   function createDraft(mode) {
     mode = mode || 'full';
@@ -78,6 +92,11 @@
       preferences: {
         destinations: [],              // top-10 chip grid selections (may include the literal "Other")
         destinationsOther: [],         // specific countries picked via the "Other" search overlay
+        // Named countries (never the literal "Other") in the exact order the visitor
+        // picked them, across BOTH the chip grid and the search overlay: index 0 is
+        // their first choice. Kept by reconcileDestinationOrder() (js/destinations.js
+        // calls it after every change; finalizeDraft() re-runs it as a safety net).
+        destinationOrder: [],
         competitiveExamPrep: null,     // 'yes' | 'no' | null (unanswered)
         competitiveExams: {},          // { [country]: [examName, ...] } or { Other: freeText }
       },
@@ -270,6 +289,7 @@
         };
       });
     }
+    reconcileDestinationOrder(draft.preferences);
     const records = loadRecords();
     const id = draft.meta.id || `P-${generateId()}`;
     const createdAt = new Date().toISOString();
@@ -424,6 +444,7 @@
     loadRecords,
     saveRecords,
     findDuplicateMatches,
+    reconcileDestinationOrder,
     getDeviceId,
     loadUnsynced,
     markSynced,

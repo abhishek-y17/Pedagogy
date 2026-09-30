@@ -69,7 +69,9 @@ function makeRecord(tag, over) {
       marketingOptIn: true, marketingOptInAt: '2026-10-11T09:00:07.000Z',
     },
     preferences: {
-      destinations: ['India', 'UK', 'Other'], destinationsOther: ['Japan', 'Norway'],
+      destinations: ['India', 'UK', 'Other'], destinationsOther: ['Japan'],
+      // pick order: UK first, then Japan (overlay), then India; deliberately not grid-first order
+      destinationOrder: ['UK', 'Japan', 'India'],
       competitiveExamPrep: 'yes', competitiveExams: { India: ['JEE', 'NEET'], UK: ['UCAT'] },
     },
     quiz: { selectedQuestionIds: qs.map(q => q.id), answers, timerStartedAt: null, timerElapsedMs: 41234 },
@@ -120,7 +122,8 @@ const withMeta = (rec, patch) => ({ ...rec, meta: { ...rec.meta, ...patch } });
   check('resend flagged already_existed', rA2.json && rA2.json.already_existed === true, rA2.json);
 
   console.log('\n[5] Duplicate detection across "devices"');
-  const B = withMeta(withReg(makeRecord('B'), { parentMobile: A.registration.parentMobile, name: `ZZ TEST B-dupphone ${RUN}` }), { deviceId: 'D-other' });
+  const B0 = makeRecord('B'); delete B0.preferences.destinationOrder;   // older device: no explicit order
+  const B = withMeta(withReg(B0, { parentMobile: A.registration.parentMobile, name: `ZZ TEST B-dupphone ${RUN}` }), { deviceId: 'D-other' });
   const rB = await submit(B);
   check('same parent mobile -> flagged duplicate of A', rB.json && rB.json.duplicate_flag === true && rB.json.duplicate_of_ids.includes(A.meta.id), rB.json);
   const C = withMeta(withReg(makeRecord('C'), { name: `  ${A.registration.name.toUpperCase()} `, dob: A.registration.dob, parentMobile: uniq(1), schoolKey: A.registration.schoolKey }), {});
@@ -158,12 +161,17 @@ const withMeta = (rec, patch) => ({ ...rec, meta: { ...rec.meta, ...patch } });
   eq('marketing_opt_in', a.marketing_opt_in, true); eq('marketing_opt_in_at', new Date(a.marketing_opt_in_at).toISOString(), r.marketingOptInAt);
   eq('destinations', a.destinations, p.destinations); eq('destinations_other', a.destinations_other, p.destinationsOther);
   eq('competitive_exam_prep', a.competitive_exam_prep, 'yes'); eq('competitive_exams', a.competitive_exams, p.competitiveExams);
+  eq('destination_order', a.destination_order, ['UK', 'Japan', 'India']);
+  eq('destination_1 (first pick)', a.destination_1, 'UK'); eq('destination_2', a.destination_2, 'Japan'); eq('destination_3', a.destination_3, 'India');
   eq('quiz.selectedQuestionIds', a.quiz && a.quiz.selectedQuestionIds, A.quiz.selectedQuestionIds);
   eq('quiz.timerElapsedMs', a.quiz && a.quiz.timerElapsedMs, 41234);
   eq('quiz.answers (full, incl. question snapshot)', a.quiz && a.quiz.answers, A.quiz.answers);
   eq('raw is the complete record', a.raw && a.raw.registration && a.raw.registration.name, r.name);
   check('server created_at set', !!a.created_at);
   check('generated name_norm', a.name_norm === r.name.toLowerCase(), a.name_norm);
+
+  const b0 = byId[B.meta.id] || {};
+  eq('fallback order when a device sent none (grid picks, then overlay)', b0.destination_order, ['India', 'UK', 'Japan']);
 
   console.log('\n[8] Quiz answers table (one row per question served)');
   const ans = (await call(`/rest/v1/registration_answers?select=*&registration_id=eq.${A.meta.id}&order=position.asc`, { token })).json;
