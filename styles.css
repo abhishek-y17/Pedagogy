@@ -831,44 +831,64 @@ input.field-invalid:focus-visible, select.field-invalid:focus-visible,
   border-radius: var(--radius-sm);
 }
 .staff-login-card .field-error { margin: 0 0 14px; }
-/* Filled cream-brown "sand" buttons for the header's New visitor button and every
-   secondary button on the staff views (Refresh, Back, Sign out, Sync now, the
-   duplicate actions...). Client feedback: the plain outlined buttons read as bland.
-   Ink #4b3a24 on #e4d3b4 is ~8:1 contrast. Scoped to the header + staff views so
-   the visitor flow's own Back/Continue buttons are unchanged. */
+/* Filled 3D buttons for the header's New visitor button and every secondary button on
+   the staff views (Refresh, Back, Sync now, ...). Built from the site's own palette
+   (brand --lime fill, --green-deep ink, which is ~8:1 contrast) so they match the
+   green Sign in / Continue buttons instead of introducing a new hue. The "3D" is a
+   light-to-deeper gradient, a solid darker bottom edge, and a soft green drop shadow;
+   on press the button sinks onto its edge. Scoped to the header + staff views so the
+   visitor flow's own Back/Continue buttons are unchanged. */
 :root {
-  --sand: #e4d3b4;
-  --sand-deep: #d6c197;
-  --sand-line: #c4aa7e;
-  --sand-ink: #4b3a24;
-  --sand-danger-ink: #8f3522;
+  --key-top: #e6f5b8;
+  --key-face: #d8ee96;
+  --key-edge: #8fac47;
+  --key-line: #b6d06c;
+  --key-ink: var(--green-deep);
+  --key-danger-ink: #8f3522;
 }
 .site-nav button.quiet,
 #view-staff button.quiet {
-  background: var(--sand);
-  color: var(--sand-ink);
-  border: 1px solid var(--sand-line);
-  font-weight: 650;
-  box-shadow: 0 1px 0 rgba(75, 58, 36, .14), inset 0 1px 0 rgba(255, 255, 255, .35);
+  background: linear-gradient(180deg, var(--key-top) 0%, var(--key-face) 100%);
+  color: var(--key-ink);
+  border: 1px solid var(--key-line);
+  font-weight: 700;
+  box-shadow: 0 4px 0 var(--key-edge), 0 9px 16px rgba(43, 97, 75, .22), inset 0 1px 0 rgba(255, 255, 255, .7);
 }
 .site-nav button.quiet:hover:not(:disabled),
 #view-staff button.quiet:hover:not(:disabled) {
-  background: var(--sand-deep);
-  box-shadow: 0 6px 14px rgba(75, 58, 36, .18), inset 0 1px 0 rgba(255, 255, 255, .35);
+  background: linear-gradient(180deg, #eef9c9 0%, #dff29f 100%);
+  box-shadow: 0 6px 0 var(--key-edge), 0 14px 22px rgba(43, 97, 75, .26), inset 0 1px 0 rgba(255, 255, 255, .7);
 }
-/* Header Sign out: solid red (white on #b8432e is ~5.5:1), shown only while staff are signed in. */
+.site-nav button.quiet:active:not(:disabled),
+#view-staff button.quiet:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 var(--key-edge), 0 2px 4px rgba(43, 97, 75, .25), inset 0 1px 2px rgba(43, 97, 75, .18);
+}
+/* Header Sign out: same 3D construction in solid red (white on #b8432e is ~5.5:1), shown only while staff are signed in. */
 .site-nav button.signout {
-  background: #b8432e;
+  background: linear-gradient(180deg, #c9503a 0%, #b8432e 100%);
   color: #fff;
   border: 1px solid #9c3623;
   font-weight: 700;
-  box-shadow: 0 1px 0 rgba(90, 30, 20, .25), inset 0 1px 0 rgba(255, 255, 255, .18);
+  box-shadow: 0 4px 0 #7d2a1a, 0 9px 16px rgba(140, 45, 30, .28), inset 0 1px 0 rgba(255, 255, 255, .22);
 }
-.site-nav button.signout:hover:not(:disabled) { background: #a13826; box-shadow: 0 6px 14px rgba(140, 45, 30, .28); }
-/* Destructive action keeps a red cue on the same sand fill; turns solid red on hover. */
-#view-staff button.staff-clear-all { color: var(--sand-danger-ink); border-color: #b9835f; }
+.site-nav button.signout:hover:not(:disabled) {
+  background: linear-gradient(180deg, #d25a44 0%, #a13826 100%);
+  box-shadow: 0 6px 0 #7d2a1a, 0 14px 22px rgba(140, 45, 30, .32), inset 0 1px 0 rgba(255, 255, 255, .22);
+}
+.site-nav button.signout:active:not(:disabled) {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 #7d2a1a, 0 2px 4px rgba(140, 45, 30, .3);
+}
+/* Destructive action keeps a red cue on the same lime key; turns solid red on hover. */
+#view-staff button.staff-clear-all { color: var(--key-danger-ink); border-color: #c98f6f; }
 #view-staff button.staff-clear-all:hover:not(:disabled),
-#view-staff button.staff-clear-all:active:not(:disabled) { background: #c0503a; border-color: #c0503a; color: #fff; }
+#view-staff button.staff-clear-all:active:not(:disabled) {
+  background: linear-gradient(180deg, #cf5a44 0%, #c0503a 100%);
+  border-color: #a8402c;
+  color: #fff;
+  box-shadow: 0 4px 0 #7d2a1a, 0 9px 16px rgba(140, 45, 30, .28);
+}
 #view-staff .step-actions + .step-heading { margin-top: 28px; }
 #view-staff .step-actions { margin-bottom: 18px; }
 
