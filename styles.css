@@ -848,6 +848,19 @@ input.field-invalid:focus-visible, select.field-invalid:focus-visible,
   background: #2f58a0;
   border-color: #264a88;
 }
+/* Sign-in card's Back button: outline, so the solid green Sign in above it is clearly the primary action. */
+#view-staff button.staff-login-back {
+  background: transparent;
+  color: var(--pedagogy-blue);
+  border: 1.5px solid var(--pedagogy-blue);
+  font-weight: 650;
+  box-shadow: none;
+}
+#view-staff button.staff-login-back:hover:not(:disabled) {
+  background: rgba(59, 104, 184, .08);
+  color: #2f58a0;
+  border-color: #2f58a0;
+}
 /* Header Sign out and the destructive "Clear" actions: flat solid red (white on #b8432e is ~5.5:1). */
 .site-nav button.signout,
 #view-staff button.staff-clear-all {
