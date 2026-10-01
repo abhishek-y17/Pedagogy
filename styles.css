@@ -832,22 +832,21 @@ input.field-invalid:focus-visible, select.field-invalid:focus-visible,
 }
 .staff-login-card .field-error { margin: 0 0 14px; }
 /* Flat buttons for the header's New visitor button and every secondary button on the
-   staff views (Refresh, Back, Sync now, ...). Fill is the page cream (--bg #f6f5ef)
-   with its distance from white pushed 25% further (#f4f2e8), no 3D/shadow; a thin
-   border keeps the edge visible on the cream page. Scoped to the header + staff views so the visitor flow's own
-   Back/Continue buttons are unchanged. */
+   staff views (Refresh, Back, Sync now, ...). Fill is the logo blue at normal strength
+   (--pedagogy-blue #3B68B8, white text ~5.6:1), no 3D/shadow. Scoped to the header +
+   staff views so the visitor flow's own Back/Continue buttons are unchanged. */
 .site-nav button.quiet,
 #view-staff button.quiet {
-  background: #f4f2e8;
-  color: var(--ink);
-  border: 1px solid #c9d2c3;
+  background: var(--pedagogy-blue);
+  color: #fff;
+  border: 1px solid #2f58a0;
   font-weight: 650;
   box-shadow: none;
 }
 .site-nav button.quiet:hover:not(:disabled),
 #view-staff button.quiet:hover:not(:disabled) {
-  background: #e9e6d6;
-  border-color: #b3bfad;
+  background: #2f58a0;
+  border-color: #264a88;
 }
 /* Header Sign out and the destructive "Clear" actions: flat solid red (white on #b8432e is ~5.5:1). */
 .site-nav button.signout,
