@@ -831,66 +831,35 @@ input.field-invalid:focus-visible, select.field-invalid:focus-visible,
   border-radius: var(--radius-sm);
 }
 .staff-login-card .field-error { margin: 0 0 14px; }
-/* Filled 3D buttons for the header's New visitor button and every secondary button on
-   the staff views (Refresh, Back, Sync now, ...). Colour is the logo blue
-   (--pedagogy-blue #3B68B8) pushed ~25% more saturated (#2B62CA) so it reads as the
-   brand mark's own colour, with white text (~5.5:1). The "3D" is a light-to-deeper
-   gradient, a solid darker bottom edge, and a soft blue drop shadow; on press the
-   button sinks onto its edge. Scoped to the header + staff views so the visitor
-   flow's own Back/Continue buttons are unchanged. */
-:root {
-  --key-top: #3f78dc;
-  --key-face: #2b62ca;
-  --key-edge: #183f8f;
-  --key-line: #22509f;
-  --key-ink: #fff;
-}
+/* Flat buttons for the header's New visitor button and every secondary button on the
+   staff views (Refresh, Back, Sync now, ...). Fill is the page cream (--bg #f6f5ef)
+   with its distance from white pushed 25% further (#f4f2e8), no 3D/shadow; a thin
+   border keeps the edge visible on the cream page. Scoped to the header + staff views so the visitor flow's own
+   Back/Continue buttons are unchanged. */
 .site-nav button.quiet,
 #view-staff button.quiet {
-  background: linear-gradient(180deg, var(--key-top) 0%, var(--key-face) 100%);
-  color: var(--key-ink);
-  border: 1px solid var(--key-line);
-  font-weight: 700;
-  box-shadow: 0 4px 0 var(--key-edge), 0 9px 16px rgba(32, 83, 174, .30), inset 0 1px 0 rgba(255, 255, 255, .3);
+  background: #f4f2e8;
+  color: var(--ink);
+  border: 1px solid #c9d2c3;
+  font-weight: 650;
+  box-shadow: none;
 }
 .site-nav button.quiet:hover:not(:disabled),
 #view-staff button.quiet:hover:not(:disabled) {
-  background: linear-gradient(180deg, #4d85e8 0%, #3270d8 100%);
-  box-shadow: 0 6px 0 var(--key-edge), 0 14px 22px rgba(32, 83, 174, .36), inset 0 1px 0 rgba(255, 255, 255, .3);
+  background: #e9e6d6;
+  border-color: #b3bfad;
 }
-.site-nav button.quiet:active:not(:disabled),
-#view-staff button.quiet:active:not(:disabled) {
-  transform: translateY(4px);
-  box-shadow: 0 0 0 var(--key-edge), 0 2px 4px rgba(32, 83, 174, .35), inset 0 1px 2px rgba(10, 30, 80, .3);
-}
-/* Header Sign out: same 3D construction in solid red (white on #b8432e is ~5.5:1), shown only while staff are signed in. */
-.site-nav button.signout {
-  background: linear-gradient(180deg, #c9503a 0%, #b8432e 100%);
+/* Header Sign out and the destructive "Clear" actions: flat solid red (white on #b8432e is ~5.5:1). */
+.site-nav button.signout,
+#view-staff button.staff-clear-all {
+  background: #b8432e;
   color: #fff;
   border: 1px solid #9c3623;
   font-weight: 700;
-  box-shadow: 0 4px 0 #7d2a1a, 0 9px 16px rgba(140, 45, 30, .28), inset 0 1px 0 rgba(255, 255, 255, .22);
+  box-shadow: none;
 }
-.site-nav button.signout:hover:not(:disabled) {
-  background: linear-gradient(180deg, #d25a44 0%, #a13826 100%);
-  box-shadow: 0 6px 0 #7d2a1a, 0 14px 22px rgba(140, 45, 30, .32), inset 0 1px 0 rgba(255, 255, 255, .22);
-}
-.site-nav button.signout:active:not(:disabled) {
-  transform: translateY(4px);
-  box-shadow: 0 0 0 #7d2a1a, 0 2px 4px rgba(140, 45, 30, .3);
-}
-/* Destructive action: the red 3D key (same as Sign out), so it never reads as a routine blue action. */
-#view-staff button.staff-clear-all {
-  background: linear-gradient(180deg, #c9503a 0%, #b8432e 100%);
-  color: #fff;
-  border-color: #9c3623;
-  box-shadow: 0 4px 0 #7d2a1a, 0 9px 16px rgba(140, 45, 30, .28), inset 0 1px 0 rgba(255, 255, 255, .22);
-}
-#view-staff button.staff-clear-all:hover:not(:disabled) {
-  background: linear-gradient(180deg, #d25a44 0%, #a13826 100%);
-  box-shadow: 0 6px 0 #7d2a1a, 0 14px 22px rgba(140, 45, 30, .32), inset 0 1px 0 rgba(255, 255, 255, .22);
-}
-#view-staff button.staff-clear-all:active:not(:disabled) { box-shadow: 0 0 0 #7d2a1a, 0 2px 4px rgba(140, 45, 30, .3); }
+.site-nav button.signout:hover:not(:disabled),
+#view-staff button.staff-clear-all:hover:not(:disabled) { background: #a13826; }
 #view-staff .step-actions + .step-heading { margin-top: 28px; }
 #view-staff .step-actions { margin-bottom: 18px; }
 
