@@ -75,3 +75,5 @@ Demo. Everything above should already be frozen and rehearsed — this morning i
 - No Arabic/multi-language work.
 - No real OTP verification — stays as designed (format-check only).
 - No stock photography or illustration image assets anywhere — logo only, everything else code-drawn.
+
+- **Update 2026-10-08:** item 4 above (T&Cs) is now done — full 11-section text is in `js/registration.js` `TCS_TEXT` (no legal review needed per Abhi). See `RUN_LOG.md` Round N.

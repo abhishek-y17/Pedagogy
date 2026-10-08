@@ -332,17 +332,76 @@
     }
   }
 
-  // Substantive content here is real (data use + equal-odds draw), but the full
-  // permit-reviewed legal text (eligibility, prize details, entry deadline, draw
-  // time, claim rules) is still pending from Pedagogy/legal — swap this for that
-  // text the moment it's delivered. Framed plainly rather than as a visible
-  // "rehearsal placeholder" disclaimer, since a real visitor reads this screen.
+  // Shown in the modal from the hero and the Register screen. The modal card
+  // scrolls (styles.css .modal-card), so sectioned text is fine on iPad/laptop.
   const TCS_TEXT = `
     <h3>Terms &amp; Conditions</h3>
-    <p>By registering you agree that Pedagogy Educational Services may keep the details
-    you provide to manage this registration and tailor today's questions to your stage.
-    One equal-chance draw entry is created per eligible, non-duplicate student regardless
-    of quiz score or how much of the experience is completed.</p>
+
+    <h4>1. About this draw</h4>
+    <p>Pedagogy Educational Services (&ldquo;Pedagogy&rdquo;) is an exhibitor at the International
+    Education Show, Expo Centre Sharjah, 11&ndash;13 October 2026, and runs this prize draw at its
+    stall. Pedagogy is not the organiser of the show. By registering you accept these terms.</p>
+
+    <h4>2. Who can enter</h4>
+    <p>Students in Grade 9 to Grade 12 (or equivalent) visiting the stall. One entry per student.
+    Pedagogy and show staff and their immediate family are not eligible. Students under 18 should
+    register with their parent or guardian&rsquo;s knowledge. All details must be true and your own.</p>
+
+    <h4>3. How to enter</h4>
+    <p>Complete the registration at the stall. Entry is free: no purchase, payment or counselling
+    session is needed to enter or to win.</p>
+
+    <h4>4. The draw</h4>
+    <p>Every eligible, non-duplicate registered student receives exactly one entry with an equal
+    chance of winning. Your quiz answers, score and how much of the experience you complete do not
+    change your chance. The prize is an iPad. There is no cash alternative, and the prize cannot be
+    exchanged or transferred. The winner is chosen by random selection from all valid entries after
+    the show.</p>
+
+    <h4>5. Duplicate and incorrect entries</h4>
+    <p>Entries that appear to be duplicates (for example the same student registered more than once,
+    or the same details repeated) are flagged and reviewed by Pedagogy staff, and only one entry
+    counts. Entries with false or incomplete details may be disqualified.</p>
+
+    <h4>6. Parent or guardian</h4>
+    <p>A parent or guardian mobile number is required because a prize won by a minor is handed over
+    through a parent or guardian. Please give a number that is active and reachable. Numbers are not
+    verified at registration, so a wrong or unreachable number may prevent the prize from being
+    delivered.</p>
+
+    <h4>7. Winner notification and claim</h4>
+    <p>The winner is contacted on the parent/guardian or student mobile number provided, by phone or
+    WhatsApp. A parent or guardian may be asked to confirm identity when collecting the prize for a
+    minor. If the winner cannot be reached or does not claim the prize within the time given when
+    contacted, Pedagogy may select another winner.</p>
+
+    <h4>8. About the quiz</h4>
+    <p>The questions help us tailor guidance to your stage. No score is shown to you. The quiz is for
+    engagement and guidance only; it is not an exam, an assessment of ability, or a prediction or
+    guarantee of any admission or result.</p>
+
+    <h4>9. Your information</h4>
+    <p>We collect your name, date of birth, school, curriculum, grade and stream, your parent or
+    guardian&rsquo;s mobile number (and your own, if given), your study-destination and exam
+    preferences, your quiz answers, and a record of your consents. We use it to run and verify the
+    draw, deliver the prize, personalise the experience and offer counselling follow-up. It is
+    stored securely on Pedagogy&rsquo;s cloud database, accessible only to authorised Pedagogy staff,
+    shared only with service providers needed to host the data and send messages, and never sold.
+    You may ask Pedagogy to correct or delete your information, or to stop contacting you, at any
+    time by telling the stall team or replying to a Pedagogy message.</p>
+
+    <h4>10. Contact and updates</h4>
+    <p>By ticking the boxes at registration you agree that Pedagogy may contact you about this
+    registration and for counselling follow-up by phone, SMS and WhatsApp (including WhatsApp
+    Business messaging), and that accepting these terms includes receiving updates about
+    Pedagogy&rsquo;s programs and offers. You can opt out of updates at any time (reply STOP or tell
+    the stall team); this does not affect an entry you have already made.</p>
+
+    <h4>11. General</h4>
+    <p>Pedagogy may change, suspend or cancel the draw if events outside its control require it. To
+    the extent permitted by law, Pedagogy is not liable for loss or damage arising from taking part,
+    other than for the prize itself. These terms are governed by the laws of the United Arab
+    Emirates.</p>
   `;
 
   /**
