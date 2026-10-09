@@ -3,11 +3,17 @@
 // (local dev). If either value is missing it writes an empty config and the app
 // runs local-only (localStorage), which keeps file:// use and the Playwright
 // suite working with no backend. Only the public anon key is ever emitted.
+// SITE_URL is the one place the public origin of this site lives (canonical/OG
+// or any other absolute URL must read PED_CONFIG.siteUrl, never hard-code it).
 const fs = require('fs');
 const path = require('path');
 
 const root = path.join(__dirname, '..');
 const outFile = path.join(root, 'js', 'generated', 'config.js');
+
+// Public origin of this stall site. Deliberately separate from the main
+// Pedagogy website (https://pedagogyedn.ae) -- never link or redirect to it.
+const DEFAULT_SITE_URL = 'https://expo.pedagogyedn.ae';
 
 function parseEnvFile(file) {
   const out = {};
@@ -23,8 +29,10 @@ function parseEnvFile(file) {
 function buildConfig(env, fileEnv) {
   const url = (env.SUPABASE_URL || fileEnv.SUPABASE_URL || '').trim().replace(/\/+$/, '');
   const key = (env.SUPABASE_ANON_KEY || fileEnv.SUPABASE_ANON_KEY || '').trim();
+  const siteRaw = (env.SITE_URL || fileEnv.SITE_URL || '').trim().replace(/\/+$/, '');
+  const siteUrl = /^https:\/\/[a-z0-9.-]+(:\d+)?$/i.test(siteRaw) ? siteRaw : DEFAULT_SITE_URL;
   const ok = /^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url) && key.length > 20;
-  return { supabaseUrl: ok ? url : '', supabaseAnonKey: ok ? key : '' };
+  return { supabaseUrl: ok ? url : '', supabaseAnonKey: ok ? key : '', siteUrl };
 }
 
 function render(cfg) {
@@ -37,7 +45,7 @@ if (require.main === module) {
   // --empty: force local-only config. The Playwright webServer uses this so
   // the test suite can never write rehearsal rows into the real database.
   const cfg = process.argv.includes('--empty')
-    ? { supabaseUrl: '', supabaseAnonKey: '' }
+    ? { supabaseUrl: '', supabaseAnonKey: '', siteUrl: DEFAULT_SITE_URL }
     : buildConfig(process.env, parseEnvFile(path.join(root, '.env.local')));
   fs.mkdirSync(path.dirname(outFile), { recursive: true });
   fs.writeFileSync(outFile, render(cfg));
@@ -46,4 +54,4 @@ if (require.main === module) {
     : 'build-config: no valid SUPABASE_URL/SUPABASE_ANON_KEY — writing empty config (app runs local-only)');
 }
 
-module.exports = { buildConfig, render, parseEnvFile };
+module.exports = { buildConfig, render, parseEnvFile, DEFAULT_SITE_URL };
