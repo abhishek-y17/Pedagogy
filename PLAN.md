@@ -15,6 +15,8 @@
 
 **Status update 2026-09-30 (evening, round L):** database migration item 1 is now done and verified live (schema 0001-0003 run by Abhi; `verify:live` 77/77, `test:live` 5/5, production smoke synced). Also shipped: Auth staff dashboard polish (sign-in card, sand buttons, header Sign out), information-only duplicates, destination pick order, NEET/JEE question guarantee. Still open on this list: items 2-6 above, plus deleting `ZZ TEST%` rehearsal rows before 11 Oct and strong staff passwords. `DEPLOYMENT_KICKOFF.md` / `KICKOFF_PROMPT.md` were completed and deleted.
 
+**Status update 2026-10-10 (Round P, pre-event audit):** ~~"deleting `ZZ TEST%` rehearsal rows" as the only DB cleanup~~ (superseded: the live DB also holds 10 older non-`ZZ` rehearsal rows that the `ZZ TEST%` SQL won't touch, plus 30 `ZZ TEST%` rows at audit time; details in `RUN_LOG.md`) and ~~"noindex not built"~~ (superseded: built in `26e7aa8`, plus nosniff / X-Frame-Options / Referrer-Policy in `dc723b2`, **local and unpushed until Abhi pushes**). `verify:live` 77/77, `test:live` 5/5, and an emulated iPad + Edge pass of both paths against the live domain all passed; the "failing" `tests/dataset-integrity.spec.js:9` was a stale CRLF-unaware regex, fixed in `8ca2155`. Verdict: conditional GO — push, rotate the weak staff passwords, clear the DB, run the physical-device checklist. Question bank is 10,080 (not 4,320) questions, all still `reviewed_by: null`. Full detail and the 15-minute checklist: `RUN_LOG.md` Round P.
+
 ---
 
 ## Historical: Sat-to-Tue demo-sprint plan (complete, kept for history)
