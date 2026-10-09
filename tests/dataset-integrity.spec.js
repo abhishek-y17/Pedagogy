@@ -9,7 +9,8 @@ const path = require('path');
 test('an empty dataset throws loudly instead of letting the app silently boot', async ({ page }) => {
   const realPath = path.join(__dirname, '..', 'js', 'generated', 'data.js');
   const real = fs.readFileSync(realPath, 'utf8');
-  const broken = real.replace(/QUESTION_BANK: \{.*?\},\n/s, 'QUESTION_BANK: {"questions":[]},\n');
+  // `\r?\n`: on a Windows checkout (core.autocrlf=true) data.js is CRLF on disk.
+  const broken = real.replace(/QUESTION_BANK: \{.*?\},\r?\n/s, 'QUESTION_BANK: {"questions":[]},\n');
   expect(broken, 'test setup: the QUESTION_BANK replace did not match — update this test\'s regex').not.toEqual(real);
 
   await page.route('**/js/generated/data.js', route => {
