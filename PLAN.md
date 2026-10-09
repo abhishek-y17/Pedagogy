@@ -79,3 +79,5 @@ Demo. Everything above should already be frozen and rehearsed — this morning i
 - **Update 2026-10-08:** item 4 above (T&Cs) is now done — full 11-section text is in `js/registration.js` `TCS_TEXT` (no legal review needed per Abhi). See `RUN_LOG.md` Round N.
 
 - **Update 2026-10-09:** deployment re-triggered for the expo.pedagogyedn.ae Vercel project (no functional change).
+
+- **Update 2026-10-09 (Round O):** the site now lives at `https://expo.pedagogyedn.ae`, separate from the main site (no links/redirects either way — audited). Single `SITE_URL` constant added in `scripts/build-config.js`. Redeploy confirmed working after a Vercel failure. Still to do for Abhi: set the Supabase Site URL/Redirect URLs (listed in `RUN_LOG.md` Round O), and decide on noindex (recommended). See `RUN_LOG.md` Round O.

@@ -85,3 +85,7 @@ npm run build:data
 ## Status
 
 This is a pre-launch build. The question bank is real and delivered (10,080 questions across two merged deliveries — see `data/QUESTION_BANK_SOURCES.md`), though no subject-teacher has independently reviewed it for factual accuracy yet (`reviewed_by: null` on every record). The dev-only "jump to quiz" staff-dashboard test shortcut that used to live in `js/staff.js`/`js/app.js`/`styles.css` has been removed (2026-09-29) now that this is the final build for the live event, not a demo build.
+
+## Domain and separation from the main site (2026-10-09)
+
+This app is served at `https://expo.pedagogyedn.ae` as its own Vercel project. The main Pedagogy website (`https://pedagogyedn.ae`) is a separate property: this app must not redirect or link to it, and it must not link here. The public origin is defined once, as `SITE_URL` in `scripts/build-config.js` (default `https://expo.pedagogyedn.ae`, optional env override, exposed as `PED_CONFIG.siteUrl`); any absolute URL (canonical, OG) should read that value instead of hard-coding one. Vercel env var names (Production + Preview): `SUPABASE_URL`, `SUPABASE_ANON_KEY`, optional `SITE_URL`.

@@ -61,3 +61,9 @@ The two old prototypes are references for **different things** — combine them,
 
 ## Tech approach for this timeline
 Given the deadline, recommend evolving `reference/pedagogy-expo-v2.html`'s **logic** (single-file-style HTML/CSS/JS, its state machine, data model, no-OTP registration pattern) into a small set of organized files (not a full Next.js/Supabase build from scratch in 3 days, unless infra is already sitting ready) — see `PLAN.md` for the explicit recommendation and what a fast-follow to a real backend would look like after the event. **Its visual layer is not being carried forward — see "Visual design direction" above: keep only the palette/fonts, rebuild the layout, hero and all illustration as code-driven interactive/animated treatments, no photos or stock images anywhere except the logo.**
+
+## Terms & Conditions (added 2026-10-08)
+The full 11-section Terms & Conditions text lives in `js/registration.js` (`TCS_TEXT`), shown in the modal from the hero and the Register screen. Per Abhi, no further legal review is needed. It deliberately names no iPad model, prize count, draw date or contact address; add those as one-line edits if Pedagogy decides them. The skip-popup copy and the bundled marketing opt-in are unchanged. Open item: quiz difficulty for beginners (Abhi wants hard-tier questions only when NEET/JEE is picked) is not yet built — see `RUN_LOG.md` Round N.
+
+## Domain (added 2026-10-09)
+This app is served at `https://expo.pedagogyedn.ae`, its own Vercel project. The main site `https://pedagogyedn.ae` is separate: never add a redirect or link to it, in either direction. The public origin comes from one constant, `SITE_URL` in `scripts/build-config.js` (-> `PED_CONFIG.siteUrl`). Commits carry Abhi's git identity only, with no AI/Co-Authored-By trailers. Open: noindex decision (recommended), see `RUN_LOG.md` Round O.

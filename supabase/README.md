@@ -72,3 +72,7 @@ select subject, difficulty, count(*) as asked, round(100.0 * avg((is_correct)::i
 
 - The staff dashboard no longer offers duplicate review actions (information only). `resolve_duplicate()` still exists in the database and is staff-only, but nothing in the app calls it.
 - `registration_answers` also snapshots the NEET/JEE guarantee's effect: a NEET-style question shows `topic` beginning `NEET-style:`; `registrations.quiz->>'examFocus'` is `NEET`, `JEE` or `either` when the guarantee applied.
+
+## Dashboard URL settings for the expo domain (2026-10-09)
+
+Authentication -> URL Configuration: **Site URL** `https://expo.pedagogyedn.ae`. **Redirect URLs:** `https://expo.pedagogyedn.ae/**`, `https://pedagogy-sharjah-expo.vercel.app/**`, the Vercel preview pattern (`https://pedagogy-sharjah-expo-*.vercel.app/**`; confirm against a real preview URL), `http://localhost:5500/**`, `http://localhost:5501/**`. The app signs in with email + password only and never sends a redirect URL, so these only matter for Supabase-sent emails (invites, password resets). The REST and Auth APIs have no CORS allowlist to configure. If another site (e.g. the main Pedagogy site) shares this project, changing Site URL affects it too.
