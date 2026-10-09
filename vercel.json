@@ -4,6 +4,10 @@
   "installCommand": "echo skip",
   "headers": [
     {
+      "source": "/(.*)",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    },
+    {
       "source": "/js/generated/config.js",
       "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
     }
