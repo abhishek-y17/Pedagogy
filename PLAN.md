@@ -83,3 +83,25 @@ Demo. Everything above should already be frozen and rehearsed — this morning i
 - **Update 2026-10-09:** deployment re-triggered for the expo.pedagogyedn.ae Vercel project (no functional change).
 
 - **Update 2026-10-09 (Round O):** the site now lives at `https://expo.pedagogyedn.ae`, separate from the main site (no links/redirects either way — audited). Single `SITE_URL` constant added in `scripts/build-config.js`. Redeploy confirmed working after a Vercel failure. Still to do for Abhi: set the Supabase Site URL/Redirect URLs (listed in `RUN_LOG.md` Round O), and decide on noindex (recommended). See `RUN_LOG.md` Round O.
+
+
+
+
+# Pedagogy Sharjah Expo — Pre-Event Priority Checklist
+
+**As of Saturday morning, 2026-10-10.** The event runs 11–13 Oct (Sun–Tue) — it starts tomorrow. The older Sept 19–23 "Sat-to-Tue demo sprint" plan is kept above for history; it succeeded on the 29th and isn't needed anymore. This section is the live priority list.
+
+Where things stand: the app is fully built and live at `https://expo.pedagogyedn.ae/` — Supabase wired in as the system of record, real T&Cs text shipped, custom domain connected. A full test + audit pass ("Round P") ran today against the live site and the real database. Result: **no app bugs, no rebuild needed.** What's left is four operational items before doors open.
+
+## Priority, in order
+
+1. **Push the 5 local commits and confirm the deploy picked them up.** A noindex fix and a security-headers fix (`X-Robots-Tag`, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`) are committed locally only until pushed. After pushing, `curl -sI https://expo.pedagogyedn.ae/` should show all four.
+2. **Clear the 40 rehearsal/test rows from the live database** — do this after step 1, once no more test traffic is expected. 30 are `ZZ TEST%` rows from automated test runs; 10 are older rehearsal rows, one of which might be a real registrant — Abhi's call on that one specifically, delete the rest. Row IDs and the delete SQL are in the audit's `RUN_LOG.md` entry in the local repo.
+3. **Run the 15-minute manual QA checklist on the real iPad and the real stall laptop.** Everything tested today (both registration paths, staff dashboard, offline/online) was browser emulation against the live site, not actual hardware — this is the one gap automated testing can't close.
+4. **Deferred by Abhi — not tonight:** rotate both staff passwords. This isn't urgent-tonight by Abhi's own call, but it should happen before the event opens, not after.
+
+## Flagged, not blocking
+
+- Question bank is 10,080 questions, all still `reviewed_by: null` — needs a subject-teacher review, not something Claude can do.
+- Quiz difficulty is still tier-blind (no "hard only on request" gating) — open decision, untouched on purpose.
+- Further hardening notes from the audit are kept in the local `RUN_LOG.md` Round P entry, not in this publicly served file.
